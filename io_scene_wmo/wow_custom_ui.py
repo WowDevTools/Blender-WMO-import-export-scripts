@@ -24,6 +24,7 @@ class WowMaterialPanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         self.layout.prop(context.material.WowMaterial, "Shader")
+        self.layout.prop(context.material.WowMaterial, "TerrainType")
         self.layout.prop(context.material.WowMaterial, "Transparent")
         self.layout.prop(context.material.WowMaterial, "TwoSided")
         self.layout.prop(context.material.WowMaterial, "Darkened")
@@ -33,7 +34,6 @@ class WowMaterialPanel(bpy.types.Panel):
         self.layout.prop(context.material.WowMaterial, "Flags1")
         self.layout.prop(context.material.WowMaterial, "Texture2")
         self.layout.prop(context.material.WowMaterial, "Color2")
-        self.layout.prop(context.material.WowMaterial, "Flags2")
         self.layout.prop(context.material.WowMaterial, "Texture3")
         self.layout.prop(context.material.WowMaterial, "Color3")
         self.layout.prop(context.material.WowMaterial, "Flags3")
@@ -47,8 +47,12 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
     shaderEnum = [('0', "Diffuse", ""), ('1', "Specular", ""), ('2', "Metal", ""), \
         ('3', "Env", ""), ('4', "Opaque", ""), ('5', "EnvMetal", ""), \
         ('6', "TwoLayerDiffuse", ""), ('7', "TwoLayerEnvMetal", ""), ('8', "TwoLayerTerrain", ""), \
-        ('9', "DiffuseEmissive", ""), ('11', "MaskedEnvMetal", ""), ('12', "EnvMetalEmissive", ""), \
+        ('9', "DiffuseEmissive", ""), ('10', "Tangent", ""), ('11', "MaskedEnvMetal", ""), ('12', "EnvMetalEmissive", ""), \
         ('13', "TwoLayerDiffuseOpaque", ""), ('14', "TwoLayerDiffuseEmissive", "")]#, ('16', "Diffuse", "")]
+    terrainEnum = [('0', "Dirt", ""), ('1', "Metallic", ""), ('2', "Stone", ""), \
+        ('3', "Snow", ""), ('4', "Wood", ""), ('5', "Grass", ""), \
+        ('6', "Leaves", ""), ('7', "Sand", ""), ('8', "Soggy", ""), \
+        ('9', "Dusty Grass", ""), ('10', "None", ""), ('11', "Water", "")]
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow material properties")
     Shader = bpy.props.EnumProperty(items=shaderEnum, name="Shader", description="Wow shader assigned to this material")
     Transparent = bpy.props.BoolProperty(name="Transparent", description="Enable transparency")
@@ -57,7 +61,7 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
     Flags1 = bpy.props.EnumProperty(items=[('0', "Clamp", ""), ('1', "Repeat", "")], name="Extension 1", description="Extension mode for texture 1")
     Texture2 = bpy.props.StringProperty(name="Texture 2", description="Texture assigned to second slot in shader")
     Color2 = bpy.props.FloatVectorProperty(name="Color 2", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
-    Flags2 = bpy.props.EnumProperty(items=[('0', "Clamp", ""), ('1', "Repeat", "")], name="Extension 2", description="Extension mode for texture 2")
+    TerrainType = bpy.props.EnumProperty(items=terrainEnum, name="Terrain Type", description="Terrain type assigned to that material")
     Texture3 = bpy.props.StringProperty(name="Texture 3", description="Texture assigned to third slot in shader")
     Color3 = bpy.props.FloatVectorProperty(name="Color 3", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
     Flags3 = bpy.props.EnumProperty(items=[('0', "Clamp", ""), ('1', "Repeat", "")], name="Extension 3", description="Extension mode for texture 3")

@@ -84,6 +84,7 @@ class WMO_root_file:
                 
                 WowMat.Shader = int(mat.WowMaterial.Shader)
                 WowMat.BlendMode = int(mat.WowMaterial.Transparent)
+                WowMat.TerrainType = int(mat.WowMaterial.TerrainType)
 
                 if mat.WowMaterial.Texture1 in self.textureLookup:
                     WowMat.Texture1Ofs = self.textureLookup[mat.WowMaterial.Texture1]
@@ -101,7 +102,6 @@ class WMO_root_file:
                     WowMat.Texture2Ofs = self.textureLookup[mat.WowMaterial.Texture2]
 
                 WowMat.Color2 = (mat.WowMaterial.Color2[0], mat.WowMaterial.Color2[1], mat.WowMaterial.Color2[2], 1)
-                WowMat.TextureFlags2 = 0
 
                 if mat.WowMaterial.Texture3 in self.textureLookup:
                     WowMat.Texture3Ofs = self.textureLookup[mat.WowMaterial.Texture3]
@@ -171,7 +171,7 @@ class WMO_root_file:
             mat.WowMaterial.Flags1 = '1' if self.momt.Materials[i].TextureFlags1 & 0x80 else '0'
             mat.WowMaterial.Texture2 = self.motx.GetString(self.momt.Materials[i].Texture2Ofs)
             mat.WowMaterial.Color2 = [x / 255 for x in self.momt.Materials[i].Color2[0:3]]
-            mat.WowMaterial.Flags2 = '1' if self.momt.Materials[i].TextureFlags2 & 0x80 else '0'
+            mat.WowMaterial.TerrainType = str(self.momt.Materials[i].TerrainType)
             mat.WowMaterial.Texture3 = self.motx.GetString(self.momt.Materials[i].Texture3Ofs)
             mat.WowMaterial.Color3 = [x / 255 for x in self.momt.Materials[i].Color3[0:3]]
             mat.WowMaterial.Flags3 = '0'#1' if momt.Materials[i].TextureFlags1 & 0x80 else '0'

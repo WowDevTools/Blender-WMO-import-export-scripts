@@ -140,7 +140,7 @@ class WMO_Material:
         self.TextureFlags1 = 0
         self.Texture2Ofs = 0
         self.Color2 = (0, 0, 0, 0)
-        self.TextureFlags2 = 0
+        self.TerrainType = 0
         self.Texture3Ofs = 0
         self.Color3 = (0, 0, 0, 0)
         self.DiffColor = (0, 0, 0)
@@ -155,7 +155,7 @@ class WMO_Material:
         self.TextureFlags1 = struct.unpack("I", f.read(4))[0]
         self.Texture2Ofs = struct.unpack("I", f.read(4))[0]
         self.Color2 = struct.unpack("BBBB", f.read(4))
-        self.TextureFlags2 = struct.unpack("I", f.read(4))[0]
+        self.TerrainType = struct.unpack("I", f.read(4))[0]
         self.Texture3Ofs = struct.unpack("I", f.read(4))[0]
         self.Color3 = struct.unpack("BBBB", f.read(4))
         self.DiffColor = struct.unpack("fff", f.read(12))
@@ -170,7 +170,7 @@ class WMO_Material:
         f.write(struct.pack('I', self.TextureFlags1))
         f.write(struct.pack('I', self.Texture2Ofs))
         f.write(struct.pack('BBBB', round(self.Color2[2] * 255), round(self.Color2[1] * 255), round(self.Color2[0] * 255), round(self.Color2[3] * 255)))
-        f.write(struct.pack('I', self.TextureFlags2))
+        f.write(struct.pack('I', self.TerrainType))
         f.write(struct.pack('I', self.Texture3Ofs))
         f.write(struct.pack('BBBB', round(self.Color3[2] * 255), round(self.Color3[1] * 255), round(self.Color3[0] * 255), round(self.Color3[3] * 255)))
         f.write(struct.pack('fff', *self.DiffColor))
