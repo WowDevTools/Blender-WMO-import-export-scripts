@@ -370,7 +370,7 @@ class WMO_group_file:
         #nobj.WowWMOGroup.PortalGroupID = objId
         nobj.WowWMOGroup.GroupDesc = mogn.GetString(self.mogp.DescGroupNameOfs)
         nobj.WowWMOGroup.GroupID = int(self.mogp.GroupID)
-        if(self.modr):
+        if(self.mogp.Flags & MOGP_FLAG.HasDoodads):
             nobj.WowWMOGroup.MODR.DoodadRefs = self.modr.DoodadRefs
             
         if(self.mogp.Flags & 0x2000):
