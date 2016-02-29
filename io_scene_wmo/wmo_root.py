@@ -427,7 +427,9 @@ class WMO_root_file:
         mods = MODS_chunk()
         modn = MODN_chunk()
         modd = MODD_chunk()
-        mfog = MFOG_chunk()    
+        mfog = MFOG_chunk()
+        fo = Fog()
+        mfog.Fogs.append(fo)
 
         molt = MOLT_chunk()
         mopv = MOPV_chunk()
