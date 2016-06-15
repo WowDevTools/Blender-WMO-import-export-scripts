@@ -26,16 +26,22 @@ class WowMaterialPanel(bpy.types.Panel):
         self.layout.prop(context.material.WowMaterial, "Shader")
         self.layout.prop(context.material.WowMaterial, "TerrainType")
         self.layout.prop(context.material.WowMaterial, "Transparent")
+        self.layout.prop(context.material.WowMaterial, "Texture1")
+        self.layout.prop(context.material.WowMaterial, "Color1")
         self.layout.prop(context.material.WowMaterial, "TwoSided")
         self.layout.prop(context.material.WowMaterial, "Darkened")
         self.layout.prop(context.material.WowMaterial, "NightGlow")
-        self.layout.prop(context.material.WowMaterial, "Texture1")
-        self.layout.prop(context.material.WowMaterial, "Color1")
         self.layout.prop(context.material.WowMaterial, "Flags1")
         self.layout.prop(context.material.WowMaterial, "Texture2")
         self.layout.prop(context.material.WowMaterial, "Color2")
+        self.layout.prop(context.material.WowMaterial, "TwoSided2")
+        self.layout.prop(context.material.WowMaterial, "Darkened2")
+        self.layout.prop(context.material.WowMaterial, "NightGlow2")
         self.layout.prop(context.material.WowMaterial, "Texture3")
         self.layout.prop(context.material.WowMaterial, "Color3")
+        self.layout.prop(context.material.WowMaterial, "TwoSided3")
+        self.layout.prop(context.material.WowMaterial, "Darkened3")
+        self.layout.prop(context.material.WowMaterial, "NightGlow3")
         self.layout.prop(context.material.WowMaterial, "Flags3")
         layout.enabled = context.material.WowMaterial.Enabled
 
@@ -67,7 +73,13 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
     Flags3 = bpy.props.EnumProperty(items=[('0', "Clamp", ""), ('1', "Repeat", "")], name="Extension 3", description="Extension mode for texture 3")
     TwoSided = bpy.props.BoolProperty(name="TwoSided", description="Enable TwoSided")
     Darkened = bpy.props.BoolProperty(name="Darkened", description="Enable Darkened")
-    NightGlow = bpy.props.BoolProperty(name="NightGlow", description="Enable NightGlow")
+    NightGlow = bpy.props.BoolProperty(name="Unshaded", description="Enable NightGlow")
+    TwoSided2 = bpy.props.BoolProperty(name="TwoSided", description="Enable TwoSided")
+    Darkened2 = bpy.props.BoolProperty(name="Darkened", description="Enable Darkened")
+    NightGlow2 = bpy.props.BoolProperty(name="Unshaded", description="Enable NightGlow")
+    TwoSided3 = bpy.props.BoolProperty(name="TwoSided", description="Enable TwoSided")
+    Darkened3 = bpy.props.BoolProperty(name="Darkened", description="Enable Darkened")
+    NightGlow3 = bpy.props.BoolProperty(name="Unshaded", description="Enable NightGlow")
 
 def RegisterWowMaterialProperties():
     bpy.types.Material.WowMaterial = bpy.props.PointerProperty(type=WowMaterialPropertyGroup)
@@ -261,6 +273,9 @@ class WowWMOGroupPanel(bpy.types.Panel):
     def poll(cls, context):
         return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
 
+class WowWMOMODRStore(bpy.types.PropertyGroup):
+    value = bpy.props.IntProperty(name="Doodads Ref")        
+
 class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow WMO group properties")
     GroupName = bpy.props.StringProperty()
@@ -271,7 +286,7 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     GroupID = bpy.props.IntProperty(name="DBC Group ID", description="WMO Group ID in DBC file")
     VertShad = bpy.props.BoolProperty(name="Vertex shading", description="Save gropu vertex shading", default = True)
     SkyBox = bpy.props.BoolProperty(name="Use Skybox", description="Use skybox in group", default = False)
-    MODR = MODR_chunk()
+    MODR = bpy.props.CollectionProperty(type=WowWMOMODRStore)
 
 def RegisterWowWMOGroupProperties():
     bpy.types.Object.WowWMOGroup = bpy.props.PointerProperty(type=WowWMOGroupPropertyGroup)

@@ -308,7 +308,6 @@ class WMO_group_file:
         # set faces material
         for i in range(len(mesh.polygons)):
             matID = self.mopy.TriangleMaterials[i].MaterialID
-
             mesh.polygons[i].material_index = material_indices[matID]
             mesh.polygons[i].use_smooth = True
             # set texture displayed in viewport
@@ -371,7 +370,10 @@ class WMO_group_file:
         nobj.WowWMOGroup.GroupDesc = mogn.GetString(self.mogp.DescGroupNameOfs)
         nobj.WowWMOGroup.GroupID = int(self.mogp.GroupID)
         if(self.mogp.Flags & MOGP_FLAG.HasDoodads):
-            nobj.WowWMOGroup.MODR.DoodadRefs = self.modr.DoodadRefs
+            if(len(self.modr.DoodadRefs) > 0):
+                for i in range(len(self.modr.DoodadRefs)):
+                    doodad = nobj.WowWMOGroup.MODR.add()
+                    doodad.value = self.modr.DoodadRefs[i]
             
         if(self.mogp.Flags & 0x2000):
             nobj.WowWMOGroup.PlaceType = str(0x2000)
@@ -671,8 +673,10 @@ class WMO_group_file:
         
         if(source_doodads):
             modr = MODR_chunk()
-            if(obj.WowWMOGroup.MODR.DoodadRefs):
-                modr.DoodadRefs = obj.WowWMOGroup.MODR.DoodadRefs
+            if(len(obj.WowWMOGroup.MODR) > 0):
+                print("has doodads")
+                for doodad in obj.WowWMOGroup.MODR:
+                    modr.DoodadRefs.append(doodad.value)
                 mogp.Flags = mogp.Flags | MOGP_FLAG.HasDoodads
             modr.Write(f)
         

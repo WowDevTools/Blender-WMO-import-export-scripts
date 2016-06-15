@@ -63,5 +63,6 @@ def read(filename):
     # create meshes
     for i in range(len(group_list)):
         objName = bpy.path.display_name_from_filepath(group_list[i].filename)
+        print(objName)
         group_list[i].LoadObject(objName, root.materials, None, root.mogn, i)
 
