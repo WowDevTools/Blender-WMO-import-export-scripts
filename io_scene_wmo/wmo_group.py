@@ -403,8 +403,15 @@ class WMO_group_file:
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.quads_convert_to_tris()
         bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.uv.select_all(action='TOGGLE')
+        bpy.ops.uv.seams_from_islands(mark_seams=False, mark_sharp=True)
         bpy.ops.object.mode_set(mode='OBJECT')
         
+        bpy.ops.object.modifier_add(type='EDGE_SPLIT')
+        bpy.context.object.modifiers["EdgeSplit"].use_edge_angle = False
+        bpy.ops.object.modifier_apply(apply_as='DATA', modifier="EdgeSplit")
+
+		
         mver = MVER_chunk()
         mver.Version = 17
         mver.Write(f)
@@ -698,5 +705,11 @@ class WMO_group_file:
         # write header
         f.seek(0xC)
         mogp.Write(f)
+		
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.remove_doubles()
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
 
         return None
