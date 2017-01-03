@@ -403,6 +403,8 @@ class WMO_group_file:
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.quads_convert_to_tris()
         bpy.ops.mesh.select_all(action='DESELECT')
+		
+        # perform edge split. Needs to be optional.
         bpy.ops.uv.select_all(action='TOGGLE')
         bpy.ops.uv.seams_from_islands(mark_seams=False, mark_sharp=True)
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -410,6 +412,10 @@ class WMO_group_file:
         bpy.ops.object.modifier_add(type='EDGE_SPLIT')
         bpy.context.object.modifiers["EdgeSplit"].use_edge_angle = False
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier="EdgeSplit")
+		
+        # apply object transformation to geometry. Needs to be optional.
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
 
 		
         mver = MVER_chunk()

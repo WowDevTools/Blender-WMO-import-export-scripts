@@ -80,7 +80,7 @@ class WMO_root_file:
                     WowMat.Flags1 = WowMat.Flags1 | 4
                     
                 if(mat.WowMaterial.Darkened):
-                    WowMat.Flags1 = WowMat.Flags1 | 8
+                    WowMat.Flags1 = WowMat.Flags1 | 8              
                 
                 WowMat.Shader = int(mat.WowMaterial.Shader)
                 WowMat.BlendMode = int(mat.WowMaterial.BlendingMode)
