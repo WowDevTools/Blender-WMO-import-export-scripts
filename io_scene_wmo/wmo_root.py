@@ -83,7 +83,7 @@ class WMO_root_file:
                     WowMat.Flags1 = WowMat.Flags1 | 8
                 
                 WowMat.Shader = int(mat.WowMaterial.Shader)
-                WowMat.BlendMode = int(mat.WowMaterial.Transparent)
+                WowMat.BlendMode = int(mat.WowMaterial.BlendingMode)
                 WowMat.TerrainType = int(mat.WowMaterial.TerrainType)
 
                 if mat.WowMaterial.Texture1 in self.textureLookup:
@@ -117,8 +117,8 @@ class WMO_root_file:
                 if(mat.WowMaterial.NightGlow):
                     WowMat.Flags1 = WowMat.Flags1 | 16
                     WowMat.Shader = 1
-                    WowMat.Color1 = (255, 255, 255, 255)
-                    WowMat.TextureFlags2 = WowMat.TextureFlags2 | 10
+                    #WowMat.Color1 = (255, 255, 255, 255)
+                    #WowMat.TextureFlags2 = WowMat.TextureFlags2 | 10
 
                 self.momt.Materials.append(WowMat)
 
