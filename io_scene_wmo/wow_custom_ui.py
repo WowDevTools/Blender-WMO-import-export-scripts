@@ -25,7 +25,7 @@ class WowMaterialPanel(bpy.types.Panel):
         row = layout.row()
         self.layout.prop(context.material.WowMaterial, "Shader")
         self.layout.prop(context.material.WowMaterial, "TerrainType")
-        self.layout.prop(context.material.WowMaterial, "Transparent")
+        self.layout.prop(context.material.WowMaterial, "BlendingMode")
         self.layout.prop(context.material.WowMaterial, "Texture1")
         self.layout.prop(context.material.WowMaterial, "Color1")
         self.layout.prop(context.material.WowMaterial, "TwoSided")
@@ -59,17 +59,21 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
         ('3', "Snow", ""), ('4', "Wood", ""), ('5', "Grass", ""), \
         ('6', "Leaves", ""), ('7', "Sand", ""), ('8', "Soggy", ""), \
         ('9', "Dusty Grass", ""), ('10', "None", ""), ('11', "Water", "")]
-    Enabled = bpy.props.BoolProperty(name="", description="Enable wow material properties")
-    Shader = bpy.props.EnumProperty(items=shaderEnum, name="Shader", description="Wow shader assigned to this material")
-    Transparent = bpy.props.BoolProperty(name="Transparent", description="Enable transparency")
+    blendingEnum = [('0', "Blend_Opaque", ""), ('1', "Blend_AlphaKey", ""), \
+        ('2', "Blend_Alpha", ""), ('3', "Blend_Add", ""), ('4', "Blend_Mod", ""), \
+        ('5', "Blend_Mod2x", ""), ('6', "Blend_ModAdd", ""), ('7', "Blend_InvSrcAlphaAdd", ""), \
+        ('8', "Blend_InvSrcAlphaOpaque", ""), ('9', "Blend_SrcAlphaOpaque", ""), ('10', "Blend_NoAlphaAdd", ""), ('11', "Blend_ConstantAlpha", "")]
+    Enabled = bpy.props.BoolProperty(name="", description="Enable WoW material properties")
+    Shader = bpy.props.EnumProperty(items=shaderEnum, name="Shader", description="WoW shader assigned to this material")
+    BlendingMode = bpy.props.EnumProperty(items=blendingEnum, name="Blending", description="WoW material blending mode")
     Texture1 = bpy.props.StringProperty(name="Texture 1", description="Texture assigned to first slot in shader")
-    Color1 = bpy.props.FloatVectorProperty(name="Color 1", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
+    Color1 = bpy.props.FloatVectorProperty(name="Emissive Color", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
     Flags1 = bpy.props.EnumProperty(items=[('0', "Clamp", ""), ('1', "Repeat", "")], name="Extension 1", description="Extension mode for texture 1")
     Texture2 = bpy.props.StringProperty(name="Texture 2", description="Texture assigned to second slot in shader")
-    Color2 = bpy.props.FloatVectorProperty(name="Color 2", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
+    Color2 = bpy.props.FloatVectorProperty(name="Emissive Color 2", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
     TerrainType = bpy.props.EnumProperty(items=terrainEnum, name="Terrain Type", description="Terrain type assigned to that material")
     Texture3 = bpy.props.StringProperty(name="Texture 3", description="Texture assigned to third slot in shader")
-    Color3 = bpy.props.FloatVectorProperty(name="Color 3", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
+    Color3 = bpy.props.FloatVectorProperty(name="Emissive Color 3", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
     Flags3 = bpy.props.EnumProperty(items=[('0', "Clamp", ""), ('1', "Repeat", "")], name="Extension 3", description="Extension mode for texture 3")
     TwoSided = bpy.props.BoolProperty(name="TwoSided", description="Enable TwoSided")
     Darkened = bpy.props.BoolProperty(name="Darkened", description="Enable Darkened")
@@ -377,3 +381,4 @@ def unregister():
     UnregisterWowWMORootProperties()
     # unregistered in __init__
     #bpy.utils.unregister_class(WowMaterialPanel)
+	
