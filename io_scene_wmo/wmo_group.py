@@ -415,6 +415,8 @@ class WMO_group_file:
 		
         # apply object transformation to geometry. Needs to be optional.
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        
+        mesh.calc_normals_split()
 
 
 		
