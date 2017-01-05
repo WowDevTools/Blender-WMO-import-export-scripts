@@ -14,6 +14,19 @@ from math import *
 #from . import Utility
 #from .Utility import *
 
+def GetAvg(list):
+    normal = [0, 0, 0]
+    
+    for n in list:
+        for i in range(0, 3):
+            normal[i] += n[i]
+    
+    for i in range(0, 3):
+        normal[i] /= len(list)
+        
+    return normal
+        
+
 class WMO_group_file:
     def __init__(self):
         pass
@@ -395,15 +408,22 @@ class WMO_group_file:
             #bpy.ops.error.message(message="Error: Trying to export " + obj.name + " but Wow WMO Group properties not enabled")
             raise Exception("Error: Trying to export " + obj.name + " but Wow WMO Group properties not enabled")
             return
-
-        mesh = obj.data
+        
 
         bpy.context.scene.objects.active = obj
+        new_obj = obj.copy()
+        new_obj.data = obj.data.copy()
+        bpy.context.scene.objects.link(new_obj)
+        bpy.context.scene.objects.active = new_obj
+        
+        mesh = new_obj.data
+        original_mesh = obj.data
+        
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.quads_convert_to_tris()
         bpy.ops.mesh.select_all(action='DESELECT')
-		
+        
         # perform edge split. Needs to be optional.
         bpy.ops.uv.select_all(action='TOGGLE')
         bpy.ops.uv.seams_from_islands(mark_seams=False, mark_sharp=True)
@@ -412,14 +432,45 @@ class WMO_group_file:
         bpy.ops.object.modifier_add(type='EDGE_SPLIT')
         bpy.context.object.modifiers["EdgeSplit"].use_edge_angle = False
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier="EdgeSplit")
-		
-        # apply object transformation to geometry. Needs to be optional.
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
         
-        mesh.calc_normals_split()
+        # perform custom normal data calculation if not yet calculated by the user
+        bpy.context.scene.objects.active = obj
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        
+        auto_normal_smooth = False
+        if (original_mesh.has_custom_normals == False):
+            bpy.ops.mesh.customdata_custom_splitnormals_add()
+            bpy.ops.mesh.masked_soften_normals()
+            original_mesh.calc_normals_split()
+            auto_normal_smooth = True
+            
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
+        # perform custom normal data transfer to a temporary object
+        obj.select = True
+        bpy.context.scene.objects.active = new_obj
+        bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='CUSTOM_NORMAL')
+        obj.select = False
+        
+        # clear auto-generated custom normal data on original scene object to avoid changes of original scene on export. If normals are user defined, we do not tuch them.
+        bpy.context.scene.objects.active = obj 
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        if (original_mesh.has_custom_normals == True) and (auto_normal_smooth == True):
+            bpy.ops.mesh.customdata_custom_splitnormals_clear()
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.context.scene.objects.active = new_obj
+        
+        # apply object transformation to geometry. Needs to be optional.
+        new_obj.select = True
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        new_obj.select = False
 
+        #mesh.calc_normals_split() -- We seem to not need that after transfer
 
-		
         mver = MVER_chunk()
         mver.Version = 17
         mver.Write(f)
@@ -460,8 +511,8 @@ class WMO_group_file:
 
         collision_vg_index = None
 
-        if(obj.WowCollision.Enabled):
-            collision_vg = obj.vertex_groups.get(obj.WowCollision.VertexGroup)
+        if(new_obj.WowCollision.Enabled):
+            collision_vg = new_obj.vertex_groups.get(obj.WowCollision.VertexGroup)
             if(collision_vg != None):
                 collision_vg_index = collision_vg.index
 
@@ -474,6 +525,21 @@ class WMO_group_file:
                     indices.append(poly.vertices[2])
             batch_indices.append(indices)
             batch_material_index.append(root.AddMaterial(mesh.materials[i]))
+            
+            
+        ################ MESH LOOP STUFF ################
+        
+        vMap = {}
+        
+        
+        for mesh_loop in mesh.loops:
+            if mesh_loop.vertex_index in vMap:
+                l = vMap.get(mesh_loop.vertex_index)
+                l.append(mesh_loop.normal)
+            else:
+                vMap[mesh_loop.vertex_index] = [mesh_loop.normal]
+            
+        
 
         # create batch vertices and reorder indices
         startIndex = 0
@@ -501,7 +567,8 @@ class WMO_group_file:
                 else:
                     v = mesh.vertices[batch[iIndex]]
                     new_vertices.append(v.co)
-                    new_normals.append(v.normal)
+                    # new_normals.append(v.normal)
+                    new_normals.append( GetAvg(vMap[v.index]) )
                     new_vertColors.append(old_vertColors[batch[iIndex]])
                     new_texCoords.append(old_texCoords[batch[iIndex]])
                     indices_map[batch[iIndex]] = len(new_vertices) - 1 + startVertex
@@ -536,6 +603,7 @@ class WMO_group_file:
 
         del startIndex
         del startVertex
+        del vMap
 
         # write triange materials
         mopy = MOPY_chunk()
@@ -627,12 +695,12 @@ class WMO_group_file:
         bb = CalculateBoundingBox(movt.Vertices)
 
         mogp.Flags = MOGP_FLAG.HasCollision # /!\ MUST HAVE 0x1 FLAG ELSE THE GAME CRASH !
-        if(obj.WowWMOGroup.VertShad):
+        if(new_obj.WowWMOGroup.VertShad):
             mogp.Flags = mogp.Flags | MOGP_FLAG.HasVertexColor
-        if(obj.WowWMOGroup.SkyBox):
+        if(new_obj.WowWMOGroup.SkyBox):
             mogp.Flags = mogp.Flags | MOGP_FLAG.HasSkybox
             
-        mogp.Flags = mogp.Flags | int(obj.WowWMOGroup.PlaceType)
+        mogp.Flags = mogp.Flags | int(new_obj.WowWMOGroup.PlaceType)
 
         mogp.BoundingBoxCorner1 = bb[0]
         mogp.BoundingBoxCorner2 = bb[1]
@@ -670,11 +738,11 @@ class WMO_group_file:
         mogp.nBatchesD = 0
         mogp.FogIndices = (0, 0, 0, 0)
         mogp.LiquidType = 0
-        mogp.GroupID = int(obj.WowWMOGroup.GroupID)
+        mogp.GroupID = int(new_obj.WowWMOGroup.GroupID)
         mogp.Unknown1 = 0
         mogp.Unknown2 = 0
         
-        groupInfo = root.AddGroupInfo(mogp.Flags, bb, obj.WowWMOGroup.GroupName, obj.WowWMOGroup.GroupDesc)
+        groupInfo = root.AddGroupInfo(mogp.Flags, bb, new_obj.WowWMOGroup.GroupName, new_obj.WowWMOGroup.GroupDesc)
         mogp.GroupNameOfs = groupInfo[0]
         mogp.DescGroupNameOfs = groupInfo[1]
         
@@ -688,15 +756,15 @@ class WMO_group_file:
         
         if(source_doodads):
             modr = MODR_chunk()
-            if(len(obj.WowWMOGroup.MODR) > 0):
+            if(len(new_obj.WowWMOGroup.MODR) > 0):
                 print("has doodads")
-                for doodad in obj.WowWMOGroup.MODR:
+                for doodad in new_obj.WowWMOGroup.MODR:
                     modr.DoodadRefs.append(doodad.value)
                 mogp.Flags = mogp.Flags | MOGP_FLAG.HasDoodads
             modr.Write(f)
         
         bsp_tree = BSP_Tree()
-        bsp_tree.GenerateBSP(movt.Vertices, movi.Indices, obj.WowCollision.NodeSize)
+        bsp_tree.GenerateBSP(movt.Vertices, movi.Indices, new_obj.WowCollision.NodeSize)
 
         mobn.Nodes = bsp_tree.Nodes
         mobr.Faces = bsp_tree.Faces
@@ -713,11 +781,9 @@ class WMO_group_file:
         # write header
         f.seek(0xC)
         mogp.Write(f)
-		
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.mesh.remove_doubles()
-        bpy.ops.mesh.select_all(action='DESELECT')
-        bpy.ops.object.mode_set(mode='OBJECT')
+        
+        new_obj.select = True
+        bpy.ops.object.delete()
+        bpy.context.scene.objects.active = obj
 
         return None
