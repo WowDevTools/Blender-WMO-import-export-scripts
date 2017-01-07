@@ -11,6 +11,8 @@ from .Collision import *
 import math
 from math import *
 
+import os
+
 #from . import Utility
 #from .Utility import *
 
@@ -401,7 +403,7 @@ class WMO_group_file:
         if scn.objects.active is None or scn.objects.active.mode == 'OBJECT':
             scn.objects.active = nobj
 
-    def Save(self, f, obj, root, objNumber, source_doodads):#, material_indices, group_name_ofs, group_desc_ofs):
+    def Save(self, f, obj, root, objNumber, source_doodads, autofill_textures):#, material_indices, group_name_ofs, group_desc_ofs):
 
         # check Wow WMO panel enabled
         if(not obj.WowWMOGroup.Enabled):
@@ -512,12 +514,16 @@ class WMO_group_file:
         collision_vg_index = None
 
         if(new_obj.WowCollision.Enabled):
-            collision_vg = new_obj.vertex_groups.get(obj.WowCollision.VertexGroup)
+            collision_vg = new_obj.vertex_groups.get(new_obj.WowCollision.VertexGroup)
             if(collision_vg != None):
                 collision_vg_index = collision_vg.index
 
         for i in range(len(mesh.materials)):
             indices = []
+            if(autofill_textures):
+                if(mesh.materials[i].WowMaterial.Texture1 != '')
+                    if(mesh.materials[i].active_texture.type == 'IMAGE'):
+                        mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath , bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
             for poly in mesh.polygons:
                 if(poly.material_index == i):
                     indices.append(poly.vertices[0])
@@ -526,11 +532,10 @@ class WMO_group_file:
             batch_indices.append(indices)
             batch_material_index.append(root.AddMaterial(mesh.materials[i]))
             
+           
             
-        ################ MESH LOOP STUFF ################
-        
+        # iterate through mesh loops to get all vertex per face normals
         vMap = {}
-        
         
         for mesh_loop in mesh.loops:
             if mesh_loop.vertex_index in vMap:
@@ -627,7 +632,7 @@ class WMO_group_file:
                     triMat.Flags = triMat.Flags | 0x48 # F_COLLIDE_HIT & F_HINT
                 else:
                     triMat.Flags = triMat.Flags | 0x04 # F_NO_COLLISION
-
+                   
 
                 mopy.TriangleMaterials.append(triMat)
 

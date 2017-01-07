@@ -59,10 +59,15 @@ class WMOImporter(bpy.types.Operator):
             subtype='FILE_PATH',
             )
     filter_glob = StringProperty(default="*.wmo", options={'HIDDEN'})
+    
+    formatEnum = [('.png', "PNG", ""), ('.bmp', "BMP", ""), ('.dds', "DDS", ""), \
+        ('.jpg', "JPG", ""), ('.tga', "TGA", ""), ('.tiff', "TIFF", "")]
+        
+    texture_format = bpy.props.EnumProperty(items=formatEnum, name="Texture format", description="Choose your texture file format")
 
     def execute(self, context):
         from . import import_wmo
-        import_wmo.read(self.filepath)
+        import_wmo.read(self.filepath, self.texture_format)
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -95,8 +100,13 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
     source_fog = BoolProperty(
         name="Save source fog",
         description="Save source fog",
-        default= False,
-        )        
+        default= True,
+        )
+    autofill_textures = BoolProperty(
+        name="Fill texture paths",
+        description="Automatically fills WoW Material texture paths based on texture filenames",
+        default= True,
+        )           
         
 
     """is_Zero = BoolProperty(
@@ -118,7 +128,7 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
 
     def execute(self, context):
         from . import export_wmo
-        export_wmo.write(self.filepath, self.fill_water, self.source_doodads, self.source_fog)
+        export_wmo.write(self.filepath, self.fill_water, self.source_doodads, self.source_fog, self.autofill_textures)
 
         return {'FINISHED'}
 

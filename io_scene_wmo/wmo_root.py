@@ -139,7 +139,7 @@ class WMO_root_file:
 
         return (group_info.NameOfs, descOfs)
 
-    def LoadMaterials(self, name, texturePath):
+    def LoadMaterials(self, name, texturePath, file_format):
         self.materials = {}
 
         images = []
@@ -177,6 +177,7 @@ class WMO_root_file:
             mat.WowMaterial.Flags3 = '0'#1' if momt.Materials[i].TextureFlags1 & 0x80 else '0'
 
             # set texture slot and load texture
+            
             if mat.WowMaterial.Texture1:
                 tex1_slot = mat.texture_slots.create(2)
                 tex1_slot.uv_layer = "UVMap"
@@ -187,7 +188,7 @@ class WMO_root_file:
                 tex1_slot.texture = tex1
 
                 try:
-                    tex1_img_filename = os.path.splitext(os.path.basename(mat.WowMaterial.Texture1))[0] + ".png"
+                    tex1_img_filename = os.path.splitext( mat.WowMaterial.Texture1 )[0] + file_format
 
                     img1_loaded = False
 
@@ -220,7 +221,7 @@ class WMO_root_file:
                 tex2_slot.texture = tex2
 
                 try:
-                    tex2_img_filename = os.path.splitext(os.path.basename(mat.WowMaterial.Texture2))[0] + ".png"
+                    tex2_img_filename = os.path.splitext( mat.WowMaterial.Texture2 )[0] + file_format
                     
                     img2_loaded = False
 
@@ -251,7 +252,7 @@ class WMO_root_file:
                 tex3_slot.texture = tex3
 
                 try:
-                    tex3_img_filename = os.path.splitext(os.path.basename(mat.WowMaterial.Texture3))[0] + ".png"
+                    tex3_img_filename = os.path.splitext( mat.WowMaterial.Texture2 )[0] + file_format
                     
                     img3_loaded = False
 
@@ -365,12 +366,13 @@ class WMO_root_file:
             mesh.from_pydata(verts,[],faces)
             bpy.context.scene.objects.link(obj)
             
-    def LoadProperties(self, name):
+    def LoadProperties(self, name, filepath):
         bpy.context.scene.WoWRoot.AmbientColor = [float(self.mohd.AmbientColor[0] / 255), float(self.mohd.AmbientColor[1] / 255), float(self.mohd.AmbientColor[2]) / 255]
         bpy.context.scene.WoWRoot.AmbientAlpha = self.mohd.AmbientColor[3]
         bpy.context.scene.WoWRoot.SkyboxPath =  self.mosb.Skybox
         bpy.context.scene.WoWRoot.UseAmbient = bool(self.mohd.Flags & 2)
         bpy.context.scene.WoWRoot.WMOid = self.mohd.ID
+        bpy.context.scene.WoWRoot.TextureRelPath = filepath
 
     def GetObjectBoundingBox(self, obj):
         corner1 = [0, 0, 0]
@@ -416,7 +418,7 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, f, fill_water, source_doodads, source_fog):
+    def Save(self, f, fill_water, source_doodads, source_fog, autofill_textures):
     
         mver = MVER_chunk()                
         # set version header

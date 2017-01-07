@@ -28,6 +28,7 @@ class WoWRootPanel(bpy.types.Panel):
         self.layout.prop(context.scene.WoWRoot, "AmbientAlpha")
         self.layout.prop(context.scene.WoWRoot, "SkyboxPath")
         self.layout.prop(context.scene.WoWRoot, "WMOid")
+        self.layout.prop(context.scene.WoWRoot, "TextureRelPath")
         layout.enabled = context.scene.WoWRoot.Enabled
         
     @classmethod
@@ -69,6 +70,12 @@ class WowRootPropertyGroup(bpy.types.PropertyGroup):
     name="WMO DBC ID",
     description="Used in WMOAreaTable (optional)",
     default= 0,
+    )
+    
+    TextureRelPath =  bpy.props.StringProperty(
+    name="TextureRelPath",
+    description="A relative path to your texture folder. WARNING: changing that property is recommended only on brand new scenes. Do not change on scenes with imported WMOs.",
+    default= '',
     )
     
 def RegisterWowRootProperties():

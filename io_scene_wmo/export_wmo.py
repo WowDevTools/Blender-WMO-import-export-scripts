@@ -8,7 +8,7 @@ from .wmo_group import *
 
 import os
 
-def write(filepath, fill_water, source_doodads, source_fog):
+def write(filepath, fill_water, source_doodads, source_fog, autofill_textures):
     f = open(filepath, "wb")
     root_filename = filepath
 
@@ -54,10 +54,10 @@ def write(filepath, fill_water, source_doodads, source_fog):
         # write group file
         wmo_group = WMO_group_file()
         #wmo_group.Save(group_file, bpy.context.selected_objects[iObj], wmo_root, iObj)
-        wmo_group.Save(group_file, bpy.data.objects[i], wmo_root, iObj, source_doodads)
+        wmo_group.Save(group_file, bpy.data.objects[i], wmo_root, iObj, source_doodads, autofill_textures)
         iObj+=1
         
     # write root file
     print("Export root file") 
-    wmo_root.Save(f, fill_water, source_doodads, source_fog)
+    wmo_root.Save(f, fill_water, source_doodads, source_fog, autofill_textures)
     return

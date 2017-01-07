@@ -22,7 +22,7 @@ def OpenAllWMOGroups(rootName):
 
     return group_list
 
-def read(filename):
+def read(filename, file_format):
     f = open(filename, "rb")
     
     # Check if file is WMO root or WMO group, or unknown
@@ -54,12 +54,12 @@ def read(filename):
         raise Exception("File seems to be corrupted")
 
     # load all materials in root file
-    root.LoadMaterials(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\")
+    root.LoadMaterials(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\", file_format)
 
     # load all lights
     root.LoadLights(bpy.path.display_name_from_filepath(rootName))
     root.LoadPortals(bpy.path.display_name_from_filepath(rootName))
-    root.LoadProperties(bpy.path.display_name_from_filepath(rootName))
+    root.LoadProperties(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\")
 
     # create meshes
     for i in range(len(group_list)):
