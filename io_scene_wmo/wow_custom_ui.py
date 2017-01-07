@@ -6,6 +6,78 @@ from . import wmo_format
 from .wmo_format import *
 
 ###############################
+## Root properties
+###############################
+
+class WoWRootPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "scene"
+    bl_label = "WoW Root"
+    bl_options = {'DEFAULT_CLOSED'}
+    
+    def draw_header(self, context):
+        layout = self.layout
+        self.layout.prop(context.scene.WoWRoot, "Enabled")
+    
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        self.layout.prop(context.scene.WoWRoot, "UseAmbient")
+        self.layout.prop(context.scene.WoWRoot, "AmbientColor")
+        self.layout.prop(context.scene.WoWRoot, "AmbientAlpha")
+        self.layout.prop(context.scene.WoWRoot, "SkyboxPath")
+        self.layout.prop(context.scene.WoWRoot, "WMOid")
+        layout.enabled = context.scene.WoWRoot.Enabled
+        
+    @classmethod
+    def poll(cls, context):
+        return (context.scene is not None)
+        
+
+class WowRootPropertyGroup(bpy.types.PropertyGroup):
+    Enabled = bpy.props.BoolProperty(name="", description="Enable WoW root properties", default = True)
+    
+    UseAmbient = bpy.props.BoolProperty(
+    name="Use Ambient",
+    description="Use ambient lighting inside indoor groups",
+    default= True,
+    )
+    
+    AmbientColor = bpy.props.FloatVectorProperty(
+    name="Ambient Color",
+    subtype='COLOR',
+    default=(1,1,1),
+    min=0.0,
+    max=1.0
+    )
+    
+    AmbientAlpha =  bpy.props.IntProperty(
+    name="Ambient Intensity",
+    description="Ambient. 255 = blizzlike",
+    min=0, max=255,
+    default= 127,
+    )
+    
+    SkyboxPath =  bpy.props.StringProperty(
+    name="SkyboxPath",
+    description="Skybox for WMO (.MDX)",
+    default= '',
+    )
+    
+    WMOid = bpy.props.IntProperty(
+    name="WMO DBC ID",
+    description="Used in WMOAreaTable (optional)",
+    default= 0,
+    )
+    
+def RegisterWowRootProperties():
+    bpy.types.Scene.WoWRoot = bpy.props.PointerProperty(type=WowRootPropertyGroup)
+
+def UnregisterWowRootProperties():
+    bpy.types.Scene.WoWRoot = None
+
+###############################
 ## Material
 ###############################
 
@@ -13,7 +85,7 @@ class WowMaterialPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "material"
-    bl_label = "Wow material"
+    bl_label = "WoW material"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
@@ -42,6 +114,7 @@ class WowMaterialPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         return (context.material is not None)
+        
 
 class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
     shaderEnum = [('0', "Diffuse", ""), ('1', "Specular", ""), ('2', "Metal", ""), \
@@ -276,7 +349,7 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     placeTypeEnum = [('8', "Outdoor", ""), ('8192', "Indoor", "")]
     PlaceType = bpy.props.EnumProperty(items=placeTypeEnum, name="Place Type", description="Group is indoor or outdoor")
     GroupID = bpy.props.IntProperty(name="DBC Group ID", description="WMO Group ID in DBC file")
-    VertShad = bpy.props.BoolProperty(name="Vertex shading", description="Save gropu vertex shading", default = True)
+    VertShad = bpy.props.BoolProperty(name="Vertex shading", description="Save gropu vertex shading", default = False)
     SkyBox = bpy.props.BoolProperty(name="Use Skybox", description="Use skybox in group", default = False)
     MODR = bpy.props.CollectionProperty(type=WowWMOMODRStore)
 
@@ -349,6 +422,7 @@ def UnregisterWowWMORootProperties():
     bpy.types.Mesh.WowWMORoot = None    
     
 def register():
+    RegisterWowRootProperties()
     RegisterWowMaterialProperties()
     #RegisterWowLiquidProperties()
     RegisterWowLightProperties()
@@ -360,6 +434,7 @@ def register():
     #bpy.utils.register_class(WowMaterialPanel)
 
 def unregister():
+    UnregisterWowRootProperties()
     UnregisterWowMaterialProperties()
     #UnregisterWowLiquidProperties()
     UnregisterWowLightProperties()
@@ -369,4 +444,7 @@ def unregister():
     UnregisterWowWMORootProperties()
     # unregistered in __init__
     #bpy.utils.unregister_class(WowMaterialPanel)
-	
+
+
+        
+

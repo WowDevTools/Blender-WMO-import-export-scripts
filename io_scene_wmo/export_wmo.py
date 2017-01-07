@@ -8,7 +8,7 @@ from .wmo_group import *
 
 import os
 
-def write(filepath, WMOid, ambient, use_ambient, fill_water, skybox_path, source_doodads, source_fog):
+def write(filepath, fill_water, source_doodads, source_fog):
     f = open(filepath, "wb")
     root_filename = filepath
 
@@ -59,5 +59,5 @@ def write(filepath, WMOid, ambient, use_ambient, fill_water, skybox_path, source
         
     # write root file
     print("Export root file") 
-    wmo_root.Save(f, WMOid, ambient, use_ambient, fill_water, skybox_path, source_doodads, source_fog)
+    wmo_root.Save(f, fill_water, source_doodads, source_fog)
     return

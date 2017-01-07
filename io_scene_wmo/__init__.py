@@ -78,19 +78,7 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
     bl_options = {'PRESET'}
 
     filename_ext = ".wmo"
-    filter_glob = StringProperty(default="*.wmo", options={'HIDDEN'})
-    
-    wmo_id = IntProperty(
-        name="WMO DBC Id",
-        description="Used in WMOAreaTable (optional)",
-        default= 0,
-        )
-    
-    use_ambient = BoolProperty(
-        name="Use ambient",
-        description="Use ambient lighting",
-        default= False,
-        )
+    filter_glob = StringProperty(default="*.wmo", options={'HIDDEN'})   
         
     fill_water = BoolProperty(
         name="Fill water",
@@ -110,27 +98,7 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
         default= False,
         )        
         
-    Color = FloatVectorProperty(
-        name="Ambient color",
-        description="Ambient. 0.1,0.1,0.1 = blizzlike",
-        subtype='COLOR',
-        min=0.0, max=1.0,
-        default= (0,0,0),
-        )
-        
-    col_a = IntProperty(
-        name="Ambient alpha",
-        description="Ambient. 255 = blizzlike",
-        min=0, max=255,
-        default= 1,
-        )
-        
-    skybox_path = StringProperty(
-        name="SkyboxPath",
-        description="Skybox for WMO (.MDX)",
-        default= '',
-        )
-        
+
     """is_Zero = BoolProperty(
             name="Save default WMO DBC ID",
             description="Check if you change default Blizzard WMO and wants to save its WMO DBC ID",
@@ -150,8 +118,7 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
 
     def execute(self, context):
         from . import export_wmo
-        ambient = [int(self.Color[0]*255), int(self.Color[1]*255), int(self.Color[2]*255), self.col_a]
-        export_wmo.write(self.filepath, self.wmo_id, ambient, self.use_ambient, self.fill_water, self.skybox_path, self.source_doodads, self.source_fog)
+        export_wmo.write(self.filepath, self.fill_water, self.source_doodads, self.source_fog)
 
         return {'FINISHED'}
 

@@ -59,6 +59,7 @@ def read(filename):
     # load all lights
     root.LoadLights(bpy.path.display_name_from_filepath(rootName))
     root.LoadPortals(bpy.path.display_name_from_filepath(rootName))
+    root.LoadProperties(bpy.path.display_name_from_filepath(rootName))
 
     # create meshes
     for i in range(len(group_list)):

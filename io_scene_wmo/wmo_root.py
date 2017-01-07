@@ -364,6 +364,13 @@ class WMO_root_file:
 
             mesh.from_pydata(verts,[],faces)
             bpy.context.scene.objects.link(obj)
+            
+    def LoadProperties(self, name):
+        bpy.context.scene.WoWRoot.AmbientColor = [float(self.mohd.AmbientColor[0] / 255), float(self.mohd.AmbientColor[1] / 255), float(self.mohd.AmbientColor[2]) / 255]
+        bpy.context.scene.WoWRoot.AmbientAlpha = self.mohd.AmbientColor[3]
+        bpy.context.scene.WoWRoot.SkyboxPath =  self.mosb.Skybox
+        bpy.context.scene.WoWRoot.UseAmbient = bool(self.mohd.Flags & 2)
+        bpy.context.scene.WoWRoot.WMOid = self.mohd.ID
 
     def GetObjectBoundingBox(self, obj):
         corner1 = [0, 0, 0]
@@ -409,7 +416,7 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, f, wmo_id, ambient, use_ambient, fill_water, skybox_path, source_doodads, source_fog):
+    def Save(self, f, fill_water, source_doodads, source_fog):
     
         mver = MVER_chunk()                
         # set version header
@@ -515,15 +522,15 @@ class WMO_root_file:
         self.mohd.nModels = modn.StringTable.decode("ascii").count('.MDX')
         self.mohd.nDoodads = len(modd.Definitions)
         self.mohd.nSets = len(mods.Sets)
-        self.mohd.AmbientColor = ambient
-        self.mohd.ID = wmo_id
+        self.mohd.AmbientColor = [int(bpy.context.scene.WoWRoot.AmbientColor[0]*255), int(bpy.context.scene.WoWRoot.AmbientColor[1]*255), int(bpy.context.scene.WoWRoot.AmbientColor[2]*255), bpy.context.scene.WoWRoot.AmbientAlpha] 
+        self.mohd.ID =  bpy.context.scene.WoWRoot.WMOid
         self.mohd.BoundingBoxCorner1 = bb[0]
         self.mohd.BoundingBoxCorner2 = bb[1]
         self.mohd.Flags = 5
         
-        mosb.Skybox = skybox_path
+        mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
         
-        if(use_ambient):
+        if(bpy.context.scene.WoWRoot.UseAmbient):
             self.mohd.Flags = self.mohd.Flags | 2
         if(fill_water):
             self.mohd.Flags = self.mohd.Flags ^ 4
