@@ -28,6 +28,7 @@ class WoWRootPanel(bpy.types.Panel):
         self.layout.prop(context.scene.WoWRoot, "AmbientAlpha")
         self.layout.prop(context.scene.WoWRoot, "SkyboxPath")
         self.layout.prop(context.scene.WoWRoot, "WMOid")
+        self.layout.prop(context.scene.WoWRoot, "UseTextureRelPath")
         self.layout.prop(context.scene.WoWRoot, "TextureRelPath")
         layout.enabled = context.scene.WoWRoot.Enabled
         
@@ -70,6 +71,12 @@ class WowRootPropertyGroup(bpy.types.PropertyGroup):
     name="WMO DBC ID",
     description="Used in WMOAreaTable (optional)",
     default= 0,
+    )
+    
+    UseTextureRelPath = bpy.props.BoolProperty(
+    name="Use Texture Relative Path",
+    description="Turn this setting off if you want texture auto-filling if your textures are already referenced through relative paths",
+    default= True,
     )
     
     TextureRelPath =  bpy.props.StringProperty(

@@ -520,10 +520,15 @@ class WMO_group_file:
 
         for i in range(len(mesh.materials)):
             indices = []
+            
             if(autofill_textures):
-                if(mesh.materials[i].WowMaterial.Texture1 != '')
+                if(mesh.materials[i].WowMaterial.Texture1 != ""):
                     if(mesh.materials[i].active_texture.type == 'IMAGE'):
-                        mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath , bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
+                        if(bpy.context.scene.WoWRoot.UseTextureRelPath):
+                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath , bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
+                        else:
+                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath )[0] + ".blp"
+                            
             for poly in mesh.polygons:
                 if(poly.material_index == i):
                     indices.append(poly.vertices[0])
