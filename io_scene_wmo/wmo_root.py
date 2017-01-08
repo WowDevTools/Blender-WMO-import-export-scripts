@@ -449,6 +449,7 @@ class WMO_root_file:
         mopt.Infos = []
         global_vertices_count = 0
         global_portal_count = 0
+        global_object_count = 0
         
         for ob in bpy.data.objects:
             if(ob.type == "LAMP"):
@@ -469,6 +470,10 @@ class WMO_root_file:
                     molt.Lights.append(light)
             if(ob.type == "MESH"):
                 obj_mesh = ob.data
+                
+                if(obj_mesh.WowWMOGroup.Enabled):
+                    global_object_count += 1
+                    
                 if(obj_mesh.WowPortalPlane.Enabled):
                     print("Export portal "+ob.name)
                     portal_info = PortalInfo()
@@ -503,6 +508,9 @@ class WMO_root_file:
                         modd.Definitions = obj_mesh.WowWMORoot.MODD.Definitions
                     if(source_fog):
                         mfog.Fogs = obj_mesh.WowWMORoot.MFOG.Fogs
+                        
+        if(global_object_count > 512):
+            raise Exception("Your scene contains more objects that it is supported by WMO file format " + str(global_object_count) + ". The hardcoded maximum is 512 for one root WMO file. Dividing your scene to a few separate WMO models is recommended.")
                         
         mopr = MOPR_chunk()
         mopr.Relationships = []

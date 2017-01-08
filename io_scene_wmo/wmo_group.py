@@ -472,6 +472,9 @@ class WMO_group_file:
         new_obj.select = False
 
         #mesh.calc_normals_split() -- We seem to not need that after transfer
+        
+        if(len(mesh.vertices) > 65535):
+            raise Exception("Object " + str(obj.name) + "contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")
 
         mver = MVER_chunk()
         mver.Version = 17
@@ -483,6 +486,7 @@ class WMO_group_file:
         old_texCoords = []
         for i in range(len(mesh.vertices)):
             old_texCoords.append((0, 0))
+         
 
         if len(mesh.uv_layers) > 0:
             uv_layer = mesh.uv_layers.active
