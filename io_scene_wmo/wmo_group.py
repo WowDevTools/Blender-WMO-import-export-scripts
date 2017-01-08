@@ -27,6 +27,7 @@ def GetAvg(list):
         normal[i] /= len(list)
         
     return normal
+    
         
 
 class WMO_group_file:
@@ -473,8 +474,8 @@ class WMO_group_file:
 
         #mesh.calc_normals_split() -- We seem to not need that after transfer
         
-        if(len(mesh.vertices) > 65535):
-            raise Exception("Object " + str(obj.name) + "contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")
+        if(len(mesh.vertices) > 196605):
+            raise Exception("Object " + str(obj.name) + "contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 196605.")
 
         mver = MVER_chunk()
         mver.Version = 17
@@ -523,22 +524,23 @@ class WMO_group_file:
                 collision_vg_index = collision_vg.index
 
         for i in range(len(mesh.materials)):
-            indices = []
             
             if(autofill_textures):
-                if(mesh.materials[i].WowMaterial.Texture1 != ""):
-                    if(mesh.materials[i].active_texture.type == 'IMAGE'):
+                if((mesh.materials[i].WowMaterial.Texture1 != "") & (mesh.materials[i].active_texture is not None) ):
+                    if((mesh.materials[i].active_texture.type == 'IMAGE')):
                         if(bpy.context.scene.WoWRoot.UseTextureRelPath):
                             mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath , bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
                         else:
                             mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath )[0] + ".blp"
-                            
+            
+            indices = []
             for poly in mesh.polygons:
                 if(poly.material_index == i):
-                    indices.append(poly.vertices[0])
-                    indices.append(poly.vertices[1])
-                    indices.append(poly.vertices[2])
+                    for j in range(0,3):
+                        if poly.vertices[j] not in indices:
+                            indices.append(poly.vertices[j])
             batch_indices.append(indices)
+                            
             batch_material_index.append(root.AddMaterial(mesh.materials[i]))
             
            

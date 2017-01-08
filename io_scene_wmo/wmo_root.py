@@ -471,7 +471,7 @@ class WMO_root_file:
             if(ob.type == "MESH"):
                 obj_mesh = ob.data
                 
-                if(obj_mesh.WowWMOGroup.Enabled):
+                if(ob.WowWMOGroup.Enabled):
                     global_object_count += 1
                     
                 if(obj_mesh.WowPortalPlane.Enabled):
