@@ -101,7 +101,7 @@ class WMO_group_file:
         if(self.mogp.Flags & MOGP_FLAG.HasWater):
             self.mliq = MLIQ_chunk()
             self.mliq.Read(f)
-
+            
     def CreateMeshFromBatch(self, meshName, batch, materials):
         # create mesh vertices / faces
         vertices = self.movt.Vertices[batch.StartVertex : batch.LastVertex + 1]
@@ -461,7 +461,7 @@ class WMO_group_file:
         bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='CUSTOM_NORMAL')
         obj.select = False
         
-        # clear auto-generated custom normal data on original scene object to avoid changes of original scene on export. If normals are user defined, we do not tuch them.
+        # clear auto-generated custom normal data on original scene object to avoid changes of original scene on export. If normals are user defined, we do not touch them.
         bpy.context.scene.objects.active = obj 
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
@@ -478,9 +478,14 @@ class WMO_group_file:
 
         #mesh.calc_normals_split() -- We seem to not need that after transfer
         
+        # doing some safety checks to notify the user if the object is badly formed
         if(len(mesh.vertices) > 65535):
-            raise Exception("Object " + str(obj.name) + " contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")    
-
+            raise Exception("Object " + str(obj.name) + " contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")
+        
+        if len(mesh.materials) > 254 or len(root.momt.Materials) > 255:
+            raise Exception("Scene has excceeded the maximum allowed number of WoW materials (255). Your scene now has " + len(root.momt.Materials) + " materials. So, " + (len(root.momt.Materials) - 255) + " extra ones." )
+        
+        
         mver = MVER_chunk()
         mver.Version = 17
         mver.Write(f)
@@ -496,7 +501,7 @@ class WMO_group_file:
         material_indices = {} #                                                                                         --material_indices:creation
         
         for i in range(len(mesh.materials)):
-            material_indices[i] = root.AddMaterial(mesh.materials[i])
+            material_indices[i] = root.AddMaterial(mesh.materials[i]) # adding materials to root object. Returns the index of material if the passed one already exists.
             if(autofill_textures):
                 if((mesh.materials[i].WowMaterial.Texture1 != "") & (mesh.materials[i].active_texture is not None) ):
                     if((mesh.materials[i].active_texture.type == 'IMAGE')):

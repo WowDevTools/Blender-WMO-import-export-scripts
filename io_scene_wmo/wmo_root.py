@@ -286,7 +286,7 @@ class WMO_root_file:
                 l_type = 'SPOT'
             elif(l.LightType == 2): # direct
                 l_type = 'SUN'
-            elif(l.LightType == 3): # ambiant
+            elif(l.LightType == 3): # ambient
                 l_type = 'POINT'    # use point with no attenuation
             else:
                 raise Exception("Light type unknown :" + str(l.LightType) + "(light nbr : " + str(i) + ")")
@@ -317,6 +317,63 @@ class WMO_root_file:
             obj.location = self.molt.Lights[i].Position
 
             bpy.context.scene.objects.link(obj)
+            
+    
+    def LoadFogs(self, name):
+        self.fogs = []
+        for i in range(len(self.mfog.Fogs)):
+            
+            f = self.mfog.Fogs[i]
+            bpy.ops.mesh.primitive_uv_sphere_add()
+            fog = bpy.context.scene.objects.active
+            fog.name = name + "_Fog_" + str(i).zfill(2)
+            
+            # applying real object transformation
+            fog.location = f.Position
+            bpy.ops.transform.resize( value=(f.BigRadius / 0.5, f.BigRadius / 0.5, f.BigRadius / 0.5) ) # 0.5 is the default radius of sphere primitive in Blender
+            
+            bpy.ops.object.shade_smooth()
+            fog.draw_type = 'SOLID'
+            fog.show_transparent = True
+            fog.show_name = True
+            fog.color = (f.Color1[2] / 255, f.Color1[1] / 255, f.Color1[0] / 255, 0.0)
+            
+            
+            mesh = fog.data
+            
+            material = bpy.data.materials.new(name = fog.name)
+            
+            if mesh.materials:
+                mesh.materials[0] = material
+            else:
+                mesh.materials.append(material)
+                
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.object.material_slot_assign()
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
+            
+            mesh.materials[0].use_object_color = True
+            mesh.materials[0].use_transparency = True
+            mesh.materials[0].alpha = 0.35
+
+            # applying object properties
+            
+            mesh.WowFog.Enabled = True
+            if(f.Flags & 0x01):
+                mesh.WoWFog.IgnoreRadius = True
+            if(f.Flags & 0x10):
+                mesh.WowFog.Unknown = True
+                 
+            mesh.WowFog.InnerRadius = round(f.BigRadius / f.SmallRadius * 100, 2)
+            mesh.WowFog.EndDist = f.EndDist
+            mesh.WowFog.StartFactor = f.StartFactor
+            mesh.WowFog.Color1 = (f.Color1[2] / 255, f.Color1[1] / 255, f.Color1[0] / 255)
+            mesh.WowFog.EndDist2 = f.EndDist2
+            mesh.WowFog.StartFactor2 = f.StartFactor2
+            mesh.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)
+            
 
     def SaveSource(self):
         name = "(TECH)Root_source"
@@ -501,6 +558,10 @@ class WMO_root_file:
                     
                     global_vertices_count+=local_vertices_count
                     mopt.Infos.append(portal_info)
+                    
+                if(obj_mesh.WowFog.Enabled):
+                    print("Export fog "+ob.name)
+                    
                 elif(obj_mesh.WowWMORoot.IsRoot):
                     if(source_doodads):
                         mods.Sets = obj_mesh.WowWMORoot.MODS.Sets

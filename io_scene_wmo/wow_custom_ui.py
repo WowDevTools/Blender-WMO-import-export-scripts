@@ -4,6 +4,7 @@ import bpy.utils
 import bpy.types
 from . import wmo_format
 from .wmo_format import *
+from bpy.app.handlers import persistent
 
 ###############################
 ## Root properties
@@ -418,6 +419,62 @@ def RegisterWowPortalPlaneProperties():
 
 def UnregisterWowPortalPlaneProperties():
     bpy.types.Mesh.WowPortalPlane = None
+    
+    
+###############################
+## Fog
+###############################
+class WowFogPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "data"
+    bl_label = "Wow Fog"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw_header(self, context):
+        layout = self.layout
+        self.layout.prop(context.object.data.WowFog, "Enabled")
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        layout.enabled = context.object.data.WowFog.Enabled
+        self.layout.prop(context.object.data.WowFog, "IgnoreRadius")
+        self.layout.prop(context.object.data.WowFog, "Unknown")
+        self.layout.prop(context.object.data.WowFog, "InnerRadius")
+        self.layout.prop(context.object.data.WowFog, "EndDist")
+        self.layout.prop(context.object.data.WowFog, "StartFactor")
+        self.layout.prop(context.object.data.WowFog, "Color1")
+        self.layout.prop(context.object.data.WowFog, "EndDist2")
+        self.layout.prop(context.object.data.WowFog, "StartFactor2")
+        self.layout.prop(context.object.data.WowFog, "Color2")
+
+    @classmethod
+    def poll(cls, context):
+        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
+
+def UpdateFogColor(self, context):
+    bpy.context.scene.objects.active.color = (self.Color1[0], self.Color1[1], self.Color1[2], 0.5)
+
+
+class WowFogPropertyGroup(bpy.types.PropertyGroup):
+    Enabled = bpy.props.BoolProperty(name="", description="Enable WoW WMO fog properties")
+    IgnoreRadius = bpy.props.BoolProperty(name="Ignore Radius", description="Ignore radius in CWorldView::QueryCameraFog", default = False)
+    Unknown = bpy.props.BoolProperty(name="Unknown Flag", description="Check that in if you know what it is", default = False)
+    InnerRadius = bpy.props.FloatProperty(name="Inner Radius (%)", description="A radius of fog starting to fade", default=100.0, min=0.0, max=100.0)
+    EndDist = bpy.props.FloatProperty(name="Farclip", description="Fog farclip", default=700.0, min=0.0, max=1500.0)
+    StartFactor = bpy.props.FloatProperty(name="Nearclip", description="Fog nearclip", default=0.5, min=0.0, max=1.0)
+    Color1 = bpy.props.FloatVectorProperty(name="Color", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0, update=UpdateFogColor)
+    EndDist2 = bpy.props.FloatProperty(name="Underwater farclip", description="Underwater fog farclip", default=700.0, min=0.0, max=1500.0)
+    StartFactor2 = bpy.props.FloatProperty(name="Underwater nearclip", description="Underwater fog nearclip", default=0.5, min=0.0, max=1.0)
+    Color2 = bpy.props.FloatVectorProperty(name="Underwater Color", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)        
+
+def RegisterWowFogProperties():
+    bpy.types.Mesh.WowFog = bpy.props.PointerProperty(type=WowFogPropertyGroup)
+
+def UnregisterWowFogProperties():
+    bpy.types.Mesh.WowFog = None
+
 
 ###############################
 ## WMO Toolbar
@@ -791,6 +848,7 @@ def register():
     RegisterWowPortalPlaneProperties()
     RegisterWowWMORootProperties()
     RegisterWoWVisibilityProperties()
+    RegisterWowFogProperties()
     # RegisterWMOToolsPanelObjectMode()
     # registered in __init__
     #bpy.utils.register_class(WowMaterialPanel)
@@ -805,6 +863,7 @@ def unregister():
     UnregisterWowPortalPlaneProperties()
     UnregisterWowWMORootProperties()
     UnregisterWoWVisibilityProperties()
+    UnregisterWowFogProperties()
     # UnregisterWMOToolsPanelObjectMode()
     # unregistered in __init__
     #bpy.utils.unregister_class(WowMaterialPanel)

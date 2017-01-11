@@ -56,10 +56,11 @@ def read(filename, file_format):
     # load all materials in root file
     root.LoadMaterials(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\", file_format)
 
-    # load all lights
+    # load all WMO components
     root.LoadLights(bpy.path.display_name_from_filepath(rootName))
     root.LoadPortals(bpy.path.display_name_from_filepath(rootName))
     root.LoadProperties(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\")
+    root.LoadFogs(bpy.path.display_name_from_filepath(rootName)) 
 
     # create meshes
     for i in range(len(group_list)):
