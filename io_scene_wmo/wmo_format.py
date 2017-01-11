@@ -900,9 +900,9 @@ class MOVI_chunk:
 
 # Vertices
 class MOVT_chunk:
-    def __init__(self):
+    def __init__(self, size = 0):
         self.Header = ChunkHeader()
-        self.Vertices = []
+        self.Vertices = size * [[0.0, 0.0, 0.0]]
 
     def Read(self, f):
         # read header
@@ -926,9 +926,9 @@ class MOVT_chunk:
 
 # Normals
 class MONR_chunk:
-    def __init__(self):
+    def __init__(self, size = 0):
         self.Header = ChunkHeader()
-        self.Normals = []
+        self.Normals = size * [[0.0, 0.0, 0.0]]
 
     def Read(self, f):
         # read header
@@ -952,9 +952,9 @@ class MONR_chunk:
 
 # Texture coordinates
 class MOTV_chunk:
-    def __init__(self):
+    def __init__(self, size = 0):
         self.Header = ChunkHeader()
-        self.TexCoords = []
+        self.TexCoords = size * [[0, 1]]
 
     def Read(self, f):
         # read header
@@ -1166,9 +1166,9 @@ class MOBR_chunk:
 
 # vertex colors
 class MOCV_chunk:
-    def __init__(self):
+    def __init__(self, size = 0):
         self.Header = ChunkHeader()
-        self.vertColors = []
+        self.vertColors = size * [[0x7F, 0x7F, 0x7F, 0xFF]]
 
     def Read(self, f):
         # read header
@@ -1243,3 +1243,18 @@ class MLIQ_chunk:
 
         for f in self.TileFlags:
             f.write(struct.pack('B', f))
+			
+# RenderBatch
+class RenderBatch:
+    def __init__(self):
+	    self.triangles = []
+	    self.vertex_infos = {}
+	    
+# VertexInfo
+class VertexInfo:
+    def __init__(self):
+	    self.pos = [0.0, 0.0, 0.0]
+	    self.normals = []
+	    self.uv = (0, 1)
+	    self.color = (0x7F, 0x7F, 0x7F, 0xFF)
+	    self.collision = False

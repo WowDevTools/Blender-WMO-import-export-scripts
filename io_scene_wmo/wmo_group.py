@@ -28,11 +28,17 @@ def GetAvg(list):
         
     return normal
     
-        
+
+def ret_min(a, b):
+    return a if a < b else b
+
+def ret_max(a, b):
+    return a if a > b else b
 
 class WMO_group_file:
     def __init__(self):
         pass
+        
 
     def Read(self, f):
         self.filename = f.name
@@ -410,8 +416,6 @@ class WMO_group_file:
         if(not obj.WowWMOGroup.Enabled):
             #bpy.ops.error.message(message="Error: Trying to export " + obj.name + " but Wow WMO Group properties not enabled")
             raise Exception("Error: Trying to export " + obj.name + " but Wow WMO Group properties not enabled")
-            return
-        
 
         bpy.context.scene.objects.active = obj
         new_obj = obj.copy()
@@ -474,241 +478,167 @@ class WMO_group_file:
 
         #mesh.calc_normals_split() -- We seem to not need that after transfer
         
-        if(len(mesh.vertices) > 196605):
-            raise Exception("Object " + str(obj.name) + "contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 196605.")
+        if(len(mesh.vertices) > 65535):
+            raise Exception("Object " + str(obj.name) + " contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")
+               
+        if(autofill_textures):
+            for i in range(len(mesh.materials)):
+                if((mesh.materials[i].WowMaterial.Texture1 != "") & (mesh.materials[i].active_texture is not None) ):
+                    if((mesh.materials[i].active_texture.type == 'IMAGE')):
+                        if(bpy.context.scene.WoWRoot.UseTextureRelPath):
+                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath , bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
+                        else:
+                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath )[0] + ".blp"        
 
         mver = MVER_chunk()
         mver.Version = 17
         mver.Write(f)
 
         mogp = MOGP_chunk()
-
-        # order faces by material
-        old_texCoords = []
-        for i in range(len(mesh.vertices)):
-            old_texCoords.append((0, 0))
-         
-
-        if len(mesh.uv_layers) > 0:
-            uv_layer = mesh.uv_layers.active
-            for i in range(len(uv_layer.data)):
-                uv = (uv_layer.data[i].uv[0], 1 - uv_layer.data[i].uv[1])
-                old_texCoords[mesh.loops[i].vertex_index] = uv
-
-        old_vertColors = []
-        for i in range(len(mesh.vertices)):
-            old_vertColors.append((0, 0, 0, 0))
-
-        if len(mesh.vertex_colors) > 0:
-            vertColor_layer1 = mesh.vertex_colors.active
-            for i in range(len(vertColor_layer1.data)):
-                color = (round(vertColor_layer1.data[i].color[2] * 255), round(vertColor_layer1.data[i].color[1] * 255), round(vertColor_layer1.data[i].color[0] * 255), 0)
-                old_vertColors[mesh.loops[i].vertex_index] = color
-
-        batch_indices = []
-        batch_vertices = []
-        batch_normals = []
-        batch_texCoords = []
-        batch_collide = [] # for each vertice, True if collide, False otherwise
-        batch_material_index = []
-        batch_vertColors = []
-
-        batch_indice_range = []
-        batch_vertex_range = []
-
-        collision_vg_index = None
-
-        if(new_obj.WowCollision.Enabled):
-            collision_vg = new_obj.vertex_groups.get(new_obj.WowCollision.VertexGroup)
-            if(collision_vg != None):
-                collision_vg_index = collision_vg.index
-
+        
+        map_batches = {} #												--map_batches:creation
+        
+        # initializing batches:
+        new_index_last = 0 #												--new_index_last:creation
+        map_indices = {} #												--map_indices:creation
+        vg_collision = None #												--vg_collision:creation
+        material_indices = {} #                                                                                         --material_indices:creation
+        
         for i in range(len(mesh.materials)):
+            material_indices[i] = root.AddMaterial(mesh.materials[i])
             
-            if(autofill_textures):
-                if((mesh.materials[i].WowMaterial.Texture1 != "") & (mesh.materials[i].active_texture is not None) ):
-                    if((mesh.materials[i].active_texture.type == 'IMAGE')):
-                        if(bpy.context.scene.WoWRoot.UseTextureRelPath):
-                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath , bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
-                        else:
-                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath )[0] + ".blp"
-            
-            indices = []
-            for poly in mesh.polygons:
-                if(poly.material_index == i):
-                    for j in range(0,3):
-                        if poly.vertices[j] not in indices:
-                            indices.append(poly.vertices[j])
-            batch_indices.append(indices)
-                            
-            batch_material_index.append(root.AddMaterial(mesh.materials[i]))
-            
-           
-            
-        # iterate through mesh loops to get all vertex per face normals
-        vMap = {}
+        if new_obj.WowCollision.Enabled:
+            vg_collision = new_obj.vertex_groups.get(new_obj.WowCollision.VertexGroup)
         
-        for mesh_loop in mesh.loops:
-            if mesh_loop.vertex_index in vMap:
-                l = vMap.get(mesh_loop.vertex_index)
-                l.append(mesh_loop.normal)
-            else:
-                vMap[mesh_loop.vertex_index] = [mesh_loop.normal]
-            
+        for poly in mesh.polygons:
+            batch_current = map_batches.setdefault(material_indices.get(poly.material_index), RenderBatch())
         
-
-        # create batch vertices and reorder indices
-        startIndex = 0
-        startVertex = 0
-        for iBatch in range(len(batch_indices)):
-            batch = batch_indices[iBatch]
-
-            new_vertices = []
-            new_indices = []
-            new_normals = []
-            new_texCoords = []
-            new_collide = []
-            new_vertColors = []
-
-            # resize new_indices
-            for i in range(len(batch)):
-                new_indices.append(0)
-
-            indices_map = {}
-            for iIndex in range(len(batch)):
-                # if vertex is already referenced, use that reference
-                if batch[iIndex] in indices_map:
-                    new_indices[iIndex] = indices_map[batch[iIndex]]
-                # else add vertex in vertex list, and add reference
-                else:
-                    v = mesh.vertices[batch[iIndex]]
-                    new_vertices.append(v.co)
-                    # new_normals.append(v.normal)
-                    new_normals.append( GetAvg(vMap[v.index]) )
-                    new_vertColors.append(old_vertColors[batch[iIndex]])
-                    new_texCoords.append(old_texCoords[batch[iIndex]])
-                    indices_map[batch[iIndex]] = len(new_vertices) - 1 + startVertex
-                    new_indices[iIndex] = indices_map[batch[iIndex]]
-                    # add index to collision list
-                    if(collision_vg_index != None):
-                        for groupElem in v.groups:
-                            if(groupElem.group == collision_vg_index):
-                                if(groupElem.weight > 0):
-                                    new_collide.append(True)
-                                    break
-                                else:
-                                    new_collide.append(False)
-                                    break
-                        else:
-                            new_collide.append(False)
-                    else:
-                        new_collide.append(False)
+            triangle_current = []
+            for vert_index in poly.vertices:
+                new_index_current = map_indices.get(vert_index)
+                if new_index_current == None:
+                    new_index_current = new_index_last
+                    map_indices[vert_index] = new_index_current
+                    new_index_last += 1
+        
+                triangle_current.append(new_index_current)
+        
+                if new_index_current not in batch_current.vertex_infos:
+                    info_current = batch_current.vertex_infos.setdefault(new_index_current, VertexInfo())
+                    info_current.pos = mesh.vertices[vert_index].co
+        
+                    if vg_collision != None:
+                        for group_info in mesh.vertices[vert_index].groups:
+                            if vg_collision.index == group_info.group:
+                                info_current.collision = True
+                                break
+        
+            batch_current.triangles.append(triangle_current)
+        
+            for loop_index in poly.loop_indices:
+                info_current = batch_current.vertex_infos.get(map_indices.get(mesh.loops[loop_index].vertex_index))
+                info_current.normals.append(mesh.loops[loop_index].normal)
+        
+                if len(mesh.uv_layers) > 0:
+                    info_current.uv = (mesh.uv_layers.active.data[loop_index].uv[0], 1.0 - mesh.uv_layers.active.data[loop_index].uv[1])
+        
+                if len(mesh.vertex_colors) > 0:
+                    for i in range(0, 3):
+                        info_current.color[i] = round(mesh.vertex_colors.active.data[loop_index].color[i] * 255)
+        
+        del vg_collision #													--vg_collision:deletion
+        del map_indices #													--map_indices:deletion
+        del new_index_last #												        --new_index_last:deletion
+        del material_indices #                                                                                                  --material_indices:deletion
+        # done: initializing batches
+        
+        # initializing chunks:
+        total_size = 0 #             --total_size:creation
+        for material_index, batch in map_batches.items():
+            total_size += len(batch.vertex_infos)
+        
+        movi = MOVI_chunk() #            --movi:creation
+        mopy = MOPY_chunk() #            --mopy:creation
+        moba = MOBA_chunk() #            --moba:creation
+        
+        movt = MOVT_chunk(total_size) #          --movt:creation
+        monr = MONR_chunk(total_size) #          --monr:creation
+        motv = MOTV_chunk(total_size) #          --motv:creation
+        mocv = MOCV_chunk(total_size) #          --mocv:creation
+        del total_size #             --total_size:deletion
+        # done: initializing chunks
+        
+        # filling chunks:
+        for material_index, batch in map_batches.items():
+            n_triangles = len(batch.triangles)
+            sentry_indices = [0xFFFF, 0]
+        
+            for triangle in batch.triangles:
+                tri_mat = TriangleMaterial()
+                needs_collision = True
+        
+                for vert_index in triangle:
+                    sentry_indices[0] = ret_min(sentry_indices[0], vert_index)
+                    sentry_indices[1] = ret_max(sentry_indices[1], vert_index)
+                    
+                    movi.Indices.append(vert_index)
+                    
+                    if batch.vertex_infos.get(vert_index).collision == False:
+                        needs_collision = False
+        
+                tri_mat.MaterialID = material_index
+                tri_mat.Flags = 0x0 if tri_mat.MaterialID == 0xFF else 0x20
+                tri_mat.Flags |= 0x48 if needs_collision else 0x4
+        
+                mopy.TriangleMaterials.append(tri_mat)
+        
             
-            batch_collide.append(new_collide)
-            batch_vertices.append(new_vertices)
-            batch_normals.append(new_normals)
-            batch_texCoords.append(new_texCoords)
-            batch_vertColors.append(new_vertColors)
-            batch_indices[iBatch] = new_indices
-
-            batch_indice_range.append((startIndex, len(new_indices)))
-            batch_vertex_range.append((startVertex, len(new_vertices)))
-
-            startIndex += len(new_indices)
-            startVertex += len(new_vertices)
-
-        del startIndex
-        del startVertex
-        del vMap
-
-        # write triange materials
-        mopy = MOPY_chunk()
-        mopy.TriangleMaterials = []
-
-        for iBatch in range(len(batch_indices)):
-            for i in range(0, len(batch_indices[iBatch]), 3):
-                triMat = TriangleMaterial()
-                triMat.MaterialID = batch_material_index[iBatch]#material_indices[mesh.materials[iBatch]]
-
-                # check if face is rendered
-                if(triMat.MaterialID == 0xFF):
-                    triMat.Flags = 0
-                else:
-                    triMat.Flags = 0x20 # F_RENDER
-
-                # check if colliding face
-                if(batch_collide[iBatch][batch_indices[iBatch][i] - batch_vertex_range[iBatch][0]] == True and
-                   batch_collide[iBatch][batch_indices[iBatch][i + 1] - batch_vertex_range[iBatch][0]] == True and
-                   batch_collide[iBatch][batch_indices[iBatch][i + 2] - batch_vertex_range[iBatch][0]] == True):
-                    triMat.Flags = triMat.Flags | 0x48 # F_COLLIDE_HIT & F_HINT
-                else:
-                    triMat.Flags = triMat.Flags | 0x04 # F_NO_COLLISION
-                   
-
-                mopy.TriangleMaterials.append(triMat)
-
-        # write indices
-        movi = MOVI_chunk()
-        movi.Indices = []
-        for batch in batch_indices:
-            movi.Indices.extend(batch)
-
-        # write vertices
-        movt = MOVT_chunk()
-        movt.Vertices = []
-        for batch in batch_vertices:
-            movt.Vertices.extend(batch)
-
-        # write normals
-        monr = MONR_chunk()
-        monr.Normals = []
-        for batch in batch_normals:
-            monr.Normals.extend(batch)
-
-        # write UV
-        motv = MOTV_chunk()
-        motv.TexCoords = []
-
-        for batch in batch_texCoords:
-            motv.TexCoords.extend(batch)
-
-        # write batches
-        moba = MOBA_chunk()
-        moba.Batches = []
-
-        for i in range(len(batch_vertices)):
-            # pass if no vertices or material is ghost(0xFF)
-            if(len(batch_vertices[i]) == 0 or batch_material_index[i] == 0xFF):#material_indices[mesh.materials[i]] == 0xFF):
+            if n_triangles == 0 or material_index == 0xFF:
                 continue
-
-            batch = Batch()
-
-            bb = CalculateBoundingBox(batch_vertices[i])
-            batch.BoundingBox = (floor(bb[0][0]), floor(bb[0][1]), floor(bb[0][2]), ceil(bb[1][0]), ceil(bb[1][1]), ceil(bb[1][2]))
-            batch.StartTriangle = batch_indice_range[i][0]
-            batch.nTriangle = batch_indice_range[i][1]
-            batch.StartVertex = batch_vertex_range[i][0]
-            batch.LastVertex = batch_vertex_range[i][0] + batch_vertex_range[i][1] - 1
-            batch.Unknown = 0
-            batch.MaterialID = batch_material_index[i]#material_indices[mesh.materials[i]]
-
-            moba.Batches.append(batch)
-
+        
+        
+            batch_current = Batch()
+        
+            batch_current.BoundingBox = [32767, 32767, 32767, -32768, -32768, -32768]
+            for index, info in batch.vertex_infos.items():
+                movt.Vertices[index] = info.pos
+                monr.Normals[index] = GetAvg(info.normals)
+                motv.TexCoords[index] = info.uv
+                mocv.vertColors[index] = info.color
+        
+                for i in range(0, 2):
+                    for j in range(0, 3):
+                        idx = i * 3 + j
+                        batch_current.BoundingBox[idx] = ret_min(batch_current.BoundingBox[idx], floor(info.pos[j])) if i == 0 else \
+                            ret_max(batch_current.BoundingBox[idx], ceil(info.pos[j]))
+        
+            batch_current.StartTriangle = len(movi.Indices) - n_triangles * 3
+            batch_current.nTriangle = n_triangles * 3
+            batch_current.StartVertex = sentry_indices[0]
+            batch_current.LastVertex = sentry_indices[1]
+            batch_current.MaterialID = material_index
+        
+            moba.Batches.append(batch_current)
+        
+        # done: filling chunks
+        
+        map_batches = {} #													--map_batches:deletion        
+        
         # write BSP nodes
         mobn = MOBN_chunk()
 
         # write BSP faces
         mobr = MOBR_chunk()
 
-        # write Vertex Color
-        mocv = MOCV_chunk()
-        mocv.vertColors = []
-
-        for batch in batch_vertColors:
-            mocv.vertColors.extend(batch)
-
         # write header
-        bb = CalculateBoundingBox(movt.Vertices)
+        mogp.BoundingBoxCorner1 = [32767, 32767, 32767]
+        mogp.BoundingBoxCorner2 = [-32768, -32768, -32768]        
+        
+        for vtx in movt.Vertices:
+            for i in range(0, 3):
+                mogp.BoundingBoxCorner1[i] = ret_min(mogp.BoundingBoxCorner1[i], floor(vtx[i]))
+                mogp.BoundingBoxCorner2[i] = ret_max(mogp.BoundingBoxCorner2[i], ceil(vtx[i]))
+            
 
         mogp.Flags = MOGP_FLAG.HasCollision # /!\ MUST HAVE 0x1 FLAG ELSE THE GAME CRASH !
         if(new_obj.WowWMOGroup.VertShad):
@@ -718,8 +648,6 @@ class WMO_group_file:
             
         mogp.Flags = mogp.Flags | int(new_obj.WowWMOGroup.PlaceType)
 
-        mogp.BoundingBoxCorner1 = bb[0]
-        mogp.BoundingBoxCorner2 = bb[1]
         
         mogp.PortalStart = -1
         mogp.PortalCount = 0
@@ -758,7 +686,7 @@ class WMO_group_file:
         mogp.Unknown1 = 0
         mogp.Unknown2 = 0
         
-        groupInfo = root.AddGroupInfo(mogp.Flags, bb, new_obj.WowWMOGroup.GroupName, new_obj.WowWMOGroup.GroupDesc)
+        groupInfo = root.AddGroupInfo(mogp.Flags, [mogp.BoundingBoxCorner1, mogp.BoundingBoxCorner2], new_obj.WowWMOGroup.GroupName, new_obj.WowWMOGroup.GroupDesc)
         mogp.GroupNameOfs = groupInfo[0]
         mogp.DescGroupNameOfs = groupInfo[1]
         
