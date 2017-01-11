@@ -479,16 +479,7 @@ class WMO_group_file:
         #mesh.calc_normals_split() -- We seem to not need that after transfer
         
         if(len(mesh.vertices) > 65535):
-            raise Exception("Object " + str(obj.name) + " contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")
-               
-        if(autofill_textures):
-            for i in range(len(mesh.materials)):
-                if((mesh.materials[i].WowMaterial.Texture1 != "") & (mesh.materials[i].active_texture is not None) ):
-                    if((mesh.materials[i].active_texture.type == 'IMAGE')):
-                        if(bpy.context.scene.WoWRoot.UseTextureRelPath):
-                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath , bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
-                        else:
-                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath )[0] + ".blp"        
+            raise Exception("Object " + str(obj.name) + " contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")    
 
         mver = MVER_chunk()
         mver.Version = 17
@@ -506,7 +497,14 @@ class WMO_group_file:
         
         for i in range(len(mesh.materials)):
             material_indices[i] = root.AddMaterial(mesh.materials[i])
-            
+            if(autofill_textures):
+                if((mesh.materials[i].WowMaterial.Texture1 != "") & (mesh.materials[i].active_texture is not None) ):
+                    if((mesh.materials[i].active_texture.type == 'IMAGE')):
+                        if(bpy.context.scene.WoWRoot.UseTextureRelPath):
+                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath , bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
+                        else:
+                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath )[0] + ".blp"      
+        
         if new_obj.WowCollision.Enabled:
             vg_collision = new_obj.vertex_groups.get(new_obj.WowCollision.VertexGroup)
         

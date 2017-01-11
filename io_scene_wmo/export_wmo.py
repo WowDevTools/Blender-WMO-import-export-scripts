@@ -26,7 +26,6 @@ def write(filepath, fill_water, source_doodads, source_fog, autofill_textures, e
     
     iObj = 0
     for i in range(len(bpy.data.objects)):
-        print(bpy.data.objects)
         
         #check if selected (optional)
         if bpy.data.objects[i].select is not True and export_selected:
