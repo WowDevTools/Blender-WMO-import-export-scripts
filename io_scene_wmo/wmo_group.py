@@ -726,8 +726,10 @@ class WMO_group_file:
         f.seek(0xC)
         mogp.Write(f)
         
-        new_obj.select = True
-        bpy.ops.object.delete()
+        bpy.context.scene.objects.unlink(new_obj)
+        bpy.data.objects.remove(new_obj)
+        
+        obj.select = True
         bpy.context.scene.objects.active = obj
 
         return None

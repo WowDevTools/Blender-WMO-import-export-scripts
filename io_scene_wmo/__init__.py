@@ -83,7 +83,13 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
     bl_options = {'PRESET'}
 
     filename_ext = ".wmo"
-    filter_glob = StringProperty(default="*.wmo", options={'HIDDEN'})   
+    filter_glob = StringProperty(default="*.wmo", options={'HIDDEN'})
+    
+    export_selected = BoolProperty(
+        name="Export selected objects",
+        description="Makes the exporter export only selected objects on the scene",
+        default= False,
+        )
         
     fill_water = BoolProperty(
         name="Fill water",
@@ -128,7 +134,7 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
 
     def execute(self, context):
         from . import export_wmo
-        export_wmo.write(self.filepath, self.fill_water, self.source_doodads, self.source_fog, self.autofill_textures)
+        export_wmo.write(self.filepath, self.fill_water, self.source_doodads, self.source_fog, self.autofill_textures, self.export_selected)
 
         return {'FINISHED'}
 

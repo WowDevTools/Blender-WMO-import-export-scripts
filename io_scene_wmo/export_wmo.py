@@ -8,7 +8,7 @@ from .wmo_group import *
 
 import os
 
-def write(filepath, fill_water, source_doodads, source_fog, autofill_textures):
+def write(filepath, fill_water, source_doodads, source_fog, autofill_textures, export_selected):
     f = open(filepath, "wb")
     root_filename = filepath
 
@@ -26,8 +26,12 @@ def write(filepath, fill_water, source_doodads, source_fog, autofill_textures):
     
     iObj = 0
     for i in range(len(bpy.data.objects)):
-    #for iObj in range(len(bpy.context.selected_objects)):
-
+        print(bpy.data.objects)
+        
+        #check if selected (optional)
+        if bpy.data.objects[i].select is not True and export_selected:
+            continue
+    
         # check if object is mesh
         """"if (not isinstance(bpy.context.selected_objects[iObj].data, bpy.types.Mesh)):
             continue
