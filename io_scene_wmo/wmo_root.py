@@ -365,8 +365,12 @@ class WMO_root_file:
                 mesh.WoWFog.IgnoreRadius = True
             if(f.Flags & 0x10):
                 mesh.WowFog.Unknown = True
-                 
-            mesh.WowFog.InnerRadius = round(f.BigRadius / f.SmallRadius * 100, 2)
+            
+            if(f.SmallRadius != 0):     
+                mesh.WowFog.InnerRadius = round(f.BigRadius / f.SmallRadius * 100, 2)
+            else:
+                mesh.WowFog.InnerRadius = 0
+            
             mesh.WowFog.EndDist = f.EndDist
             mesh.WowFog.StartFactor = f.StartFactor
             mesh.WowFog.Color1 = (f.Color1[2] / 255, f.Color1[1] / 255, f.Color1[0] / 255)

@@ -347,6 +347,7 @@ class WowWMOGroupPanel(bpy.types.Panel):
         self.layout.prop(context.object.WowWMOGroup, "GroupID")
         self.layout.prop(context.object.WowWMOGroup, "VertShad")
         self.layout.prop(context.object.WowWMOGroup, "SkyBox")
+        self.layout.prop(context.object.WowWMOGroup, "Fog1")
         layout.enabled = context.object.WowWMOGroup.Enabled
 
     @classmethod
@@ -354,8 +355,18 @@ class WowWMOGroupPanel(bpy.types.Panel):
         return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
 
 class WowWMOMODRStore(bpy.types.PropertyGroup):
-    value = bpy.props.IntProperty(name="Doodads Ref")        
-
+    value = bpy.props.IntProperty(name="Doodads Ref")
+    
+def GetFogObjects(self, context):
+    fogs = []
+    for object in bpy.context.scene.objects:
+        if object.data.WowFog.Enabled:
+            fogs.append((object.name, object.name, ""))
+            
+    return fogs
+    
+    
+    
 class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow WMO group properties")
     GroupName = bpy.props.StringProperty()
@@ -366,6 +377,7 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     GroupID = bpy.props.IntProperty(name="DBC Group ID", description="WMO Group ID in DBC file")
     VertShad = bpy.props.BoolProperty(name="Vertex shading", description="Save gropu vertex shading", default = False)
     SkyBox = bpy.props.BoolProperty(name="Use Skybox", description="Use skybox in group", default = False)
+    Fog1 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 1", description="Fog of an object")
     MODR = bpy.props.CollectionProperty(type=WowWMOMODRStore)
 
 def RegisterWowWMOGroupProperties():
