@@ -586,6 +586,7 @@ class WoWToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_fill_textures", text = 'Fill textures', icon = 'FILE_IMAGE')
         col.operator("scene.wow_fill_group_name", text = 'Fill group name', icon = 'FONTPREVIEW')
         col.operator("scene.wow_invert_portals", text = 'Invert portals', icon = 'FILE_REFRESH')
+        col.operator("scene.wow_add_fog", text = 'Add fog', icon = 'GROUP_VERTEX')
         col.label(text="Display")
         col.operator("scene.wow_hide_show_outdoor", text = 'Outdoor', icon = 'BBOX')
         col.operator("scene.wow_hide_show_indoor", text = 'Indoor', icon = 'ROTATE')
@@ -597,6 +598,47 @@ class WoWToolsPanelObjectMode(bpy.types.Panel):
         bpy.utils.register_module(WMOToolsPanelObjectMode)
     def UnregisterWMOToolsPanelObjectMode():
         bpy.utils.register_module(WMOToolsPanelObjectMode)
+        
+        
+class OBJECT_OP_Add_Fog(bpy.types.Operator):
+    bl_idname = 'scene.wow_add_fog'
+    bl_label = 'Add fog'
+    bl_description = 'Adds a WoW fog object to the scene'
+                        
+    def execute(self, context):
+        
+        bpy.ops.mesh.primitive_uv_sphere_add()
+        fog = bpy.context.scene.objects.active
+        fog.name = fog.name + "_Fog" 
+        
+        # applying real object transformation
+        bpy.ops.object.shade_smooth()
+        fog.draw_type = 'SOLID'
+        fog.show_transparent = True
+        fog.show_name = True
+               
+        mesh = fog.data
+        
+        material = bpy.data.materials.new(name = fog.name)
+        
+        if mesh.materials:
+            mesh.materials[0] = material
+        else:
+            mesh.materials.append(material)
+            
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.object.material_slot_assign()
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
+        mesh.materials[0].use_object_color = True
+        mesh.materials[0].use_transparency = True
+        mesh.materials[0].alpha = 0.35
+        
+        mesh.WowFog.Enabled = True
+        return {'FINISHED'}
+    
         
 class OBJECT_OP_Invert_Portals(bpy.types.Operator):
     bl_idname = 'scene.wow_invert_portals'
