@@ -323,7 +323,11 @@ class WMO_root_file:
         self.fogs = []
         for i in range(len(self.mfog.Fogs)):
             
+            if i == 0: # skipping default fog. always at zero index
+                continue
+            
             f = self.mfog.Fogs[i]
+            
             bpy.ops.mesh.primitive_uv_sphere_add()
             fog = bpy.context.scene.objects.active
             fog.name = name + "_Fog_" + str(i).zfill(2)
@@ -362,7 +366,7 @@ class WMO_root_file:
             
             mesh.WowFog.Enabled = True
             if(f.Flags & 0x01):
-                mesh.WoWFog.IgnoreRadius = True
+                mesh.WowFog.IgnoreRadius = True
             if(f.Flags & 0x10):
                 mesh.WowFog.Unknown = True
             
@@ -377,6 +381,7 @@ class WMO_root_file:
             mesh.WowFog.EndDist2 = f.EndDist2
             mesh.WowFog.StartFactor2 = f.StartFactor2
             mesh.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)
+        
             
 
     def SaveSource(self):
@@ -479,7 +484,7 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, f, fill_water, source_doodads, source_fog, autofill_textures):
+    def Save(self, f, fill_water, source_doodads, autofill_textures):
     
         mver = MVER_chunk()                
         # set version header
@@ -498,9 +503,16 @@ class WMO_root_file:
         modn = MODN_chunk()
         modd = MODD_chunk()
         mfog = MFOG_chunk()
-        fo = Fog()
-        mfog.Fogs.append(fo)
-
+        
+        empty_fog = Fog() # setting up default fog with default blizzlike values.
+        empty_fog.Color1 = (0xFF, 0xFF, 0xFF, 0xFF)
+        empty_fog.Color2 = (0x00, 0x00, 0x00, 0xFF)
+        empty_fog.EndDist = 444.4445
+        empty_fog.EndDist2 = 222.2222
+        empty_fog.StartFactor = 0.25
+        empty_fog.StartFactor2 = -0.5
+        mfog.Fogs.append(empty_fog)
+        
         molt = MOLT_chunk()
         mopv = MOPV_chunk()
         mopt = MOPT_chunk()
@@ -565,18 +577,45 @@ class WMO_root_file:
                     
                 if(obj_mesh.WowFog.Enabled):
                     print("Export fog "+ob.name)
+                    fog = Fog()
+                    
+                    
+                    ob.select = True
+                    bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+                    ob.select = False
+                    
+                    max_z = 0
+                    
+                    for vertex in obj_mesh.vertices:
+                        if(max_z < vertex.co[2]):
+                            max_z = vertex.co[2]
+                    
+                    fog.BigRadius = max_z - ob.location[2]
+                    fog.SmallRadius = fog.BigRadius * (obj_mesh.WowFog.InnerRadius / 100)
+                    fog.Color1 = (int(obj_mesh.WowFog.Color1[0] * 255), int(obj_mesh.WowFog.Color1[1] * 255), int(obj_mesh.WowFog.Color1[2] * 255), 0xFF)
+                    fog.Color2 = (int(obj_mesh.WowFog.Color2[0] * 255), int(obj_mesh.WowFog.Color2[1] * 255), int(obj_mesh.WowFog.Color2[2] * 255), 0xFF)
+                    fog.EndDist = obj_mesh.WowFog.EndDist
+                    fog.EndDist2 = obj_mesh.WowFog.EndDist2
+                    fog.Position = ob.location
+                    fog.StartFactor = obj_mesh.WowFog.StartFactor
+                    fog.StarFactor2 = obj_mesh.WowFog.StartFactor2
+                    
+                    if(obj_mesh.WowFog.IgnoreRadius):
+                        fog.Flags |= 0x01
+                    if(obj_mesh.WowFog.Unknown):
+                        fog.Flags |= 0x10
+                        
+                    mfog.Fogs.append(fog)
                     
                 elif(obj_mesh.WowWMORoot.IsRoot):
                     if(source_doodads):
                         mods.Sets = obj_mesh.WowWMORoot.MODS.Sets
                         modn.StringTable = obj_mesh.WowWMORoot.MODN.StringTable
                         modd.Definitions = obj_mesh.WowWMORoot.MODD.Definitions
-                    if(source_fog):
-                        mfog.Fogs = obj_mesh.WowWMORoot.MFOG.Fogs
                         
         if(global_object_count > 512):
             raise Exception("Your scene contains more objects that it is supported by WMO file format " + str(global_object_count) + ". The hardcoded maximum is 512 for one root WMO file. Dividing your scene to a few separate WMO models is recommended.")
-                        
+            
         mopr = MOPR_chunk()
         mopr.Relationships = []
         # set portal relationship

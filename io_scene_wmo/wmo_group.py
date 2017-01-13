@@ -204,7 +204,7 @@ class WMO_group_file:
         return indices
 
     # Create mesh from file data
-    def LoadObject(self, objName, materials, doodads, mogn, objId):
+    def LoadObject(self, objName, materials, doodads, mogn, objId, base_name):
 
         vertices = []
         normals = []
@@ -391,6 +391,29 @@ class WMO_group_file:
         #nobj.WowWMOGroup.PortalGroupID = objId
         nobj.WowWMOGroup.GroupDesc = mogn.GetString(self.mogp.DescGroupNameOfs)
         nobj.WowWMOGroup.GroupID = int(self.mogp.GroupID)
+        
+        # I am sorry for this piece of indian code
+        if(self.mogp.FogIndices[0] != 0):
+            nobj.WowWMOGroup.Fog1 = base_name + "_Fog_" + str(self.mogp.FogIndices[0]).zfill(2)
+        else:
+            nobj.WowWMOGroup.Fog1 = "0"
+            
+        if(self.mogp.FogIndices[0] != 0):
+            nobj.WowWMOGroup.Fog2 = base_name + "_Fog_" + str(self.mogp.FogIndices[1]).zfill(2)
+        else:
+            nobj.WowWMOGroup.Fog2 = "0"
+        
+        if(self.mogp.FogIndices[0] != 0):
+            nobj.WowWMOGroup.Fog3 = base_name + "_Fog_" + str(self.mogp.FogIndices[2]).zfill(2)
+        else:
+            nobj.WowWMOGroup.Fog3 = "0"
+        
+        if(self.mogp.FogIndices[0] != 0):
+            nobj.WowWMOGroup.Fog4 = base_name + "_Fog_" + str(self.mogp.FogIndices[3]).zfill(2)
+        else:
+            nobj.WowWMOGroup.Fog4 = "0"        
+    
+        
         if(self.mogp.Flags & MOGP_FLAG.HasDoodads):
             if(len(self.modr.DoodadRefs) > 0):
                 for i in range(len(self.modr.DoodadRefs)):
@@ -655,7 +678,10 @@ class WMO_group_file:
         mogp.PortalStart = -1
         mogp.PortalCount = 0
         
-        for ob in bpy.data.objects:
+        fog_id = 0
+        fogMap = {}
+        
+        for ob in bpy.context.scene.objects:
             if(ob.type == "MESH"):
                 obj_mesh = ob.data
                 if(obj_mesh.WowPortalPlane.Enabled and (obj_mesh.WowPortalPlane.First == objNumber or obj_mesh.WowPortalPlane.Second == objNumber)):
@@ -675,6 +701,10 @@ class WMO_group_file:
                     portalRef[2] = portalRef[2] * modify
                     root.PortalR.append(portalRef)
                     mogp.PortalCount+=1
+                if(obj_mesh.WowFog.Enabled):
+                    fogMap[ob.name] = fog_id
+                    fog_id += 1
+                    
         
         if(mogp.PortalStart == -1):
             mogp.PortalStart = root.PortalRCount
@@ -683,7 +713,7 @@ class WMO_group_file:
         mogp.nBatchesB = 0
         mogp.nBatchesC = len(moba.Batches)
         mogp.nBatchesD = 0
-        mogp.FogIndices = (0, 0, 0, 0)
+        mogp.FogIndices = (fogMap.get(new_obj.WowWMOGroup.Fog1, 0), fogMap.get(new_obj.WowWMOGroup.Fog2, 0), fogMap.get(new_obj.WowWMOGroup.Fog3, 0), fogMap.get(new_obj.WowWMOGroup.Fog4, 0), )
         mogp.LiquidType = 0
         mogp.GroupID = int(new_obj.WowWMOGroup.GroupID)
         mogp.Unknown1 = 0
@@ -729,10 +759,11 @@ class WMO_group_file:
         f.seek(0xC)
         mogp.Write(f)
         
-        bpy.context.scene.objects.unlink(new_obj)
-        bpy.data.objects.remove(new_obj)
+        # bpy.context.scene.objects.unlink(new_obj)
+        bpy.data.objects.remove(new_obj, do_unlink = True)
         
-        obj.select = True
+    
+        # obj.select = True
         bpy.context.scene.objects.active = obj
 
         return None

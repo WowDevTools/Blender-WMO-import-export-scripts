@@ -102,12 +102,7 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
         description="Save source doodads",
         default= False,
         )
-
-    source_fog = BoolProperty(
-        name="Save source fog",
-        description="Save source fog",
-        default= True,
-        )
+    
     autofill_textures = BoolProperty(
         name="Fill texture paths",
         description="Automatically fills WoW Material texture paths based on texture filenames",
@@ -134,7 +129,7 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
 
     def execute(self, context):
         from . import export_wmo
-        export_wmo.write(self.filepath, self.fill_water, self.source_doodads, self.source_fog, self.autofill_textures, self.export_selected)
+        export_wmo.write(self.filepath, self.fill_water, self.source_doodads, self.autofill_textures, self.export_selected)
 
         return {'FINISHED'}
 

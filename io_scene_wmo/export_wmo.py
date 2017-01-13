@@ -8,7 +8,7 @@ from .wmo_group import *
 
 import os
 
-def write(filepath, fill_water, source_doodads, source_fog, autofill_textures, export_selected):
+def write(filepath, fill_water, source_doodads, autofill_textures, export_selected):
     f = open(filepath, "wb")
     root_filename = filepath
 
@@ -17,7 +17,7 @@ def write(filepath, fill_water, source_doodads, source_fog, autofill_textures, e
     base_name = os.path.splitext(filepath)[0]
     
     portal_count = 0
-    for ob in bpy.data.objects:
+    for ob in bpy.context.scene.objects:
         if(ob.type == "MESH"):
             obj_mesh = ob.data
             if(obj_mesh.WowPortalPlane.Enabled):
@@ -25,7 +25,8 @@ def write(filepath, fill_water, source_doodads, source_fog, autofill_textures, e
                 portal_count+=1
     
     iObj = 0
-    for i in range(len(bpy.data.objects)):
+    
+    for i in range(len(bpy.context.scene.objects)):
         
         #check if selected (optional)
         if bpy.data.objects[i].select is not True and export_selected:
@@ -39,28 +40,32 @@ def write(filepath, fill_water, source_doodads, source_fog, autofill_textures, e
         if(bpy.context.selected_objects[iObj].data.WowPortalPlane.Enabled):
             continue"""
         
-        if (not isinstance(bpy.data.objects[i].data, bpy.types.Mesh)):
+        if (not isinstance(bpy.context.scene.objects[i].data, bpy.types.Mesh)):
             continue
         
         # check if object is portal
-        if(bpy.data.objects[i].data.WowPortalPlane.Enabled):
+        if(bpy.context.scene.objects[i].data.WowPortalPlane.Enabled):
             continue
         
-        #check if object is root source
-        if(bpy.data.objects[i].data.WowWMORoot.IsRoot):
+        # check if object is root source
+        if(bpy.context.scene.objects[i].data.WowWMORoot.IsRoot):
             continue
         
-        print("Export group "+bpy.data.objects[i].name)
+        # check if object is a fog
+        if(bpy.context.scene.objects[i].data.WowFog.Enabled):
+            continue
+        
+        print("Export group "+bpy.context.scene.objects[i].name)
         group_filename = base_name + "_" + str(iObj).zfill(3) + ".wmo"
         group_file = open(group_filename, "wb")
 
         # write group file
         wmo_group = WMO_group_file()
         #wmo_group.Save(group_file, bpy.context.selected_objects[iObj], wmo_root, iObj)
-        wmo_group.Save(group_file, bpy.data.objects[i], wmo_root, iObj, source_doodads, autofill_textures)
+        wmo_group.Save(group_file, bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures)
         iObj+=1
         
     # write root file
     print("Export root file") 
-    wmo_root.Save(f, fill_water, source_doodads, source_fog, autofill_textures)
+    wmo_root.Save(f, fill_water, source_doodads, autofill_textures)
     return

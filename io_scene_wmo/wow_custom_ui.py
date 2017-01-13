@@ -348,6 +348,9 @@ class WowWMOGroupPanel(bpy.types.Panel):
         self.layout.prop(context.object.WowWMOGroup, "VertShad")
         self.layout.prop(context.object.WowWMOGroup, "SkyBox")
         self.layout.prop(context.object.WowWMOGroup, "Fog1")
+        self.layout.prop(context.object.WowWMOGroup, "Fog2")
+        self.layout.prop(context.object.WowWMOGroup, "Fog3")
+        self.layout.prop(context.object.WowWMOGroup, "Fog4")
         layout.enabled = context.object.WowWMOGroup.Enabled
 
     @classmethod
@@ -359,6 +362,9 @@ class WowWMOMODRStore(bpy.types.PropertyGroup):
     
 def GetFogObjects(self, context):
     fogs = []
+    
+    fogs.append(("0", "None", "")) # setting a default entry as a first element of our enum
+    
     for object in bpy.context.scene.objects:
         if object.data.WowFog.Enabled:
             fogs.append((object.name, object.name, ""))
@@ -378,6 +384,9 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     VertShad = bpy.props.BoolProperty(name="Vertex shading", description="Save gropu vertex shading", default = False)
     SkyBox = bpy.props.BoolProperty(name="Use Skybox", description="Use skybox in group", default = False)
     Fog1 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 1", description="Fog of an object")
+    Fog2 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 2", description="Fog of an object")
+    Fog3 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 3", description="Fog of an object")
+    Fog4 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 4", description="Fog of an object")
     MODR = bpy.props.CollectionProperty(type=WowWMOMODRStore)
 
 def RegisterWowWMOGroupProperties():
@@ -508,6 +517,7 @@ class WoWSceneVisibilityProperties(bpy.types.Panel):
         self.layout.prop(context.scene.WoWVisibility, "Outdoor")
         self.layout.prop(context.scene.WoWVisibility, "Indoor")
         self.layout.prop(context.scene.WoWVisibility, "Portals")
+        self.layout.prop(context.scene.WoWVisibility, "Fog")
         self.layout.prop(context.scene.WoWVisibility, "All")
         layout.enabled = context.scene.WoWVisibility.Enabled
 
@@ -536,6 +546,12 @@ class WoWVisibilityPropertyGroup(bpy.types.PropertyGroup):
         description="Show/hide portal objects",
         default= True,
     )
+    
+    Fog = bpy.props.BoolProperty(
+        name="Fog",
+        description="Show/hide fog objects",
+        default= True,
+    )    
     
     All = bpy.props.BoolProperty(
         name="All",
@@ -574,7 +590,8 @@ class WoWToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_hide_show_outdoor", text = 'Outdoor', icon = 'BBOX')
         col.operator("scene.wow_hide_show_indoor", text = 'Indoor', icon = 'ROTATE')
         col.operator("scene.wow_hide_show_portals", text = 'Portals', icon = 'MOD_PARTICLES')
-        col.operator("scene.wow_hide_show_all_objects", text = 'All', icon = 'VISIBLE_IPO_ON')     
+        col.operator("scene.wow_hide_show_fog", text = 'Fog', icon = 'FORCE_TURBULENCE')
+        col.operator("scene.wow_hide_show_all_objects", text = 'All', icon = 'VISIBLE_IPO_ON') 
 
     def RegisterWMOToolsPanelObjectMode():
         bpy.utils.register_module(WMOToolsPanelObjectMode)
@@ -833,7 +850,25 @@ class OBJECT_OP_Hide_Show_Outdoor(bpy.types.Operator):
                     ob.hide = False
                     state = True
         bpy.context.scene.WoWVisibility.Outdoor = state
-        return {'FINISHED'}   
+        return {'FINISHED'}
+    
+class OBJECT_OP_Hide_Show_Fog(bpy.types.Operator):
+    bl_idname = 'scene.wow_hide_show_fog'
+    bl_label = 'Hide/Show all WoW fog objects'
+    bl_description = 'Hide/Show all WoW fog objects'
+
+    def execute(self, context):
+        state = True
+        for ob in bpy.context.scene.objects:
+            if(ob.data.WowFog.Enabled == True):
+                if(bpy.context.scene.WoWVisibility.Fog == True):
+                    ob.hide = True
+                    state = False
+                else:
+                    ob.hide = False
+                    state = True
+        bpy.context.scene.WoWVisibility.Fog = state
+        return {'FINISHED'}       
 ###############################
 ## Root source
 ###############################
