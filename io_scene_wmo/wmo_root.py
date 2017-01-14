@@ -165,7 +165,7 @@ class WMO_root_file:
 
             mat.WowMaterial.Enabled = True
             mat.WowMaterial.Shader = str(self.momt.Materials[i].Shader)
-            mat.WowMaterial.Transparent = (self.momt.Materials[i].BlendMode == 1)
+            mat.WowMaterial.BlendingMode = str(self.momt.Materials[i].BlendMode)
             mat.WowMaterial.Texture1 = self.motx.GetString(self.momt.Materials[i].Texture1Ofs)
             mat.WowMaterial.Color1 = [x / 255 for x in self.momt.Materials[i].Color1[0:3]]
             mat.WowMaterial.Flags1 = '1' if self.momt.Materials[i].TextureFlags1 & 0x80 else '0'

@@ -1008,9 +1008,9 @@ class Batch:
 
 # batches
 class MOBA_chunk:
-    def __init__(self):
+    def __init__(self, size = 0):
         self.Header = ChunkHeader()
-        self.Batches = []
+        self.Batches = size * [Batch()]
 
     def Read(self, f):
         # read header
@@ -1256,5 +1256,5 @@ class VertexInfo:
         self.pos = [0.0, 0.0, 0.0]
         self.normals = []
         self.uv = (0, 1)
-        self.color = (0x7F, 0x7F, 0x7F, 0xFF)
+        self.color = [0x7F, 0x7F, 0x7F, 0xFF]
         self.collision = False

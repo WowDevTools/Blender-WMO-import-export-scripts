@@ -315,6 +315,19 @@ class WMO_group_file:
         # add materials
         for i in range(len(self.moba.Batches)):
             mesh.materials.append(materials[self.moba.Batches[i].MaterialID])
+            
+            material =  mesh.materials[i]
+            
+            material.WowMaterial.Enabled = True
+            
+            if(i < self.mogp.nBatchesA):
+                material.WowMaterial.BatchType = '0'
+            elif(i < self.mogp.nBatchesB):
+                material.WowMaterial.BatchType = '1'
+            else:
+                material.WowMaterial.BatchType = '2'
+                
+            
             material_viewport_textures[i] = self.GetMaterialViewportImage(mesh.materials[i])
             material_indices[self.moba.Batches[i].MaterialID] = i
             
@@ -519,12 +532,27 @@ class WMO_group_file:
         
         # initializing batches:
         new_index_last = 0 #												--new_index_last:creation
+        nBatchesA = 0
+        nBatchesB = 0
+        nBatchesC = 0
         map_indices = {} #												--map_indices:creation
         vg_collision = None #												--vg_collision:creation
         material_indices = {} #                                                                                         --material_indices:creation
+        batchTypeMap = {}
         
         for i in range(len(mesh.materials)):
             material_indices[i] = root.AddMaterial(mesh.materials[i]) # adding materials to root object. Returns the index of material if the passed one already exists.
+            
+            if(mesh.materials[i].WowMaterial.Enabled == True and mesh.materials[i].WowMaterial.BatchType == '0'):
+                nBatchesA += 1
+                batchTypeMap[material_indices.get(i)] = 0
+            if(mesh.materials[i].WowMaterial.Enabled == True and mesh.materials[i].WowMaterial.BatchType == '1'):
+                nBatchesB += 1
+                batchTypeMap[material_indices.get(i)] = 1
+            if(mesh.materials[i].WowMaterial.Enabled == True and mesh.materials[i].WowMaterial.BatchType == '2'):
+                nBatchesC += 1
+                batchTypeMap[material_indices.get(i)] = 2
+
             if(autofill_textures):
                 if((mesh.materials[i].WowMaterial.Texture1 != "") & (mesh.materials[i].active_texture is not None) ):
                     if((mesh.materials[i].active_texture.type == 'IMAGE')):
@@ -532,6 +560,7 @@ class WMO_group_file:
                             mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath , bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
                         else:
                             mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath )[0] + ".blp"      
+
         
         if new_obj.WowCollision.Enabled:
             vg_collision = new_obj.vertex_groups.get(new_obj.WowCollision.VertexGroup)
@@ -574,25 +603,31 @@ class WMO_group_file:
         
         del vg_collision #													--vg_collision:deletion
         del map_indices #													--map_indices:deletion
-        del new_index_last #												        --new_index_last:deletion
-        del material_indices #                                                                                                  --material_indices:deletion
+        del new_index_last #												        --new_index_last:deletion                                                                                                 --material_indices:deletion
         # done: initializing batches
         
         # initializing chunks:
-        total_size = 0 #             --total_size:creation
+        total_size = 0 #                         --total_size:creation
+        count = 0
         for material_index, batch in map_batches.items():
             total_size += len(batch.vertex_infos)
+            count += 1
         
-        movi = MOVI_chunk() #            --movi:creation
-        mopy = MOPY_chunk() #            --mopy:creation
-        moba = MOBA_chunk() #            --moba:creation
+        movi = MOVI_chunk() #                    --movi:creation
+        mopy = MOPY_chunk() #                    --mopy:creation
+        moba = MOBA_chunk(count) #                    --moba:creation
         
         movt = MOVT_chunk(total_size) #          --movt:creation
         monr = MONR_chunk(total_size) #          --monr:creation
         motv = MOTV_chunk(total_size) #          --motv:creation
         mocv = MOCV_chunk(total_size) #          --mocv:creation
-        del total_size #             --total_size:deletion
+        
+        del total_size #                         --total_size:deletion
         # done: initializing chunks
+        
+        iA = 0
+        iB = nBatchesA
+        iC = nBatchesB
         
         # filling chunks:
         for material_index, batch in map_batches.items():
@@ -643,9 +678,23 @@ class WMO_group_file:
             batch_current.StartVertex = sentry_indices[0]
             batch_current.LastVertex = sentry_indices[1]
             batch_current.MaterialID = material_index
+            
+            if(batchTypeMap.get(material_index) == 0):
+                moba.Batches[iA] = batch_current
+                iA += 1
+            if(batchTypeMap.get(material_index) == 0):
+                moba.Batches[iB] = batch_current
+                iB += 1
+            if(batchTypeMap.get(material_index) == 0):
+                moba.Batches[iC] = batch_current
+                iC += 1                
         
-            moba.Batches.append(batch_current)
-        
+              
+        del material_indices #
+        del batchTypeMap
+        del iA
+        del iB
+        del iC
         # done: filling chunks
         
         map_batches = {} #													--map_batches:deletion        
@@ -709,9 +758,9 @@ class WMO_group_file:
         if(mogp.PortalStart == -1):
             mogp.PortalStart = root.PortalRCount
         root.PortalRCount+=mogp.PortalCount
-        mogp.nBatchesA = 0
-        mogp.nBatchesB = 0
-        mogp.nBatchesC = len(moba.Batches)
+        mogp.nBatchesA = nBatchesA
+        mogp.nBatchesB = nBatchesB
+        mogp.nBatchesC = nBatchesC
         mogp.nBatchesD = 0
         mogp.FogIndices = (fogMap.get(new_obj.WowWMOGroup.Fog1, 0), fogMap.get(new_obj.WowWMOGroup.Fog2, 0), fogMap.get(new_obj.WowWMOGroup.Fog3, 0), fogMap.get(new_obj.WowWMOGroup.Fog4, 0), )
         mogp.LiquidType = 0

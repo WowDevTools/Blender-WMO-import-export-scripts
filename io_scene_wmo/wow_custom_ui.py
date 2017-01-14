@@ -113,6 +113,7 @@ class WowMaterialPanel(bpy.types.Panel):
         self.layout.prop(context.material.WowMaterial, "Shader")
         self.layout.prop(context.material.WowMaterial, "TerrainType")
         self.layout.prop(context.material.WowMaterial, "BlendingMode")
+        self.layout.prop(context.material.WowMaterial, "BatchType")
         self.layout.prop(context.material.WowMaterial, "TwoSided")
         self.layout.prop(context.material.WowMaterial, "Darkened")
         self.layout.prop(context.material.WowMaterial, "NightGlow")
@@ -145,15 +146,20 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
                     ('2', "Blend_Alpha", ""), ('3', "Blend_Add", ""), ('4', "Blend_Mod", ""), \
                     ('5', "Blend_Mod2x", ""), ('6', "Blend_ModAdd", ""), ('7', "Blend_InvSrcAlphaAdd", ""), \
                     ('8', "Blend_InvSrcAlphaOpaque", ""), ('9', "Blend_SrcAlphaOpaque", ""), ('10', "Blend_NoAlphaAdd", ""), ('11', "Blend_ConstantAlpha", "")]
+    batchEnum = [('0', "A (Special)", "Both vertex shader and global lighting are used. (Mixing is done based on MOCV alpha or automatically depending on a flag)"), \
+                 ('1', "B (Indoor)", "Global lighting is ignored. Vertex shader modulates the texture and works as lighting."), \
+                 ('2', "C (Outdoor)", "Only global lighting is used. Vertex shader is just a color modulating the texture.")]
+    
     Enabled = bpy.props.BoolProperty(name="", description="Enable WoW material properties")
     Shader = bpy.props.EnumProperty(items=shaderEnum, name="Shader", description="WoW shader assigned to this material")
-    BlendingMode = bpy.props.EnumProperty(items=blendingEnum, name="Blending", description="WoW material blending mode")
+    BlendingMode = bpy.props.EnumProperty(items=blendingEnum, name="Blending Mode", description="WoW material blending mode")
+    BatchType = bpy.props.EnumProperty(items=batchEnum, name="Batch Type", description="WoW batch type. See tutorial to learn what that is for.", default='2')
     Texture1 = bpy.props.StringProperty(name="Texture 1", description="Texture assigned to first slot in shader")
     Color1 = bpy.props.FloatVectorProperty(name="Emissive Color", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
     Flags1 = bpy.props.EnumProperty(items=[('0', "Clamp", ""), ('1', "Repeat", "")], name="Extension 2", description="Extension mode for texture 1")
     Texture2 = bpy.props.StringProperty(name="Texture 2", description="Texture assigned to second slot in shader")
     Color2 = bpy.props.FloatVectorProperty(name="Emissive Color 2", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
-    TerrainType = bpy.props.EnumProperty(items=terrainEnum, name="Terrain Type", description="Terrain type assigned to that material")
+    TerrainType = bpy.props.EnumProperty(items=terrainEnum, name="Terrain Type", description="Terrain type assigned to this material. Used for footstep sounds and similar things.")
     Texture3 = bpy.props.StringProperty(name="Texture 3", description="Texture assigned to third slot in shader")
     Color3 = bpy.props.FloatVectorProperty(name="Emissive Color 3", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
     Flags3 = bpy.props.EnumProperty(items=[('0', "Clamp", ""), ('1', "Repeat", "")], name="Extension 3", description="Extension mode for texture 3")
@@ -363,7 +369,7 @@ class WowWMOMODRStore(bpy.types.PropertyGroup):
 def GetFogObjects(self, context):
     fogs = []
     
-    fogs.append(("0", "None", "")) # setting a default entry as a first element of our enum
+    fogs.append(('0', "None", "")) # setting a default entry as a first element of our enum
     
     for object in bpy.context.scene.objects:
         if object.data.WowFog.Enabled:
