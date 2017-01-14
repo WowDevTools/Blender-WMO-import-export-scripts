@@ -372,7 +372,7 @@ def GetFogObjects(self, context):
     fogs.append(('0', "None", "")) # setting a default entry as a first element of our enum
     
     for object in bpy.context.scene.objects:
-        if object.data.WowFog.Enabled:
+        if object.data.WowFog.Enabled and isinstance(context.object.data,bpy.types.Mesh):
             fogs.append((object.name, object.name, ""))
             
     return fogs
@@ -836,7 +836,7 @@ class OBJECT_OP_Hide_Show_All(bpy.types.Operator):
     def execute(self, context):
         state = True
         for ob in bpy.context.scene.objects:
-            if((ob.WowWMOGroup.Enabled == True) or (ob.data.WowPortalPlane.Enabled == True)):
+            if((ob.WowWMOGroup.Enabled == True) or (ob.data.WowPortalPlane.Enabled == True)) or (ob.data.WowFog.Enabled == True):
                 if(bpy.context.scene.WoWVisibility.All == True):
                     ob.hide = True
                     state = False

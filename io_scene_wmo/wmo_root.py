@@ -323,13 +323,15 @@ class WMO_root_file:
         self.fogs = []
         for i in range(len(self.mfog.Fogs)):
             
-            if i == 0: # skipping default fog. always at zero index
-                continue
-            
             f = self.mfog.Fogs[i]
             
             bpy.ops.mesh.primitive_uv_sphere_add()
             fog = bpy.context.scene.objects.active
+            
+            if(i == 0 and f.Color1 == (0xFF, 0xFF, 0xFF, 0xFF) and  f.Color2 == (0x00, 0x00, 0x00, 0xFF) and f.EndDist == 444.4445 and \
+            f.EndDist2 == 222.2222 and f.StartFactor == 0.25 and f.StartFactor2 == -0.5): # Checking if the fog is default
+                fog.hide = True
+                
             fog.name = name + "_Fog_" + str(i).zfill(2)
             
             # applying real object transformation
@@ -504,15 +506,6 @@ class WMO_root_file:
         modd = MODD_chunk()
         mfog = MFOG_chunk()
         
-        empty_fog = Fog() # setting up default fog with default blizzlike values.
-        empty_fog.Color1 = (0xFF, 0xFF, 0xFF, 0xFF)
-        empty_fog.Color2 = (0x00, 0x00, 0x00, 0xFF)
-        empty_fog.EndDist = 444.4445
-        empty_fog.EndDist2 = 222.2222
-        empty_fog.StartFactor = 0.25
-        empty_fog.StartFactor2 = -0.5
-        mfog.Fogs.append(empty_fog)
-        
         molt = MOLT_chunk()
         mopv = MOPV_chunk()
         mopt = MOPT_chunk()
@@ -523,6 +516,7 @@ class WMO_root_file:
         global_vertices_count = 0
         global_portal_count = 0
         global_object_count = 0
+        global_fog_count = 0
         
         for ob in bpy.data.objects:
             if(ob.type == "LAMP"):
@@ -605,6 +599,8 @@ class WMO_root_file:
                     if(obj_mesh.WowFog.Unknown):
                         fog.Flags |= 0x10
                         
+                    global_fog_count += 1
+                        
                     mfog.Fogs.append(fog)
                     
                 elif(obj_mesh.WowWMORoot.IsRoot):
@@ -615,7 +611,18 @@ class WMO_root_file:
                         
         if(global_object_count > 512):
             raise Exception("Your scene contains more objects that it is supported by WMO file format " + str(global_object_count) + ". The hardcoded maximum is 512 for one root WMO file. Dividing your scene to a few separate WMO models is recommended.")
-            
+        
+        if(global_fog_count == 0):
+        
+            empty_fog = Fog() # setting up default fog with default blizzlike values.
+            empty_fog.Color1 = (0xFF, 0xFF, 0xFF, 0xFF)
+            empty_fog.Color2 = (0x00, 0x00, 0x00, 0xFF)
+            empty_fog.EndDist = 444.4445
+            empty_fog.EndDist2 = 222.2222
+            empty_fog.StartFactor = 0.25
+            empty_fog.StartFactor2 = -0.5
+            mfog.Fogs.append(empty_fog)
+                    
         mopr = MOPR_chunk()
         mopr.Relationships = []
         # set portal relationship

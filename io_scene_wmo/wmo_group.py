@@ -350,10 +350,11 @@ class WMO_group_file:
             if(img != None):
                 uv1.data[i].image = img
 
-        # set textured solid in all 3D views
+        # set textured solid in all 3D views and switch to textured mode
         for area in bpy.context.screen.areas:
             if(area.type == 'VIEW_3D'):
                 area.spaces[0].show_textured_solid = True
+                area.spaces[0].viewport_shade = 'TEXTURED'                
 
         scn = bpy.context.scene
                     
@@ -405,27 +406,10 @@ class WMO_group_file:
         nobj.WowWMOGroup.GroupDesc = mogn.GetString(self.mogp.DescGroupNameOfs)
         nobj.WowWMOGroup.GroupID = int(self.mogp.GroupID)
         
-        # I am sorry for this piece of indian code
-        if(self.mogp.FogIndices[0] != 0):
-            nobj.WowWMOGroup.Fog1 = base_name + "_Fog_" + str(self.mogp.FogIndices[0]).zfill(2)
-        else:
-            nobj.WowWMOGroup.Fog1 = "0"
-            
-        if(self.mogp.FogIndices[0] != 0):
-            nobj.WowWMOGroup.Fog2 = base_name + "_Fog_" + str(self.mogp.FogIndices[1]).zfill(2)
-        else:
-            nobj.WowWMOGroup.Fog2 = "0"
-        
-        if(self.mogp.FogIndices[0] != 0):
-            nobj.WowWMOGroup.Fog3 = base_name + "_Fog_" + str(self.mogp.FogIndices[2]).zfill(2)
-        else:
-            nobj.WowWMOGroup.Fog3 = "0"
-        
-        if(self.mogp.FogIndices[0] != 0):
-            nobj.WowWMOGroup.Fog4 = base_name + "_Fog_" + str(self.mogp.FogIndices[3]).zfill(2)
-        else:
-            nobj.WowWMOGroup.Fog4 = "0"        
-    
+        nobj.WowWMOGroup.Fog1 = base_name + "_Fog_" + str(self.mogp.FogIndices[0]).zfill(2)
+        nobj.WowWMOGroup.Fog2 = base_name + "_Fog_" + str(self.mogp.FogIndices[1]).zfill(2)
+        nobj.WowWMOGroup.Fog3 = base_name + "_Fog_" + str(self.mogp.FogIndices[2]).zfill(2)
+        nobj.WowWMOGroup.Fog4 = base_name + "_Fog_" + str(self.mogp.FogIndices[3]).zfill(2)     
         
         if(self.mogp.Flags & MOGP_FLAG.HasDoodads):
             if(len(self.modr.DoodadRefs) > 0):
