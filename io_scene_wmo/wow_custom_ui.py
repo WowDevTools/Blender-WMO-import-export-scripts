@@ -372,9 +372,9 @@ def GetFogObjects(self, context):
     fogs.append(('0', "None", "")) # setting a default entry as a first element of our enum
     
     for object in bpy.context.scene.objects:
-        if object.data.WowFog.Enabled and isinstance(context.object.data,bpy.types.Mesh):
-            fogs.append((object.name, object.name, ""))
-            
+        if object.type != 'LAMP' and object.data.WowFog.Enabled:
+                fogs.append((object.name, object.name, ""))
+        
     return fogs
     
     

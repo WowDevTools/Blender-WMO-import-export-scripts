@@ -1190,17 +1190,69 @@ class MOCV_chunk:
         for vc in self.vertColors:
             f.write(struct.pack('BBBB', *vc))
 
-# liquids
-class MLIQ_chunk:
+class LiquidVertex:
     def __init__(self):
+
+        self.height = 0
+        
+    def Read(self, f):
+        self.height = struct.unpack("f", f.read(4))
+
+
+    def Write(self, f):
+        f.write(struct.pack('f', self.height))
+
+class WaterVertex(LiquidVertex):
+    def __init__(self):
+        self.flow1 = 0
+        self.flow2 = 0
+        self.flow1Pct = 0
+        self.filler = 0
+        
+    def Read(self, f):
+        
+        LiquidVertex.Read(self, f) # Python, wtf?
+        self.flow1 = struct.unpack("B", f.read(1))[0]
+        self.flow2 = struct.unpack("B", f.read(1))[0]
+        self.flow1Pct = struct.unpack("B", f.read(1))[0]
+        self.filler = struct.unpack("B", f.read(1))[0]
+        
+        
+    def Write(self, f):
+        
+        LiquidVertex.Write(f) # Python, wtf?
+        f.write(struct.pack('B', self.flow1))
+        f.write(struct.pack('B', self.flow2))
+        f.write(struct.pack('B', self.flow1Pct))
+        f.write(struct.pack('B', self.filler))
+        
+        
+class MagmaVertex(LiquidVertex):
+    def __init__(self):
+        self.u = 0
+        self.v = 0
+    
+    def Read(self, f):
+        self.u = struct.unpack("h", f.read(2))[0]
+        self.v = struct.unpack("h", f.read(2))[0]
+        LiquidVertex.Read(self, f)
+        
+    def Write(self, f):
+        f.write(struct.pack('h', self.u))
+        f.write(struct.pack('h', self.v))
+        LiquidVertex.Write(f)
+        
+class MLIQ_chunk:
+    def __init__(self, mat = True):
         self.Header = ChunkHeader()
         self.xVerts = 0
         self.yVerts = 0
         self.xTiles = 0
         self.yTiles = 0
         self.Position = (0, 0, 0)
-        self.HeightMap = []
+        self.VertexMap = []
         self.TileFlags = []
+        self.LiquidMaterial = mat
 
     def Read(self, f):
         # read header
@@ -1211,18 +1263,26 @@ class MLIQ_chunk:
         self.xTiles = struct.unpack("I", f.read(4))[0]
         self.yTiles = struct.unpack("I", f.read(4))[0]
         self.Position = struct.unpack("fff", f.read(12))
-
-        # defines a volume, most of time [0] is -inf or something like that, and [1] is liquid height
-        self.HeightMap = []
+        
+        self.VertexMap = []
 
         for i in range(self.xVerts * self.yVerts):
-            self.HeightMap.append(struct.unpack("ff", f.read(8)))
-
+            if(self.LiquidMaterial):
+                vtx = WaterVertex()
+                vtx.Read(f)
+                self.VertexMap.append(vtx)
+            else:
+                    vtx = MagmaVertex()
+                    vtx.Read(f)
+                    self.VertexMap.append(vtx)
+        
+        
         self.TileFlags = []
 
         # 0x40 = visible
         # 0x0C = invisible
         # well some other strange things (e.g 0x7F = visible, etc...)
+        
         for i in range(self.xTiles * self.yTiles):
             self.TileFlags.append(struct.unpack("B", f.read(1))[0])
 
@@ -1237,9 +1297,9 @@ class MLIQ_chunk:
         f.write(struct.pack('I', self.xTiles))
         f.write(struct.pack('I', self.yTiles))
         f.write(struct.pack('fff', *self.Position))
-
-        for h in self.HeightMap:
-            f.write(struct.pack('ff', *h))
+        
+        for vtx in self.VertexMap:
+            f.write(struct.pack('ff', vtx))
 
         for f in self.TileFlags:
             f.write(struct.pack('B', f))

@@ -153,28 +153,86 @@ class WMO_group_file:
         return None
     
     # return array of vertice and array of faces in a tuple
-    def LoadLiquids(self):
+    def LoadLiquids(self, objName, pos):
+        
         # load vertices
         vertices = []
-        for y in range(self.mliq.yVerts):
+        for y in range(0, self.mliq.yVerts):
             y_pos = self.mliq.Position[1] + y * 4.1666625
-            for x in range(self.mliq.xVerts):
+            for x in range(0 , self.mliq.xVerts):
                 x_pos = self.mliq.Position[0] + x * 4.1666625
-                vertices.append((x_pos, y_pos, self.mliq.HeightMap[y * self.mliq.xVerts + x][0] + self.mliq.Position[2]))
+                vertices.append((x_pos, y_pos, self.mliq.VertexMap[y * self.mliq.xVerts + x].height[0] + self.mliq.Position[2]))
+                # print(x_pos, y_pos, self.mliq.VertexMap[y * self.mliq.xVerts + x].height[0] + self.mliq.Position[2])
                 # second float seems to be VERY low (e.g -3.271161e+35), or NAN or whatever when vertice is shown (or maybe it indicate a volume?)
                 #vertices.append((x_pos, y_pos, self.mliq.HeightMap[y * self.mliq.xVerts + x][1] + self.mliq.Position[2]))
         # calculate faces
+        
         indices = []
         for y in range(self.mliq.yTiles):
             for x in range(self.mliq.xTiles):
                 indices.append(y * self.mliq.xVerts + x)
                 indices.append(y * self.mliq.xVerts + x + 1)
                 indices.append((y + 1) * self.mliq.xVerts + x)
-                indices.append((y + 1) * self.mliq.xVerts + x)
-                indices.append(y * self.mliq.xVerts + x + 1)
                 indices.append((y + 1) * self.mliq.xVerts + x + 1)
+                
+        faces = []
+        
+        for i in range(0, len(indices), 4):
+            faces.append((indices[i], indices[i + 1], indices[i + 3], indices[i + 2]))  
 
-        return (vertices, indices)
+        #create mesh and object
+        name = objName + "_Liquid"
+        mesh = bpy.data.meshes.new(name)
+        object = bpy.data.objects.new(name, mesh)
+                    
+        #create mesh from python data
+        mesh.from_pydata(vertices,[],faces)
+        mesh.update(calc_edges=True)
+        mesh.validate()
+        
+        flag_0x1 = mesh.vertex_colors.new("flag_0x1")
+        flag_0x2 = mesh.vertex_colors.new("flag_0x2")
+        flag_0x4 = mesh.vertex_colors.new("flag_0x4")
+        flag_0x8 = mesh.vertex_colors.new("flag_0x8")
+        flag_0x10 = mesh.vertex_colors.new("flag_0x10")
+        flag_0x20 = mesh.vertex_colors.new("flag_0x20")
+        flag_0x40 = mesh.vertex_colors.new("flag_0x40")
+        flag_0x80 = mesh.vertex_colors.new("flag_0x80")
+        
+        for face in mesh.polygons:
+            for loop in face.loop_indices:
+                    if(self.mliq.TileFlags[face.index] & 0x1):
+                        flag_0x1.data[loop].color = (0, 0, 255)
+                    if(self.mliq.TileFlags[face.index] & 0x2):
+                        flag_0x2.data[loop].color = (0, 0, 255)           
+                    if(self.mliq.TileFlags[face.index] & 0x4):
+                        flag_0x4.data[loop].color = (0, 0, 255)
+                    if(self.mliq.TileFlags[face.index] & 0x8):
+                        flag_0x8.data[loop].color = (0, 0, 255) 
+                    if(self.mliq.TileFlags[face.index] & 0x10):
+                        flag_0x10.data[loop].color = (0, 0, 255)
+                    if(self.mliq.TileFlags[face.index] & 0x20):
+                        flag_0x20.data[loop].color = (0, 0, 255)           
+                    if(self.mliq.TileFlags[face.index] & 0x20):
+                        flag_0x40.data[loop].color = (0, 0, 255)
+                    if(self.mliq.TileFlags[face.index] & 0x80):
+                        flag_0x80.data[loop].color = (0, 0, 255)
+                    
+        #set mesh location
+        object.location = pos
+        bpy.context.scene.objects.link(object)
+        
+        bpy.context.scene.objects.active = object
+        
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        #bpy.ops.mesh.tris_convert_to_quads(face_threshold=3.14159)
+        bpy.ops.mesh.normals_make_consistent(inside=True)
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
+                  
+               
     
     # Return faces indices
     def GetBSPNodeIndices(self, iNode, nodes, faces, indices):
@@ -363,9 +421,13 @@ class WMO_group_file:
 
         mesh.update()
         mesh.validate()
+        
 
         nobj = bpy.data.objects.new(objName, mesh)
-
+        
+        if(self.mogp.Flags & MOGP_FLAG.HasWater):
+            self.LoadLiquids(objName, nobj.location)
+        
         # set liquid properties
         """if(self.mogp.Flags & MOGP_FLAG.HasWater):
             liquidGroup = nobj.vertex_groups.new("liquidGroup")

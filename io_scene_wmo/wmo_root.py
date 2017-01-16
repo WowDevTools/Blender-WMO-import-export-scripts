@@ -581,8 +581,8 @@ class WMO_root_file:
                     max_z = 0
                     
                     for vertex in obj_mesh.vertices:
-                        if(max_z < vertex.co[2]):
-                            max_z = vertex.co[2]
+                        if(max_z < vertex.co[2] * ob.scale[2]):
+                            max_z = vertex.co[2] * ob.scale[2]
                     
                     fog.BigRadius = max_z - ob.location[2]
                     fog.SmallRadius = fog.BigRadius * (obj_mesh.WowFog.InnerRadius / 100)
