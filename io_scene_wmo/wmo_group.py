@@ -226,11 +226,35 @@ class WMO_group_file:
         
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
-        #bpy.ops.mesh.tris_convert_to_quads(face_threshold=3.14159)
         bpy.ops.mesh.normals_make_consistent(inside=True)
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.object.mode_set(mode='OBJECT')
         
+        object.lock_scale = [True, True, True]
+        object.lock_rotation[2] = True
+        
+        object.WowLiquid.Enabled = True
+        
+        # getting Liquid Type ID
+        
+        basic_liquid_type = self.mogp.LiquidType - 1
+        real_liquid_type = 0
+        
+        if basic_liquid_type < 21: # to understand what is being done here see wiki
+            if basic_liquid_type == 0:
+                real_liquid_type = 14 if self.mogp.Flags & 0x80000 else 13
+            if basic_liquid_type == 1:
+                real_liquid_type = 14
+            if basic_liquid_type == 2:
+                real_liquid_type = 19
+            if basic_liquid_type == 3:
+                real_liquid_type = 20
+        else:
+            real_liquid_type = basic_liquid_type
+            
+            
+        
+        object.WowLiquid.LiquidType = real_liquid_type
                   
                
     

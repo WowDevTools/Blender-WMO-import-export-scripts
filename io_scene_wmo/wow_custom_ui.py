@@ -250,7 +250,7 @@ def UnregisterWowLightProperties():
 #XTextures\slime\slime.1.blp
 #XTextures\ocean\ocean_h.1.blp
 #XTextures\LavaGreen\lavagreen.1.blp
-"""
+
 class WowLiquidPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -260,7 +260,6 @@ class WowLiquidPanel(bpy.types.Panel):
 
     def draw_header(self, context):
         layout = self.layout
-        self.layout.prop(context.object.WowLiquid, "Enabled")
 
     def draw(self, context):
         layout = self.layout
@@ -281,7 +280,7 @@ class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
         ('6', "Slow Ocean", ""), ('10', "Fast Ocean", ""), ('7', "Slow Magma", ""), \
         ('11', "Fast Magma", ""), ('8', "Slow Slime", ""), ('12', "Fast Slime", ""), \
         ('14', "WMO Ocean", ""), ('15', "Green Lava", "")]
-    Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties")
+    Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
     LiquidType = bpy.props.EnumProperty(items=liquidTypeEnum, name="Liquid Type", description="Type of the liquid present in this WMO group")
     VertexGroup = bpy.props.StringProperty()
 
@@ -290,7 +289,7 @@ def RegisterWowLiquidProperties():
 
 def UnregisterWowLiquidProperties():
     bpy.types.Object.WowLiquid = None
-"""
+
 ###############################
 ## Collision
 ###############################
@@ -936,7 +935,7 @@ def UnregisterWowWMORootProperties():
 def register():
     RegisterWowRootProperties()
     RegisterWowMaterialProperties()
-    #RegisterWowLiquidProperties()
+    RegisterWowLiquidProperties()
     RegisterWowLightProperties()
     RegisterWowCollisionProperties()
     RegisterWowWMOGroupProperties()
@@ -951,7 +950,7 @@ def register():
 def unregister():
     UnregisterWowRootProperties()
     UnregisterWowMaterialProperties()
-    #UnregisterWowLiquidProperties()
+    UnregisterWowLiquidProperties()
     UnregisterWowLightProperties()
     UnregisterWowCollisionProperties()
     UnregisterWowWMOGroupProperties()

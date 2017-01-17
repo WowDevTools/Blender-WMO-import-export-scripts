@@ -1233,9 +1233,9 @@ class MagmaVertex(LiquidVertex):
         self.v = 0
     
     def Read(self, f):
+        LiquidVertex.Read(self, f)  # Python, wtf?
         self.u = struct.unpack("h", f.read(2))[0]
         self.v = struct.unpack("h", f.read(2))[0]
-        LiquidVertex.Read(self, f)
         
     def Write(self, f):
         f.write(struct.pack('h', self.u))
