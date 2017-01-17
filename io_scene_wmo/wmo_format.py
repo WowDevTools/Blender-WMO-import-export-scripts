@@ -1233,14 +1233,15 @@ class MagmaVertex(LiquidVertex):
         self.v = 0
     
     def Read(self, f):
-        LiquidVertex.Read(self, f)  # Python, wtf?
+        LiquidVertex.Read(self, f)
         self.u = struct.unpack("h", f.read(2))[0]
         self.v = struct.unpack("h", f.read(2))[0]
         
     def Write(self, f):
+        LiquidVertex.Write(f)
         f.write(struct.pack('h', self.u))
         f.write(struct.pack('h', self.v))
-        LiquidVertex.Write(f)
+
         
 class MLIQ_chunk:
     def __init__(self, mat = True):

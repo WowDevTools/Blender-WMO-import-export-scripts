@@ -505,31 +505,6 @@ def UnregisterWowFogProperties():
 ###############################
 ## WMO Toolbar
 ###############################    
-class WoWSceneVisibilityProperties(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "scene"
-    bl_label = "WoW Visibility"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw_header(self, context):
-        layout = self.layout
-        self.layout.prop(context.scene.WoWVisibility, "Enabled")
-
-    def draw(self, context):
-        layout = self.layout
-        row = layout.row()
-        self.layout.prop(context.scene.WoWVisibility, "Outdoor")
-        self.layout.prop(context.scene.WoWVisibility, "Indoor")
-        self.layout.prop(context.scene.WoWVisibility, "Portals")
-        self.layout.prop(context.scene.WoWVisibility, "Fog")
-        self.layout.prop(context.scene.WoWVisibility, "All")
-        layout.enabled = context.scene.WoWVisibility.Enabled
-
-    @classmethod
-    def poll(cls, context):
-        return (context.scene is not None)
-
 
 class WoWVisibilityPropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable WoW visibility properties", default = True)
@@ -556,7 +531,13 @@ class WoWVisibilityPropertyGroup(bpy.types.PropertyGroup):
         name="Fog",
         description="Show/hide fog objects",
         default= True,
-    )    
+    )  
+    
+    Water = bpy.props.BoolProperty(
+        name="Water",
+        description="Show/hide water planes",
+        default= True,
+    )     
     
     All = bpy.props.BoolProperty(
         name="All",
@@ -575,7 +556,7 @@ class WoWToolsPanelObjectMode(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_context = 'objectmode'
-    bl_category = 'Tools'
+    bl_category = 'WoW'
 
     def draw(self, context):
         layout = self.layout.split()
@@ -597,6 +578,7 @@ class WoWToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_hide_show_indoor", text = 'Indoor', icon = 'ROTATE')
         col.operator("scene.wow_hide_show_portals", text = 'Portals', icon = 'MOD_PARTICLES')
         col.operator("scene.wow_hide_show_fog", text = 'Fog', icon = 'FORCE_TURBULENCE')
+        col.operator("scene.wow_hide_show_water", text = 'Water', icon = 'MOD_FLUIDSIM')
         col.operator("scene.wow_hide_show_all_objects", text = 'All', icon = 'VISIBLE_IPO_ON') 
 
     def RegisterWMOToolsPanelObjectMode():
@@ -835,7 +817,7 @@ class OBJECT_OP_Hide_Show_All(bpy.types.Operator):
     def execute(self, context):
         state = True
         for ob in bpy.context.scene.objects:
-            if((ob.WowWMOGroup.Enabled == True) or (ob.data.WowPortalPlane.Enabled == True)) or (ob.data.WowFog.Enabled == True):
+            if((ob.WowWMOGroup.Enabled == True) or (ob.data.WowPortalPlane.Enabled == True)) or (ob.data.WowFog.Enabled == True) or (ob.WowLiquid.Enabled == True):
                 if(bpy.context.scene.WoWVisibility.All == True):
                     ob.hide = True
                     state = False
@@ -843,6 +825,25 @@ class OBJECT_OP_Hide_Show_All(bpy.types.Operator):
                     ob.hide = False
                     state = True
         bpy.context.scene.WoWVisibility.All = state
+        return {'FINISHED'}
+    
+
+class OBJECT_OP_Hide_Show_Water(bpy.types.Operator):
+    bl_idname = 'scene.wow_hide_show_water'
+    bl_label = 'Hide/Show all water planes'
+    bl_description = 'Hide/Show all WoW WMO water planes'
+
+    def execute(self, context):
+        state = True
+        for ob in bpy.context.scene.objects:
+            if(ob.WowLiquid.Enabled == True):
+                if(bpy.context.scene.WoWVisibility.Water == True):
+                    ob.hide = True
+                    state = False
+                else:
+                    ob.hide = False
+                    state = True
+        bpy.context.scene.WoWVisibility.Water = state
         return {'FINISHED'}   
 
 class OBJECT_OP_Hide_Show_Portals(bpy.types.Operator):

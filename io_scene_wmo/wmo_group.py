@@ -152,8 +152,20 @@ class WMO_group_file:
                 pass
         return None
     
+    def ToWMOLiquid(basic_liquid_type):
+        if basic_liquid_type == 0:
+            real_liquid_type = 14 if self.mogp.Flags & 0x80000 else 13
+        if basic_liquid_type == 1:
+            real_liquid_type = 14
+        if basic_liquid_type == 2:
+            real_liquid_type = 19
+        if basic_liquid_type == 3:
+            real_liquid_type = 20
+            
+        return real_liquid_type
+    
     # return array of vertice and array of faces in a tuple
-    def LoadLiquids(self, objName, pos):
+    def LoadLiquids(self, objName, pos, mohd_flags):
         
         # load vertices
         vertices = []
@@ -237,24 +249,26 @@ class WMO_group_file:
         
         # getting Liquid Type ID
         
-        basic_liquid_type = self.mogp.LiquidType - 1
+        basic_liquid_type = self.mogp.LiquidType
         real_liquid_type = 0
         
-        if basic_liquid_type < 21: # to understand what is being done here see wiki
-            if basic_liquid_type == 0:
-                real_liquid_type = 14 if self.mogp.Flags & 0x80000 else 13
-            if basic_liquid_type == 1:
-                real_liquid_type = 14
-            if basic_liquid_type == 2:
-                real_liquid_type = 19
-            if basic_liquid_type == 3:
-                real_liquid_type = 20
+        if(mohd_flags & 0x4): # defining real liquid type ID from DBC. to understand what is being done here see wiki (MLIQ)
+                
+            if basic_liquid_type < 21: 
+                real_liquid_type = self.ToWMOLiquid(basic_liquid_type - 1)
+            else:
+                real_liquid_type = basic_liquid_type
         else:
-            real_liquid_type = basic_liquid_type
-            
+            if(basic_liquid_type == 15):
+                real_liquid_type = 0
+            else:
+                if(basic_liquid_type < 20):
+                    real_liquid_type = self.ToWMOLiquid(basic_liquid_type)
+                else:
+                    real_liquid_type = basic_liquid_type + 1
             
         
-        object.WowLiquid.LiquidType = real_liquid_type
+        # object.WowLiquid.LiquidType = str(real_liquid_type)
                   
                
     
@@ -286,7 +300,7 @@ class WMO_group_file:
         return indices
 
     # Create mesh from file data
-    def LoadObject(self, objName, materials, doodads, mogn, objId, base_name):
+    def LoadObject(self, objName, materials, doodads, mogn, objId, base_name, mohd):
 
         vertices = []
         normals = []
@@ -450,7 +464,7 @@ class WMO_group_file:
         nobj = bpy.data.objects.new(objName, mesh)
         
         if(self.mogp.Flags & MOGP_FLAG.HasWater):
-            self.LoadLiquids(objName, nobj.location)
+            self.LoadLiquids(objName, nobj.location, mohd.Flags)
         
         # set liquid properties
         """if(self.mogp.Flags & MOGP_FLAG.HasWater):
