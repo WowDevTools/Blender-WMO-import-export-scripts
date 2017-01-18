@@ -598,7 +598,7 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
     yPlanes = bpy.props.IntProperty(name="Y subdivisions:", description="Amount of WoW liquid planes in a column. One plane is 4.1666625 in its radius.", default=10, min=1)
     
     def AddWater(self, xPlanes, yPlanes):
-        bpy.ops.mesh.primitive_grid_add(x_subdivisions=xPlanes + 1, y_subdivisions=yPlanes + 1, radius=4.1666625 / 2)
+        bpy.ops.mesh.primitive_grid_add(x_subdivisions =xPlanes + 1, y_subdivisions = Planes + 1, radius=4.1666625 / 2)
         water = bpy.context.scene.objects.active
         bpy.ops.transform.resize( value=(xPlanes, yPlanes, 1.0) )
         

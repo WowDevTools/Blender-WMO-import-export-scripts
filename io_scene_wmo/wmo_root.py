@@ -547,6 +547,10 @@ class WMO_root_file:
                     portal_info.StartVertex = global_vertices_count
                     local_vertices_count = 0
                     v = []
+                    ob.select = True
+                    bpy.ops.object.transform_apply(location = True, rotation = True, scale = True)
+                    ob.select = False
+                    
                     for vert in obj_mesh.vertices:
                         mopv.PortalVertices.append(vert.co)
                         v.append(vert.co)
