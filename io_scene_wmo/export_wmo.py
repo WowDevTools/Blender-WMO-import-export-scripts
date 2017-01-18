@@ -29,7 +29,7 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
     for i in range(len(bpy.context.scene.objects)):
         
         #check if selected (optional)
-        if bpy.data.objects[i].select is not True and export_selected:
+        if bpy.data.objects[i].select != True and export_selected:
             continue
     
         # check if object is mesh

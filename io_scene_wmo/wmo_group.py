@@ -764,13 +764,15 @@ class WMO_group_file:
             batch_current.LastVertex = sentry_indices[1]
             batch_current.MaterialID = material_index
             
+            print(batch_current.StartTriangle)
+            
             if(batchTypeMap.get(material_index) == 0):
                 moba.Batches[iA] = batch_current
                 iA += 1
-            if(batchTypeMap.get(material_index) == 0):
+            if(batchTypeMap.get(material_index) == 1):
                 moba.Batches[iB] = batch_current
                 iB += 1
-            if(batchTypeMap.get(material_index) == 0):
+            if(batchTypeMap.get(material_index) == 2):
                 moba.Batches[iC] = batch_current
                 iC += 1                
         

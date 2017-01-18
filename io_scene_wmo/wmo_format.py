@@ -1280,7 +1280,6 @@ class MLIQ_chunk:
                     vtx.Read(f)
                     self.VertexMap.append(vtx)
         
-        print("Vertex map: " + str(self.VertexMap[0].flow1) + str( self.VertexMap[len(self.VertexMap) - 1].height))
         self.TileFlags = []
 
         # 0x40 = visible
@@ -1289,8 +1288,6 @@ class MLIQ_chunk:
         
         for i in range(self.xTiles * self.yTiles):
             self.TileFlags.append(struct.unpack("B", f.read(1))[0])
-        
-        print("Tile flags: " + str(self.TileFlags[0]) + str(self.TileFlags[1]))
 
     def Write(self, f):
         self.Header.Magic = 'QILM'
