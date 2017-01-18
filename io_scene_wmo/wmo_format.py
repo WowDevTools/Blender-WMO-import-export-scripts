@@ -1251,6 +1251,7 @@ class MLIQ_chunk:
         self.xTiles = 0
         self.yTiles = 0
         self.Position = (0, 0, 0)
+        self.materialID = 0
         self.VertexMap = []
         self.TileFlags = []
         self.LiquidMaterial = mat
@@ -1264,8 +1265,10 @@ class MLIQ_chunk:
         self.xTiles = struct.unpack("I", f.read(4))[0]
         self.yTiles = struct.unpack("I", f.read(4))[0]
         self.Position = struct.unpack("fff", f.read(12))
+        self.materialID = struct.unpack("H", f.read(2))[0]
         
         self.VertexMap = []
+        
 
         for i in range(self.xVerts * self.yVerts):
             if(self.LiquidMaterial):
@@ -1277,7 +1280,7 @@ class MLIQ_chunk:
                     vtx.Read(f)
                     self.VertexMap.append(vtx)
         
-        
+        print("Vertex map: " + str(self.VertexMap[0].flow1) + str( self.VertexMap[len(self.VertexMap) - 1].height))
         self.TileFlags = []
 
         # 0x40 = visible
@@ -1286,6 +1289,8 @@ class MLIQ_chunk:
         
         for i in range(self.xTiles * self.yTiles):
             self.TileFlags.append(struct.unpack("B", f.read(1))[0])
+        
+        print("Tile flags: " + str(self.TileFlags[0]) + str(self.TileFlags[1]))
 
     def Write(self, f):
         self.Header.Magic = 'QILM'
@@ -1298,6 +1303,7 @@ class MLIQ_chunk:
         f.write(struct.pack('I', self.xTiles))
         f.write(struct.pack('I', self.yTiles))
         f.write(struct.pack('fff', *self.Position))
+        f.write(struct.pack('H', self.materialID))
         
         for vtx in self.VertexMap:
             f.write(struct.pack('ff', vtx))

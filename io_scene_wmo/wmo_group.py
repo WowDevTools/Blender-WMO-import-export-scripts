@@ -156,11 +156,11 @@ class WMO_group_file:
         real_liquid_type = 0
         if basic_liquid_type == 0:
             real_liquid_type = 14 if self.mogp.Flags & 0x80000 else 13
-        if basic_liquid_type == 1:
+        elif basic_liquid_type == 1:
             real_liquid_type = 14
-        if basic_liquid_type == 2:
+        elif basic_liquid_type == 2:
             real_liquid_type = 19
-        if basic_liquid_type == 3:
+        elif basic_liquid_type == 3:
             real_liquid_type = 20
             
         return real_liquid_type
@@ -261,7 +261,7 @@ class WMO_group_file:
                 real_liquid_type = basic_liquid_type
         else:
             if(basic_liquid_type == 15):
-                real_liquid_type = 0
+                real_liquid_type = 17
             else:
                 if(basic_liquid_type < 20):
                     real_liquid_type = self.ToWMOLiquid(basic_liquid_type)
