@@ -573,6 +573,7 @@ class WoWToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_fill_group_name", text = 'Fill group name', icon = 'FONTPREVIEW')
         col.operator("scene.wow_invert_portals", text = 'Invert portals', icon = 'FILE_REFRESH')
         col.operator("scene.wow_add_fog", text = 'Add fog', icon = 'GROUP_VERTEX')
+        col.operator("scene.wow_add_water", text = 'Add water', icon = 'MOD_WAVE')
         col.label(text="Display")
         col.operator("scene.wow_hide_show_outdoor", text = 'Outdoor', icon = 'BBOX')
         col.operator("scene.wow_hide_show_indoor", text = 'Indoor', icon = 'ROTATE')
@@ -586,7 +587,41 @@ class WoWToolsPanelObjectMode(bpy.types.Panel):
     def UnregisterWMOToolsPanelObjectMode():
         bpy.utils.register_module(WMOToolsPanelObjectMode)
         
+
+class OBJECT_OP_Add_Water(bpy.types.Operator):
+    bl_idname = 'scene.wow_add_water'
+    bl_label = 'Add water'
+    bl_description = 'Adds a WoW water plane'
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    xPlanes = bpy.props.IntProperty(name="X subdivisions:", description="Amount of WoW liquid planes in a row. One plane is 4.1666625 in its radius.", default=10, min=1)
+    yPlanes = bpy.props.IntProperty(name="Y subdivisions:", description="Amount of WoW liquid planes in a column. One plane is 4.1666625 in its radius.", default=10, min=1)
+    
+    def AddWater(self, xPlanes, yPlanes):
+        bpy.ops.mesh.primitive_grid_add(x_subdivisions=xPlanes + 1, y_subdivisions=yPlanes + 1, radius=4.1666625 / 2)
+        water = bpy.context.scene.objects.active
+        bpy.ops.transform.resize( value=(xPlanes, yPlanes, 1.0) )
         
+        water.name = water.name + "_Liquid"
+        
+        mesh = water.data
+        
+        mesh.vertex_colors.new("flag_0x1")
+        mesh.vertex_colors.new("flag_0x2")
+        mesh.vertex_colors.new("flag_0x4")
+        mesh.vertex_colors.new("flag_0x8")
+        mesh.vertex_colors.new("flag_0x10")
+        mesh.vertex_colors.new("flag_0x20")
+        mesh.vertex_colors.new("flag_0x40")
+        mesh.vertex_colors.new("flag_0x80")                                 
+        
+        water.WowLiquid.Enabled = True
+
+        
+    def execute(self, context):
+        self.AddWater(self.xPlanes, self.yPlanes)
+        return {'FINISHED'}
+    
 class OBJECT_OP_Add_Fog(bpy.types.Operator):
     bl_idname = 'scene.wow_add_fog'
     bl_label = 'Add fog'
@@ -703,6 +738,7 @@ class OBJECT_OP_Quick_Collision(bpy.types.Operator):
             ob.WowCollision.VertexGroup = ob.vertex_groups.active.name
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT')
+            ob.WowCollision.NodeSize = NodeSize
 
     def execute(self, context):
         

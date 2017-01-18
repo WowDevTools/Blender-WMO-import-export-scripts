@@ -152,7 +152,8 @@ class WMO_group_file:
                 pass
         return None
     
-    def ToWMOLiquid(basic_liquid_type):
+    def ToWMOLiquid(self, basic_liquid_type):
+        real_liquid_type = 0
         if basic_liquid_type == 0:
             real_liquid_type = 14 if self.mogp.Flags & 0x80000 else 13
         if basic_liquid_type == 1:
