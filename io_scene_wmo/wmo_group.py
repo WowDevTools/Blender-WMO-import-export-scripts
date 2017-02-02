@@ -12,6 +12,7 @@ import math
 from math import *
 
 import os
+import sys
 
 #from . import Utility
 #from .Utility import *
@@ -214,22 +215,22 @@ class WMO_group_file:
         
         for face in mesh.polygons:
             for loop in face.loop_indices:
-                    if(self.mliq.TileFlags[face.index] & 0x1):
-                        flag_0x1.data[loop].color = (0, 0, 255)
-                    if(self.mliq.TileFlags[face.index] & 0x2):
-                        flag_0x2.data[loop].color = (0, 0, 255)           
-                    if(self.mliq.TileFlags[face.index] & 0x4):
-                        flag_0x4.data[loop].color = (0, 0, 255)
-                    if(self.mliq.TileFlags[face.index] & 0x8):
-                        flag_0x8.data[loop].color = (0, 0, 255) 
-                    if(self.mliq.TileFlags[face.index] & 0x10):
-                        flag_0x10.data[loop].color = (0, 0, 255)
-                    if(self.mliq.TileFlags[face.index] & 0x20):
-                        flag_0x20.data[loop].color = (0, 0, 255)           
-                    if(self.mliq.TileFlags[face.index] & 0x20):
-                        flag_0x40.data[loop].color = (0, 0, 255)
-                    if(self.mliq.TileFlags[face.index] & 0x80):
-                        flag_0x80.data[loop].color = (0, 0, 255)
+                if(self.mliq.TileFlags[face.index] & 0x1):
+                    flag_0x1.data[loop].color = (0, 0, 255)
+                if(self.mliq.TileFlags[face.index] & 0x2):
+                    flag_0x2.data[loop].color = (0, 0, 255)           
+                if(self.mliq.TileFlags[face.index] & 0x4):
+                    flag_0x4.data[loop].color = (0, 0, 255)
+                if(self.mliq.TileFlags[face.index] & 0x8):
+                    flag_0x8.data[loop].color = (0, 0, 255) 
+                if(self.mliq.TileFlags[face.index] & 0x10):
+                    flag_0x10.data[loop].color = (0, 0, 255)
+                if(self.mliq.TileFlags[face.index] & 0x20):
+                    flag_0x20.data[loop].color = (0, 0, 255)           
+                if(self.mliq.TileFlags[face.index] & 0x20):
+                    flag_0x40.data[loop].color = (0, 0, 255)
+                if(self.mliq.TileFlags[face.index] & 0x80):
+                    flag_0x80.data[loop].color = (0, 0, 255)
                     
         #set mesh location
         object.location = pos
@@ -816,6 +817,8 @@ class WMO_group_file:
         
         fog_id = 0
         fogMap = {}
+    
+        mliq = MLIQ_chunk()        
         
         for ob in bpy.context.scene.objects:
             if(ob.type == "MESH"):
@@ -840,6 +843,23 @@ class WMO_group_file:
                 if(obj_mesh.WowFog.Enabled):
                     fogMap[ob.name] = fog_id
                     fog_id += 1
+                if(ob.WowLiquid.Enabled and ob.WowLiquid.WMOGroup == obj.name):
+                    sum = sys.float_info.max
+                    StartVertex = 0
+                    for vertex in obj_mesh.vertices:
+                        curSum = vertex.co[0] + vertex.co[1]
+                        
+                        if (curSum < sum):
+                            StartVertex = vertex.index
+                            sum = curSum
+                            
+                    mliq.xVerts = ob.dimensions[0] / 4.1666625
+                    mliq.yVerts = ob.dimensions[1] / 4.1666625
+                    mliq.xTiles = mliq.xVerts - 1
+                    mliq.yTiles = mliq.yTiles - 1
+                    self.Position = StartVertex.co
+                    # self.materialID = 
+ 
                     
         
         if(mogp.PortalStart == -1):

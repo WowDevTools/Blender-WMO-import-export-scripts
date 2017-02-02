@@ -20,8 +20,7 @@ class ChunkHeader:
     def Write(self, f):
         f.write(self.Magic[:4].encode('ascii'))
         f.write(struct.pack('I', self.Size))
-
-
+        
 # contain version of file
 class MVER_chunk:
     def __init__(self, header=ChunkHeader(), version=0):
@@ -750,6 +749,28 @@ class MFOG_chunk:
         for fo in self.Fogs:
             fo.Write(f)
 
+# Convex volume plane, used only for transport objects         
+class MCVP_chunk:
+    def __init__(self):    
+        self.Header = ChunkHeader()
+        self.convex_volume_planes = []
+        
+    def Read(self, f):
+        self.Header.Read(f)
+        
+        count = self.Header.Size // 16
+        
+        for i in range(0, count):
+            self.convex_volume_planes.append(struct.unpack('ffff', f.read(16)))
+            
+    def Write(self, f):
+        self.Header.Magic = 'PVCM'
+        self.Header.Size = len(self.convex_volume_planes) * 16
+        
+        self.Header.Write(f)
+        for i in self.convex_volume_planes:
+            f.write(struct.pack('ffff', self.convex_volume_planes[i]))
+
 ###########################
 # WMO GROUP
 ###########################
@@ -1288,6 +1309,7 @@ class MLIQ_chunk:
         
         for i in range(self.xTiles * self.yTiles):
             self.TileFlags.append(struct.unpack("B", f.read(1))[0])
+
 
     def Write(self, f):
         self.Header.Magic = 'QILM'

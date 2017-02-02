@@ -25,6 +25,7 @@ class WMO_root_file:
         self.modn = MODN_chunk()
         self.modd = MODD_chunk()
         self.mfog = MFOG_chunk()
+        self.mcvp = MCVP_chunk()
 
         self.materialLookup = {}
         self.textureLookup = {}
@@ -52,6 +53,9 @@ class WMO_root_file:
         self.modn.Read(f)
         self.modd.Read(f)
         self.mfog.Read(f)
+        
+        if f.tell() != os.fstat(f.fileno()).st_size:
+            self.mcvp.Read(f)
         
         self.SaveSource()
     
@@ -433,6 +437,33 @@ class WMO_root_file:
 
             mesh.from_pydata(verts,[],faces)
             bpy.context.scene.objects.link(obj)
+            
+    def LoadConvexVolumePlanes(self, name):
+        self.convex_volume_planes = []
+        
+        faces = []
+        counter = 0
+        
+        for plane in self.mcvp.convex_volume_planes:
+            if plane[2] != 0:
+                self.convex_volume_planes.append( (1.0, 1.0, -(plane[0] + plane[1] + plane[3]) / plane[2]) )
+            else:
+                self.convex_volume_planes.append( (1.0, 1.0, -(plane[0] + plane[1] + plane[3]) / plane[2]) )
+                
+                
+            self.convex_volume_planes.append( (1.0, -(plane[0] + plane[2] + plane[3]) / plane[1], 1.0) )
+            self.convex_volume_planes.append( (-(plane[1] + plane[2] + plane[3]) / plane[0], 1.0, 1.0) )
+            
+            for i in range(0, 3):
+                faces.append(counter * 3 + i)
+            counter += 1
+            
+        mesh = bpy.data.meshes.new('Convex_Volume_Plane')
+        
+        obj = bpy.data.objects.new('Convex_Volume_Plane', mesh)
+        
+        mesh.from_pydata(self.convex_volume_planes, [], faces)
+        bpy.context.scene.objects.link(obj)
             
     def LoadProperties(self, name, filepath):
         bpy.context.scene.WoWRoot.AmbientColor = [float(self.mohd.AmbientColor[0] / 255), float(self.mohd.AmbientColor[1] / 255), float(self.mohd.AmbientColor[2]) / 255]

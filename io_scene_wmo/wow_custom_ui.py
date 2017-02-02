@@ -227,70 +227,6 @@ def UnregisterWowLightProperties():
 
 
 ###############################
-## Liquid
-###############################
-
-#XTextures\river\lake_a.1.blp
-#XTextures\river\lake_a.1.blp
-#XTextures\river\lake_a.1.blp
-#XTextures\ocean\ocean_h.1.blp
-#XTextures\lava\lava.1.blp
-#XTextures\slime\slime.1.blp
-#XTextures\slime\slime.1.blp
-#XTextures\river\lake_a.1.blp
-#XTextures\procWater\basicReflectionMap.1.blp
-#XTextures\river\lake_a.1.blp
-#XTextures\river\lake_a.1.blp
-#XTextures\river\fast_a.1.blp
-#XTextures\ocean\ocean_h.1.blp
-#XTextures\ocean\ocean_h.1.blp
-#XTextures\lava\lava.1.blp
-#XTextures\lava\lava.1.blp
-#XTextures\slime\slime.1.blp
-#XTextures\slime\slime.1.blp
-#XTextures\ocean\ocean_h.1.blp
-#XTextures\LavaGreen\lavagreen.1.blp
-
-class WowLiquidPanel(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "data"
-    bl_label = "Wow liquid"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw_header(self, context):
-        layout = self.layout
-
-    def draw(self, context):
-        layout = self.layout
-        row = layout.row()
-        self.layout.prop(context.object.WowLiquid, "LiquidType")
-        self.layout.prop_search(context.object.WowLiquid, "VertexGroup", context.object, "vertex_groups", text="Liquid vertex group")
-        layout.enabled = context.object.WowLiquid.Enabled
-
-    @classmethod
-    def poll(cls, context):
-        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
-
-class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
-    liquidTypeEnum = [('81', "Lake Wintergrasp - Water", ""), ('41', "Coilfang Raid - Water", ""), ('1', "Water", ""), \
-        ('2', "Ocean", ""), ('3', "Magma", ""), ('4', "Slime", ""), \
-        ('21', "Naxxramas - Slime", ""), ('61', "Hyjal Past - Water", ""), ('100', "Basic Procedural Water", ""), \
-        ('13', "WMO Water", ""), ('5', "Slow Water", ""), ('9', "Fast Water", ""), \
-        ('6', "Slow Ocean", ""), ('10', "Fast Ocean", ""), ('7', "Slow Magma", ""), \
-        ('11', "Fast Magma", ""), ('8', "Slow Slime", ""), ('12', "Fast Slime", ""), \
-        ('14', "WMO Ocean", ""), ('15', "Green Lava", "")]
-    Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
-    LiquidType = bpy.props.EnumProperty(items=liquidTypeEnum, name="Liquid Type", description="Type of the liquid present in this WMO group")
-    VertexGroup = bpy.props.StringProperty()
-
-def RegisterWowLiquidProperties():
-    bpy.types.Object.WowLiquid = bpy.props.PointerProperty(type=WowLiquidPropertyGroup)
-
-def UnregisterWowLiquidProperties():
-    bpy.types.Object.WowLiquid = None
-
-###############################
 ## Collision
 ###############################
 
@@ -407,7 +343,7 @@ def UnregisterWowWMOGroupProperties():
 class WowPortalPlanePanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
-    bl_context = "data"
+    bl_context = "object"
     bl_label = "Wow Portal Plane"
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -446,20 +382,93 @@ def RegisterWowPortalPlaneProperties():
 def UnregisterWowPortalPlaneProperties():
     bpy.types.Mesh.WowPortalPlane = None
     
+###############################
+## Liquid
+###############################
+
+#XTextures\river\lake_a.1.blp
+#XTextures\river\lake_a.1.blp
+#XTextures\river\lake_a.1.blp
+#XTextures\ocean\ocean_h.1.blp
+#XTextures\lava\lava.1.blp
+#XTextures\slime\slime.1.blp
+#XTextures\slime\slime.1.blp
+#XTextures\river\lake_a.1.blp
+#XTextures\procWater\basicReflectionMap.1.blp
+#XTextures\river\lake_a.1.blp
+#XTextures\river\lake_a.1.blp
+#XTextures\river\fast_a.1.blp
+#XTextures\ocean\ocean_h.1.blp
+#XTextures\ocean\ocean_h.1.blp
+#XTextures\lava\lava.1.blp
+#XTextures\lava\lava.1.blp
+#XTextures\slime\slime.1.blp
+#XTextures\slime\slime.1.blp
+#XTextures\ocean\ocean_h.1.blp
+#XTextures\LavaGreen\lavagreen.1.blp
+
+def GetGroupObjects(self, context):
+    groups = []
     
+    groups.append(('0', "None", "")) # setting a default entry as a first element of our enum
+    
+    for object in bpy.context.scene.objects:
+        if object.type != 'LAMP' and object.data.WowWMOGroup.Enabled:
+                groups.append((object.name, object.name, ""))
+        
+    return groups
+
+class WowLiquidPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "object"
+    bl_label = "Wow Liquid"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw_header(self, context):
+        layout = self.layout
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        self.layout.prop(context.object.WowLiquid, "LiquidType")
+        self.layout.prop(context.object.WowLiquid, "WMOGroup")
+        layout.enabled = context.object.WowLiquid.Enabled
+
+    @classmethod
+    def poll(cls, context):
+        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
+
+class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
+    liquidTypeEnum = [('81', "Lake Wintergrasp - Water", ""), ('41', "Coilfang Raid - Water", ""), ('1', "Water", ""), \
+        ('2', "Ocean", ""), ('3', "Magma", ""), ('4', "Slime", ""), \
+        ('21', "Naxxramas - Slime", ""), ('61', "Hyjal Past - Water", ""), ('100', "Basic Procedural Water", ""), \
+        ('13', "WMO Water", ""), ('5', "Slow Water", ""), ('9', "Fast Water", ""), \
+        ('6', "Slow Ocean", ""), ('10', "Fast Ocean", ""), ('7', "Slow Magma", ""), \
+        ('11', "Fast Magma", ""), ('8', "Slow Slime", ""), ('12', "Fast Slime", ""), \
+        ('14', "WMO Ocean", ""), ('15', "Green Lava", "")]
+    Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
+    LiquidType = bpy.props.EnumProperty(items=liquidTypeEnum, name="Liquid Type", description="Type of the liquid present in this WMO group")
+    WMOGroup = bpy.props.EnumProperty(items=GetGroupObjects, name="WMO Group", description = "WMO Group this liquid is bound to")
+
+def RegisterWowLiquidProperties():
+    bpy.types.Object.WowLiquid = bpy.props.PointerProperty(type=WowLiquidPropertyGroup)
+
+def UnregisterWowLiquidProperties():
+    bpy.types.Object.WowLiquid = None
+
 ###############################
 ## Fog
 ###############################
 class WowFogPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
-    bl_context = "data"
+    bl_context = "object"
     bl_label = "Wow Fog"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
-        self.layout.prop(context.object.data.WowFog, "Enabled")
 
     def draw(self, context):
         layout = self.layout
@@ -549,8 +558,8 @@ def RegisterWoWVisibilityProperties():
 
 def UnregisterWoWVisibilityProperties():
     bpy.types.Scene.WoWVisibility = None
-    
-class WoWToolsPanelObjectMode(bpy.types.Panel):
+
+class WMOToolsPanelObjectMode(bpy.types.Panel):
     bl_label = 'Quick WMO'
     bl_idname = 'WMOQuickPanelObjMode'
     bl_space_type = 'VIEW_3D'
@@ -560,7 +569,7 @@ class WoWToolsPanelObjectMode(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout.split()
-
+        
         col = layout.column()
         
         col.label(text="Actions")
@@ -587,7 +596,258 @@ class WoWToolsPanelObjectMode(bpy.types.Panel):
     def UnregisterWMOToolsPanelObjectMode():
         bpy.utils.register_module(WMOToolsPanelObjectMode)
         
+class WoWToolsPanelLiquidFlags(bpy.types.Panel):
+    bl_label = 'Liquid Flags'
+    bl_idname = 'WMOQuickPanelVertexColorMode'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'TOOLS'
+    bl_context = 'vertexpaint'
+    bl_category = 'WoW'
 
+    def draw(self, context):
+        
+        layout = self.layout.split()
+
+        col = layout.column()
+        
+        col.label(text="Flags")
+        col.operator("scene.wow_mliq_flag_0x01", text = 'Flag 0x01', icon = 'MOD_SOFT')
+        col.operator("scene.wow_mliq_flag_0x02", text = 'Flag 0x02', icon = 'MOD_SOFT')
+        col.operator("scene.wow_mliq_flag_0x04", text = 'Flag 0x04', icon = 'MOD_SOFT')
+        col.operator("scene.wow_mliq_flag_0x08", text = 'Invisible', icon = 'VISIBLE_IPO_ON')
+        col.operator("scene.wow_mliq_flag_0x10", text = 'Flag 0x10', icon = 'MOD_SOFT')
+        col.operator("scene.wow_mliq_flag_0x20", text = 'Flag 0x20', icon = 'MOD_SOFT')
+        col.operator("scene.wow_mliq_flag_0x40", text = 'Flag 0x40', icon = 'MOD_SOFT')
+        col.operator("scene.wow_mliq_flag_0x80", text = 'Flag 0x80', icon = 'MOD_SOFT')
+        col.label(text="Actions")
+        col.operator("scene.wow_mliq_add_flag", text = 'Add flag', icon = 'MOD_SOFT')
+        col.operator("scene.wow_mliq_add_all_flags", text = 'Fill all', icon = 'OUTLINER_OB_LATTICE')
+        col.operator("scene.wow_mliq_clear_flag", text = 'Clear flag', icon = 'LATTICE_DATA')
+        col.operator("scene.wow_mliq_clear_all_flags", text = 'Clear all', icon = 'MOD_LATTICE')
+
+    
+    
+class OBJECT_OP_FLAG_0x01(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_flag_0x01'
+    bl_label = 'Flag 0x01'
+    bl_description = 'Currently displayed flag layer'
+    
+    def SwitchFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            mesh.vertex_colors["flag_0x1"].active = True
+            mesh.use_paint_mask = True
+        
+    def execute(self, context):
+        self.SwitchFlag()
+        return {'FINISHED'}
+    
+    
+class OBJECT_OP_FLAG_0x02(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_flag_0x02'
+    bl_label = 'Flag 0x02'
+    bl_description = 'Currently displayed flag layer'
+    
+    def SwitchFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            mesh.vertex_colors["flag_0x2"].active = True
+            mesh.use_paint_mask = True
+        
+    def execute(self, context):
+        self.SwitchFlag()
+        return {'FINISHED'}
+
+class OBJECT_OP_FLAG_0x03(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_flag_0x03'
+    bl_label = 'Flag 0x03'
+    bl_description = 'Currently displayed flag layer'
+    
+    def SwitchFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            mesh.vertex_colors["flag_0x3"].active = True
+            mesh.use_paint_mask = True
+        
+    def execute(self, context):
+        self.SwitchFlag()
+        return {'FINISHED'}
+
+class OBJECT_OP_FLAG_0x04(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_flag_0x04'
+    bl_label = 'Flag 0x04'
+    bl_description = 'Currently displayed flag layer'
+    
+    def SwitchFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            mesh.vertex_colors["flag_0x4"].active = True
+            mesh.use_paint_mask = True
+        
+    def execute(self, context):
+        self.SwitchFlag()
+        return {'FINISHED'}
+    
+class OBJECT_OP_FLAG_0x08(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_flag_0x08'
+    bl_label = 'Invisible'
+    bl_description = 'Currently displayed flag layer'
+    
+    def SwitchFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            mesh.vertex_colors["flag_0x8"].active = True
+            mesh.use_paint_mask = True
+        
+    def execute(self, context):
+        self.SwitchFlag()
+        return {'FINISHED'}
+    
+class OBJECT_OP_FLAG_0x10(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_flag_0x10'
+    bl_label = 'Flag 0x10'
+    bl_description = 'Currently displayed flag layer'
+    
+    def SwitchFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            mesh.vertex_colors["flag_0x10"].active = True
+            mesh.use_paint_mask = True
+        
+    def execute(self, context):
+        self.SwitchFlag()
+        return {'FINISHED'}
+    
+class OBJECT_OP_FLAG_0x20(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_flag_0x20'
+    bl_label = 'Flag 0x20'
+    bl_description = 'Currently displayed flag layer'
+    
+    def SwitchFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            mesh.vertex_colors["flag_0x20"].active = True
+            mesh.use_paint_mask = True
+        
+    def execute(self, context):
+        self.SwitchFlag()
+        return {'FINISHED'}
+    
+class OBJECT_OP_FLAG_0x40(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_flag_0x40'
+    bl_label = 'Flag 0x40'
+    bl_description = 'Currently displayed flag layer'
+    
+    def SwitchFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            mesh.vertex_colors["flag_0x40"].active = True
+            mesh.use_paint_mask = True
+        
+    def execute(self, context):
+        self.SwitchFlag()
+        return {'FINISHED'}
+    
+class OBJECT_OP_FLAG_0x80(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_flag_0x80'
+    bl_label = 'Flag 0x80'
+    bl_description = 'Currently displayed flag layer'
+    
+    def SwitchFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            mesh.vertex_colors["flag_0x80"].active = True
+            mesh.use_paint_mask = True
+        
+    def execute(self, context):
+        self.SwitchFlag()
+        return {'FINISHED'}
+
+
+class OBJECT_OP_ADD_FLAG(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_add_flag'
+    bl_label = 'Add flag'
+    bl_description = 'Add flag to currently selected faces'
+    
+    def AddFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            for polygon in mesh.polygons:
+                if polygon.select:
+                    for loop_index in polygon.loop_indices:
+                            mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (0, 0, 255)
+        
+    def execute(self, context):
+        self.AddFlag()
+        return {'FINISHED'}
+    
+
+class OBJECT_OP_CLEAR_FLAG(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_clear_flag'
+    bl_label = 'Clear flag'
+    bl_description = 'Remove flag from currently selected faces'
+    
+    def ClearFlag(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            for polygon in mesh.polygons:
+                if polygon.select:
+                    for loop_index in polygon.loop_indices:
+                            mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (255, 255, 255)
+        
+    def execute(self, context):
+        self.ClearFlag()
+        return {'FINISHED'}
+    
+class OBJECT_OP_CLEAR_ALL_FLAGS(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_clear_all_flags'
+    bl_label = 'Clear all flags'
+    bl_description = 'Clear all flags on currently selected layer'
+    
+    def ClearAllFlags(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            for polygon in mesh.polygons:
+                    for loop_index in polygon.loop_indices:
+                            mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (255, 255, 255)
+        
+    def execute(self, context):
+        self.ClearAllFlags()
+        return {'FINISHED'}
+    
+class OBJECT_OP_ADD_ALL_FLAGS(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_add_all_flags'
+    bl_label = 'Fill all flags'
+    bl_description = 'Fill all with flags on currently selected layer'
+    
+    def AddAllFlags(self):
+        water = bpy.context.scene.objects.active
+        mesh = water.data
+        if(water.WowLiquid.Enabled):
+            for polygon in mesh.polygons:
+                    for loop_index in polygon.loop_indices:
+                            mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (0, 0, 255)
+        
+    def execute(self, context):
+        self.AddAllFlags()
+        return {'FINISHED'}
+
+
+
+    
+    
 class OBJECT_OP_Add_Water(bpy.types.Operator):
     bl_idname = 'scene.wow_add_water'
     bl_label = 'Add water'
@@ -598,7 +858,7 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
     yPlanes = bpy.props.IntProperty(name="Y subdivisions:", description="Amount of WoW liquid planes in a column. One plane is 4.1666625 in its radius.", default=10, min=1)
     
     def AddWater(self, xPlanes, yPlanes):
-        bpy.ops.mesh.primitive_grid_add(x_subdivisions =xPlanes + 1, y_subdivisions = Planes + 1, radius=4.1666625 / 2)
+        bpy.ops.mesh.primitive_grid_add(x_subdivisions = xPlanes + 1, y_subdivisions = yPlanes + 1, radius=4.1666625 / 2)
         water = bpy.context.scene.objects.active
         bpy.ops.transform.resize( value=(xPlanes, yPlanes, 1.0) )
         
