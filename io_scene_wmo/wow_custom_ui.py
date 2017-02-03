@@ -2,6 +2,7 @@
 import bpy
 import bpy.utils
 import bpy.types
+import os
 from . import wmo_format
 from .wmo_format import *
 from bpy.app.handlers import persistent
@@ -967,12 +968,15 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
         for ob in bpy.context.selected_objects:
             mesh = ob.data
             for i in range(len(mesh.materials)):
-                if((mesh.materials[i].WowMaterial.Texture1 != "") & (mesh.materials[i].active_texture is not None) ):
-                    if((mesh.materials[i].active_texture.type == 'IMAGE')):
+                if( (mesh.materials[i].active_texture is not None) and not mesh.materials[i].WowMaterial.Texture1 and \
+                    (mesh.materials[i].active_texture.type == 'IMAGE') and (mesh.materials[i].active_texture.image is not None) ):
+                        print ("test")
                         if(bpy.context.scene.WoWRoot.UseTextureRelPath):
-                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath , bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
+                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
+                            print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
                         else:
-                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( bpy.types.ImageTexture(mesh.materials[i].active_texture).image.filepath )[0] + ".blp"                
+                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( mesh.materials[i].active_texture.image.filepath )[0] + ".blp"
+                            print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")              
 
     def execute(self, context):
         
