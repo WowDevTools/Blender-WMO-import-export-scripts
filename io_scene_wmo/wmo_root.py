@@ -678,7 +678,7 @@ class WMO_root_file:
         self.mohd.nModels = modn.StringTable.decode("ascii").count('.MDX')
         self.mohd.nDoodads = len(modd.Definitions)
         self.mohd.nSets = len(mods.Sets)
-        self.mohd.AmbientColor = [int(bpy.context.scene.WoWRoot.AmbientColor[0]*255), int(bpy.context.scene.WoWRoot.AmbientColor[1]*255), int(bpy.context.scene.WoWRoot.AmbientColor[2]*255), bpy.context.scene.WoWRoot.AmbientAlpha] 
+        self.mohd.AmbientColor = [int(bpy.context.scene.WoWRoot.AmbientColor[2]*255), int(bpy.context.scene.WoWRoot.AmbientColor[1]*255), int(bpy.context.scene.WoWRoot.AmbientColor[0]*255), bpy.context.scene.WoWRoot.AmbientAlpha] 
         self.mohd.ID =  bpy.context.scene.WoWRoot.WMOid
         self.mohd.BoundingBoxCorner1 = bb[0]
         self.mohd.BoundingBoxCorner2 = bb[1]
@@ -687,7 +687,7 @@ class WMO_root_file:
         mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
         
         if(bpy.context.scene.WoWRoot.UseAmbient):
-            self.mohd.Flags = self.mohd.Flags | 2
+            self.mohd.Flags |= 0x02
         if(fill_water):
             self.mohd.Flags = self.mohd.Flags ^ 4
 

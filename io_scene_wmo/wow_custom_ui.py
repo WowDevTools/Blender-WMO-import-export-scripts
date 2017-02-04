@@ -414,11 +414,11 @@ def GetGroupObjects(self, context):
     groups.append(('0', "None", "")) # setting a default entry as a first element of our enum
     
     for object in bpy.context.scene.objects:
-        if object.type != 'LAMP' and object.data.WowWMOGroup.Enabled:
+        if object.type != 'LAMP' and object.WowWMOGroup.Enabled:
                 groups.append((object.name, object.name, ""))
         
     return groups
-
+    
 class WowLiquidPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -429,7 +429,7 @@ class WowLiquidPanel(bpy.types.Panel):
     def draw_header(self, context):
         layout = self.layout
 
-    def draw(self, context):
+    def draw(self, context): 
         layout = self.layout
         row = layout.row()
         self.layout.prop(context.object.WowLiquid, "LiquidType")
@@ -441,13 +441,15 @@ class WowLiquidPanel(bpy.types.Panel):
         return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
 
 class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
-    liquidTypeEnum = [('81', "Lake Wintergrasp - Water", ""), ('41', "Coilfang Raid - Water", ""), ('1', "Water", ""), \
+    liquidTypeEnum = [('13', "WMO Water", ""), ('17', "WMO Water Interior", ""), \
+        ('14', "WMO Ocean", ""), ('20', "WMO Slime", ""), ('21', "Naxxramas - Slime", ""), \
+        ('41', "Coilfang Raid - Water", ""), ('81', "Lake Wintergrasp - Water", ""),  ('1', "Water", ""), \
         ('2', "Ocean", ""), ('3', "Magma", ""), ('4', "Slime", ""), \
-        ('21', "Naxxramas - Slime", ""), ('61', "Hyjal Past - Water", ""), ('100', "Basic Procedural Water", ""), \
-        ('13', "WMO Water", ""), ('5', "Slow Water", ""), ('9', "Fast Water", ""), \
+        ('61', "Hyjal Past - Water", ""), ('100', "Basic Procedural Water", ""), \
+        ('5', "Slow Water", ""), ('9', "Fast Water", ""), \
         ('6', "Slow Ocean", ""), ('10', "Fast Ocean", ""), ('7', "Slow Magma", ""), \
         ('11', "Fast Magma", ""), ('8', "Slow Slime", ""), ('12', "Fast Slime", ""), \
-        ('14', "WMO Ocean", ""), ('15', "Green Lava", "")]
+         ('15', "Green Lava", "")]
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
     LiquidType = bpy.props.EnumProperty(items=liquidTypeEnum, name="Liquid Type", description="Type of the liquid present in this WMO group")
     WMOGroup = bpy.props.EnumProperty(items=GetGroupObjects, name="WMO Group", description = "WMO Group this liquid is bound to")

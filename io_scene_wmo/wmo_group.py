@@ -687,12 +687,14 @@ class WMO_group_file:
                     info_current.uv = (mesh.uv_layers.active.data[loop_index].uv[0], 1.0 - mesh.uv_layers.active.data[loop_index].uv[1])
         
                 if len(mesh.vertex_colors) > 0:
-                    for i in range(0, 3):
-                        info_current.color[i] = round(mesh.vertex_colors.active.data[loop_index].color[i] * 255)
+                        info_current.color[2] = round(mesh.vertex_colors.active.data[loop_index].color[0] * 255) # B
+                        info_current.color[1] = round(mesh.vertex_colors.active.data[loop_index].color[1] * 255) # G
+                        info_current.color[0] = round(mesh.vertex_colors.active.data[loop_index].color[2] * 255) # R
+        
         
         del vg_collision #													--vg_collision:deletion
         del map_indices #													--map_indices:deletion
-        del new_index_last #												        --new_index_last:deletion                                                                                                 --material_indices:deletion
+        del new_index_last #												        --new_index_last:deletion                                                                                               
         # done: initializing batches
         
         # initializing chunks:

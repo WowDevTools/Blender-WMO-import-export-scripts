@@ -1189,7 +1189,7 @@ class MOBR_chunk:
 class MOCV_chunk:
     def __init__(self, size = 0):
         self.Header = ChunkHeader()
-        self.vertColors = size * [[0x7F, 0x7F, 0x7F, 0xFF]]
+        self.vertColors = size * [[0x7F, 0x7F, 0x7F, 0x00]]
 
     def Read(self, f):
         # read header
