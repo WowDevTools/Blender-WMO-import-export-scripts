@@ -888,14 +888,16 @@ class WMO_group_file:
                     material.WowMaterial.Enabled = True
                     material.WowMaterial.Flags3 = '1'
 
+                    material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
+
+
                     if mogp.LiquidType == 3:
                         material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\TRIM\BM_BRSPIRE_LAVAWALLTRANS.BLP"
                     elif mogp.LiquidType == 4:
                         material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\TRIM\BM_BRSPIRE_LAVAWALLTRANS.BLP"
-                    else
-                        material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
 
                     mliq.materialID = root.AddMaterial(material) 
+
 
 
                     
