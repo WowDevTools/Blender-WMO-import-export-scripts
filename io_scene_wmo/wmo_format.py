@@ -1342,5 +1342,5 @@ class VertexInfo:
         self.pos = [0.0, 0.0, 0.0]
         self.normals = []
         self.uv = (0, 1)
-        self.color = [0x7F, 0x7F, 0x7F, 0xFF]
+        self.color = [0x7F, 0x7F, 0x7F, 0x00]
         self.collision = False
