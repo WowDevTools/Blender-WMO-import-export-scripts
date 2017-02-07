@@ -165,7 +165,22 @@ class WMO_group_file:
             real_liquid_type = 20
             
         return real_liquid_type
-    
+
+    def FromWMOLiquid(self, real_liquid_type):
+        basic_liquid_type = real_liquid_type
+        if real_liquid_type == 13:
+            basic_liquid_type = 1
+        if real_liquid_type == 14:
+            basic_liquid_type = 2
+        if real_liquid_type == 17:
+            basic_liquid_type = 15
+        if real_liquid_type == 19:
+            basic_liquid_type = 3
+        if real_liquid_type == 20:
+            basic_liquid_type = 4
+
+        return basic_liquid_type
+                
     # return array of vertice and array of faces in a tuple
     def LoadLiquids(self, objName, pos, mohd_flags):
         
@@ -261,6 +276,7 @@ class WMO_group_file:
             else:
                 real_liquid_type = basic_liquid_type
         else:
+
             if(basic_liquid_type == 15):
                 real_liquid_type = 17
             else:
@@ -268,6 +284,9 @@ class WMO_group_file:
                     real_liquid_type = self.ToWMOLiquid(basic_liquid_type)
                 else:
                     real_liquid_type = basic_liquid_type + 1
+
+
+
             
         
         # object.WowLiquid.LiquidType = str(real_liquid_type)
@@ -816,7 +835,7 @@ class WMO_group_file:
             
         mogp.Flags = mogp.Flags | int(new_obj.WowWMOGroup.PlaceType)
 
-        
+
         mogp.PortalStart = -1
         mogp.PortalCount = 0
         
@@ -848,8 +867,8 @@ class WMO_group_file:
                 if(obj_mesh.WowFog.Enabled):
                     fogMap[ob.name] = fog_id
                     fog_id += 1
-                if(ob.WowLiquid.Enabled and ob.WowLiquid.WMOGroup == obj.name):
-                    sum = sys.float_info.max
+                
+                if(ob.WowLiquid.Enabled and ob.WowLiquid.WMOGroup == obj.name): # export liquids
                     StartVertex = 0
                     for vertex in obj_mesh.vertices:
                         curSum = vertex.co[0] + vertex.co[1]
@@ -862,9 +881,23 @@ class WMO_group_file:
                     mliq.yVerts = ob.dimensions[1] / 4.1666625
                     mliq.xTiles = mliq.xVerts - 1
                     mliq.yTiles = mliq.yTiles - 1
-                    self.Position = StartVertex.co
-                    # self.materialID = 
- 
+                    mliq.Position = StartVertex.co
+
+                    mogp.LiquidType = FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
+                    material = bpy.data.materials.new(ob.name)
+                    material.WowMaterial.Enabled = True
+                    material.WowMaterial.Flags3 = '1'
+
+                    if mogp.LiquidType == 3:
+                        material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\TRIM\BM_BRSPIRE_LAVAWALLTRANS.BLP"
+                    elif mogp.LiquidType == 4:
+                        material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\TRIM\BM_BRSPIRE_LAVAWALLTRANS.BLP"
+                    else
+                        material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
+
+                    mliq.materialID = root.AddMaterial(material) 
+
+
                     
         
         if(mogp.PortalStart == -1):

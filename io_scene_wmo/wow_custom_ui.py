@@ -443,13 +443,8 @@ class WowLiquidPanel(bpy.types.Panel):
 class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
     liquidTypeEnum = [('13', "WMO Water", ""), ('17', "WMO Water Interior", ""), \
         ('14', "WMO Ocean", ""), ('20', "WMO Slime", ""), ('21', "Naxxramas - Slime", ""), \
-        ('41', "Coilfang Raid - Water", ""), ('81', "Lake Wintergrasp - Water", ""),  ('1', "Water", ""), \
-        ('2', "Ocean", ""), ('3', "Magma", ""), ('4', "Slime", ""), \
-        ('61', "Hyjal Past - Water", ""), ('100', "Basic Procedural Water", ""), \
-        ('5', "Slow Water", ""), ('9', "Fast Water", ""), \
-        ('6', "Slow Ocean", ""), ('10', "Fast Ocean", ""), ('7', "Slow Magma", ""), \
-        ('11', "Fast Magma", ""), ('8', "Slow Slime", ""), ('12', "Fast Slime", ""), \
-         ('15', "Green Lava", "")]
+        ('41', "Coilfang Raid - Water", ""), ('81', "Lake Wintergrasp - Water", ""), \
+        ('61', "Hyjal Past - Water", ""), ('100', "Basic Procedural Water", ""), ('0', "Unsupported", "")]
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
     LiquidType = bpy.props.EnumProperty(items=liquidTypeEnum, name="Liquid Type", description="Type of the liquid present in this WMO group")
     WMOGroup = bpy.props.EnumProperty(items=GetGroupObjects, name="WMO Group", description = "WMO Group this liquid is bound to")

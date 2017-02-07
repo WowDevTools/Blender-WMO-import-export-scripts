@@ -60,3 +60,5 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+io_scene_wmo.sublime_project.sublime-project
+io_scene_wmo.sublime_project.sublime-workspace
