@@ -789,8 +789,6 @@ class WMO_group_file:
             batch_current.LastVertex = sentry_indices[1]
             batch_current.MaterialID = material_index
             
-            print(batch_current.StartTriangle)
-            
             if(batchTypeMap.get(material_index) == 0):
                 moba.Batches[iA] = batch_current
                 iA += 1
@@ -869,6 +867,7 @@ class WMO_group_file:
                     fog_id += 1
                 
                 if(ob.WowLiquid.Enabled and ob.WowLiquid.WMOGroup == obj.name): # export liquids
+                    mesh = ob.data
                     StartVertex = 0
                     for vertex in obj_mesh.vertices:
                         curSum = vertex.co[0] + vertex.co[1]
@@ -898,9 +897,58 @@ class WMO_group_file:
 
                     mliq.materialID = root.AddMaterial(material) 
 
+                    if mogp.LiquidType == 3:
 
+                        uvMap = {}
 
-                    
+                        for poly in mesh.polygons:
+                            for loop_index in poly.loop_indices:
+                                if mesh.loops[loop_index].vertex_index not in uvMap:
+                                    uvMap[mesh.loops[loop_index].vertex_index] = mesh.uv_layers.active.data[loop_index].uv
+
+                        for i in range(mliq.xVerts * mliq.yVerts):
+                            vertex = new MagmaVertex()
+
+                            vertex.u = uvMap.get(mesh.vertices[i].index)[0]
+                            vertex.v = uvMap.get(mesh.vertices[i].index)[1]
+
+                            vertex.height = mesh.vertices[i].co[2]
+
+                    else:
+
+                        for i in range(mliq.xVerts * mliq.yVerts):
+                            vertex = new WaterVertex()
+
+                            vertex.height = mesh.vertices[i].co[2]
+
+                    flag_0x1 = mesh.vertex_colors["flag_0x1"]
+                    flag_0x2 = mesh.vertex_colors["flag_0x2"]
+                    flag_0x4 = mesh.vertex_colors["flag_0x4"]
+                    flag_0x8 = mesh.vertex_colors["flag_0x8"]
+                    flag_0x10 = mesh.vertex_colors["flag_0x10"]
+                    flag_0x20 = mesh.vertex_colors["flag_0x20"]
+                    flag_0x40 = mesh.vertex_colors["flag_0x40"]
+                    flag_0x80 = mesh.vertex_colors["flag_0x80"]
+
+                    for poly in mesh.polygons:
+
+                        if flag_0x1.data[poly.loop_indices[0]].color == (0, 0, 255):
+                            mliq.TileFlags[poly.index] |= 0x1
+                        if flag_0x2.data[poly.loop_indices[0]].color == (0, 0, 255):
+                            mliq.TileFlags[poly.index] |= 0x2
+                        if flag_0x4.data[poly.loop_indices[0]].color == (0, 0, 255):
+                            mliq.TileFlags[poly.index] |= 0x4
+                        if flag_0x8.data[poly.loop_indices[0]].color == (0, 0, 255):
+                            mliq.TileFlags[poly.index] |= 0x8
+                        if flag_0x10.data[poly.loop_indices[0]].color == (0, 0, 255):
+                            mliq.TileFlags[poly.index] |= 0x10
+                        if flag_0x20.data[poly.loop_indices[0]].color == (0, 0, 255):
+                            mliq.TileFlags[poly.index] |= 0x20
+                        if flag_0x40.data[poly.loop_indices[0]].color == (0, 0, 255):
+                            mliq.TileFlags[poly.index] |= 0x40
+                        if flag_0x80.data[poly.loop_indices[0]].color == (0, 0, 255):
+                            mliq.TileFlags[poly.index] |= 0x80
+         
         
         if(mogp.PortalStart == -1):
             mogp.PortalStart = root.PortalRCount
