@@ -100,7 +100,10 @@ class WMO_group_file:
 
         # read liquids
         if(self.mogp.Flags & MOGP_FLAG.HasWater):
-            self.mliq = MLIQ_chunk()
+            if self.mogp.LiquidType == 3:
+                self.mliq = MLIQ_chunk(False)
+            else:
+                self.mliq = MLIQ_chunk()
             self.mliq.Read(f)
             
     def CreateMeshFromBatch(self, meshName, batch, materials):
@@ -285,11 +288,8 @@ class WMO_group_file:
                 else:
                     real_liquid_type = basic_liquid_type + 1
 
-
-
-            
         
-        # object.WowLiquid.LiquidType = str(real_liquid_type)
+        object.WowLiquid.LiquidType = str(real_liquid_type)
                   
                
     
