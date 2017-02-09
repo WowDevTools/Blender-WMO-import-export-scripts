@@ -897,7 +897,7 @@ class WMO_group_file:
                     mliq.yVerts = round(ob.dimensions[1] / 4.1666625)
                     mliq.xTiles = mliq.xVerts - 1
                     mliq.yTiles = mliq.yTiles - 1
-                    mliq.Position = StartVertex.co
+                    mliq.Position = mesh.vertices[StartVertex].co
 
                     mogp.LiquidType = FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
                     material = bpy.data.materials.new(ob.name)
