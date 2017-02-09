@@ -221,7 +221,23 @@ class WMO_group_file:
         mesh.from_pydata(vertices,[],faces)
         mesh.update(calc_edges=True)
         mesh.validate()
+
+        #create uv map if liquid is lava
         
+        if self.mogp.LiquidType == 3:
+            uvMap = {}
+
+            for vertex in mesh.vertices:
+                uvMap[vertex.index] = (self.mliq.VertexMap[vertex.index].u, self.mliq.VertexMap[vertex.index].v)
+
+            uv1 = mesh.uv_textures.new("UVMap")
+            uv_layer1 = mesh.uv_layers[0]
+
+            for poly in mesh.polygons:
+                for loop_index in poly.loop_indices:
+                        uv_layer1.data[loop_index].uv = (uvMap.get(mesh.loops[loop_index].vertex_index)[0], 1 - uvMap.get(mesh.loops[loop_index].vertex_index)[1])
+            
+
         flag_0x1 = mesh.vertex_colors.new("flag_0x1")
         flag_0x2 = mesh.vertex_colors.new("flag_0x2")
         flag_0x4 = mesh.vertex_colors.new("flag_0x4")
@@ -290,7 +306,7 @@ class WMO_group_file:
 
         
         object.WowLiquid.LiquidType = str(real_liquid_type)
-                  
+
                
     
     # Return faces indices
