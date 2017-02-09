@@ -876,8 +876,8 @@ class WMO_group_file:
                             StartVertex = vertex.index
                             sum = curSum
                             
-                    mliq.xVerts = ob.dimensions[0] / 4.1666625
-                    mliq.yVerts = ob.dimensions[1] / 4.1666625
+                    mliq.xVerts = round(ob.dimensions[0] / 4.1666625)
+                    mliq.yVerts = round(ob.dimensions[1] / 4.1666625)
                     mliq.xTiles = mliq.xVerts - 1
                     mliq.yTiles = mliq.yTiles - 1
                     mliq.Position = StartVertex.co
