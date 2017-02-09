@@ -907,7 +907,7 @@ class WMO_group_file:
                                     uvMap[mesh.loops[loop_index].vertex_index] = mesh.uv_layers.active.data[loop_index].uv
 
                         for i in range(mliq.xVerts * mliq.yVerts):
-                            vertex = new MagmaVertex()
+                            vertex = MagmaVertex()
 
                             vertex.u = uvMap.get(mesh.vertices[i].index)[0]
                             vertex.v = uvMap.get(mesh.vertices[i].index)[1]
@@ -917,7 +917,7 @@ class WMO_group_file:
                     else:
 
                         for i in range(mliq.xVerts * mliq.yVerts):
-                            vertex = new WaterVertex()
+                            vertex = WaterVertex()
 
                             vertex.height = mesh.vertices[i].co[2]
 
