@@ -899,7 +899,7 @@ class WMO_group_file:
                     mliq.yTiles = mliq.yTiles - 1
                     mliq.Position = mesh.vertices[StartVertex].co
 
-                    mogp.LiquidType = FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
+                    mogp.LiquidType = self.FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
                     material = bpy.data.materials.new(ob.name)
                     material.WowMaterial.Enabled = True
                     material.WowMaterial.Flags3 = '1'
