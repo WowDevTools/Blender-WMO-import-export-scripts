@@ -885,6 +885,7 @@ class WMO_group_file:
                 if(ob.WowLiquid.Enabled and ob.WowLiquid.WMOGroup == obj.name): # export liquids
                     mesh = ob.data
                     StartVertex = 0
+                    sum = 0
                     for vertex in obj_mesh.vertices:
                         curSum = vertex.co[0] + vertex.co[1]
                         
