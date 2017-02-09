@@ -54,6 +54,10 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         # check if object is a fog
         if(bpy.context.scene.objects[i].data.WowFog.Enabled):
             continue
+
+        # check if object is a liquid
+        if(bpy.context.scene.objects[i].WowLiquid.Enabled):
+            continue
         
         print("Export group "+bpy.context.scene.objects[i].name)
         group_filename = base_name + "_" + str(iObj).zfill(3) + ".wmo"
