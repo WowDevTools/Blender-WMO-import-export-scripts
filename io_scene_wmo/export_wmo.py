@@ -19,9 +19,8 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
     portal_count = 0
     for ob in bpy.context.scene.objects:
         if(ob.type == "MESH"):
-            obj_mesh = ob.data
-            if(obj_mesh.WowPortalPlane.Enabled):
-                obj_mesh.WowPortalPlane.PortalID = portal_count
+            if(ob.WowPortalPlane.Enabled):
+                ob.WowPortalPlane.PortalID = portal_count
                 portal_count+=1
     
     iObj = 0

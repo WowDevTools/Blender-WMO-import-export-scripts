@@ -379,7 +379,7 @@ class WMO_root_file:
             if(f.SmallRadius != 0):     
                 fog.WowFog.InnerRadius = round(f.BigRadius / f.SmallRadius * 100, 2)
             else:
-                fog.WowFog.InnerRadius = 0
+                mesh.WowFog.InnerRadius = 0
             
             fog.WowFog.EndDist = f.EndDist
             fog.WowFog.StartFactor = f.StartFactor
@@ -429,7 +429,7 @@ class WMO_root_file:
             obj.WowPortalPlane.normalY = self.mopt.Infos[i].Normal[1]
             obj.WowPortalPlane.normalZ = self.mopt.Infos[i].Normal[2]
 
-
+            
             for j in range(len(self.mopr.Relationships)):
                 if(self.mopr.Relationships[j].PortalIndex == i):
                     if(obj.WowPortalPlane.First == -1):
