@@ -1241,7 +1241,7 @@ class WaterVertex(LiquidVertex):
         
     def Write(self, f):
         
-        LiquidVertex.Write(f) # Python, wtf?
+        LiquidVertex.Write(self, f) # Python, wtf?
         f.write(struct.pack('B', self.flow1))
         f.write(struct.pack('B', self.flow2))
         f.write(struct.pack('B', self.flow1Pct))
@@ -1259,7 +1259,7 @@ class MagmaVertex(LiquidVertex):
         self.v = struct.unpack("h", f.read(2))[0]
         
     def Write(self, f):
-        LiquidVertex.Write(f)
+        LiquidVertex.Write(self, f)
         f.write(struct.pack('h', self.u))
         f.write(struct.pack('h', self.v))
 
@@ -1325,8 +1325,7 @@ class MLIQ_chunk:
         f.write(struct.pack('H', self.materialID))
         
         for vtx in self.VertexMap:
-            f.write(struct.pack('ff', vtx))
-
+            vtx.Write(f)
         for f in self.TileFlags:
             f.write(struct.pack('B', f))
 
