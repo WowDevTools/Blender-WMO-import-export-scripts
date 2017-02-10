@@ -379,7 +379,7 @@ class WMO_root_file:
             if(f.SmallRadius != 0):     
                 fog.WowFog.InnerRadius = round(f.BigRadius / f.SmallRadius * 100, 2)
             else:
-                mesh.WowFog.InnerRadius = 0
+                fog.WowFog.InnerRadius = 0
             
             fog.WowFog.EndDist = f.EndDist
             fog.WowFog.StartFactor = f.StartFactor
