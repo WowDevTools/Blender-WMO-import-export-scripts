@@ -902,6 +902,8 @@ class WMO_group_file:
                     mliq.Position = mesh.vertices[StartVertex].co
 
                     mogp.LiquidType = self.FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
+                    root.mohd.Flags |= 0x4 # needs checking
+
                     material = bpy.data.materials.new(ob.name)
                     material.WowMaterial.Enabled = True
                     material.WowMaterial.Flags3 = '1'
@@ -1013,8 +1015,9 @@ class WMO_group_file:
 
         mobn.Write(f)
         mobr.Write(f)
-
         mocv.Write(f)
+        mliq.Write(f)
+
 
         # get file size
         f.seek(0, 2)
