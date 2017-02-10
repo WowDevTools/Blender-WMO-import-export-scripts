@@ -892,6 +892,7 @@ class WMO_group_file:
                     mliq.yVerts = mliq.yTiles + 1
                     mliq.Position = mesh.vertices[StartVertex].co
 
+                    mogp.Flags |= 0x1000
                     mogp.LiquidType = self.FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
                     root.mohd.Flags |= 0x4 # needs checking
 
@@ -944,24 +945,31 @@ class WMO_group_file:
                     flag_0x40 = mesh.vertex_colors["flag_0x40"]
                     flag_0x80 = mesh.vertex_colors["flag_0x80"]
 
-                    for poly in mesh.polygons:
 
-                        if flag_0x1.data[poly.loop_indices[0]].color == (0, 0, 255):
-                            mliq.TileFlags[poly.index] |= 0x1
-                        if flag_0x2.data[poly.loop_indices[0]].color == (0, 0, 255):
-                            mliq.TileFlags[poly.index] |= 0x2
-                        if flag_0x4.data[poly.loop_indices[0]].color == (0, 0, 255):
-                            mliq.TileFlags[poly.index] |= 0x4
-                        if flag_0x8.data[poly.loop_indices[0]].color == (0, 0, 255):
-                            mliq.TileFlags[poly.index] |= 0x8
-                        if flag_0x10.data[poly.loop_indices[0]].color == (0, 0, 255):
-                            mliq.TileFlags[poly.index] |= 0x10
-                        if flag_0x20.data[poly.loop_indices[0]].color == (0, 0, 255):
-                            mliq.TileFlags[poly.index] |= 0x20
-                        if flag_0x40.data[poly.loop_indices[0]].color == (0, 0, 255):
-                            mliq.TileFlags[poly.index] |= 0x40
-                        if flag_0x80.data[poly.loop_indices[0]].color == (0, 0, 255):
-                            mliq.TileFlags[poly.index] |= 0x80
+                    tile_flag = 0
+
+                    for poly in mesh.polygons:
+                        for loop_index in poly.loop_indices:
+                            if flag_0x1.data[loop_index].color == (0, 0, 255): 
+                                tile_flag |= 0x1
+                            if flag_0x2.data[loop_index].color == (0, 0, 255):
+                                tile_flag |= 0x2
+                            if flag_0x4.data[loop_index].color == (0, 0, 255):
+                                tile_flag |= 0x4
+                            if flag_0x8.data[loop_index].color == (0, 0, 255):
+                                tile_flag |= 0x8
+                            if flag_0x10.data[loop_index].color == (0, 0, 255):
+                                tile_flag |= 0x10
+                            if flag_0x20.data[loop_index].color == (0, 0, 255):
+                                tile_flag |= 0x20
+                            if flag_0x40.data[loop_index].color == (0, 0, 255):
+                                tile_flag |= 0x40
+                            if flag_0x80.data[loop_index].color == (0, 0, 255):
+                                tile_flag |= 0x80
+
+                            mliq.TileFlags[poly.index].append(tile_flag)
+                            tile_flag = 0
+
          
         
         if(mogp.PortalStart == -1):
