@@ -442,7 +442,7 @@ class WowLiquidPanel(bpy.types.Panel):
 
 class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
     liquidTypeEnum = [('13', "WMO Water", ""), ('17', "WMO Water Interior", ""), \
-        ('14', "WMO Ocean", ""), ('20', "WMO Slime", ""), ('21', "Naxxramas - Slime", ""), \
+        ('14', "WMO Ocean", ""), ('19', "WMO Lava", ""), ('20', "WMO Slime", ""), ('21', "Naxxramas - Slime", ""), \
         ('41', "Coilfang Raid - Water", ""), ('81', "Lake Wintergrasp - Water", ""), \
         ('61', "Hyjal Past - Water", ""), ('100', "Basic Procedural Water", ""), ('0', "Unsupported", "")]
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
