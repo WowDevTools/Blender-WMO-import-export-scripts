@@ -883,6 +883,8 @@ class WMO_group_file:
                     fog_id += 1
                 
                 if(ob.WowLiquid.Enabled and ob.WowLiquid.WMOGroup == obj.name): # export liquids
+
+                    print("Exporting liquid:", ob.name )
                     mesh = ob.data
                     StartVertex = 0
                     sum = 0
