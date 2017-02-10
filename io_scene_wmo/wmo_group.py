@@ -861,24 +861,24 @@ class WMO_group_file:
         for ob in bpy.context.scene.objects:
             if(ob.type == "MESH"):
                 obj_mesh = ob.data
-                if(obj_mesh.WowPortalPlane.Enabled and (obj_mesh.WowPortalPlane.First == objNumber or obj_mesh.WowPortalPlane.Second == objNumber)):
+                if(ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == objNumber or ob.WowPortalPlane.Second == objNumber)):
                     portalRef = [0,0,0]
                     if(mogp.PortalStart == -1):
                         mogp.PortalStart = root.PortalRCount
-                    portalRef[0] = obj_mesh.WowPortalPlane.PortalID
+                    portalRef[0] = ob.WowPortalPlane.PortalID
                     modify = 1
-                    if(obj_mesh.WowPortalPlane.First == objNumber):
-                        portalRef[1] = obj_mesh.WowPortalPlane.Second
+                    if(ob.WowPortalPlane.First == objNumber):
+                        portalRef[1] = ob.WowPortalPlane.Second
                         portalRef[2] = 1
                     else:
-                        portalRef[1] = obj_mesh.WowPortalPlane.First
+                        portalRef[1] = ob.WowPortalPlane.First
                         portalRef[2] = -1
-                    if(obj_mesh.WowPortalPlane.Invert):
+                    if(ob.WowPortalPlane.Invert):
                         modify = -1
                     portalRef[2] = portalRef[2] * modify
                     root.PortalR.append(portalRef)
                     mogp.PortalCount+=1
-                if(obj_mesh.WowFog.Enabled):
+                if(ob.WowFog.Enabled):
                     fogMap[ob.name] = fog_id
                     fog_id += 1
                 

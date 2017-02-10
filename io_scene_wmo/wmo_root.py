@@ -370,23 +370,23 @@ class WMO_root_file:
 
             # applying object properties
             
-            mesh.WowFog.Enabled = True
+            fog.WowFog.Enabled = True
             if(f.Flags & 0x01):
-                mesh.WowFog.IgnoreRadius = True
+                fog.WowFog.IgnoreRadius = True
             if(f.Flags & 0x10):
-                mesh.WowFog.Unknown = True
+                fog.WowFog.Unknown = True
             
             if(f.SmallRadius != 0):     
-                mesh.WowFog.InnerRadius = round(f.BigRadius / f.SmallRadius * 100, 2)
+                fog.WowFog.InnerRadius = round(f.BigRadius / f.SmallRadius * 100, 2)
             else:
                 mesh.WowFog.InnerRadius = 0
             
-            mesh.WowFog.EndDist = f.EndDist
-            mesh.WowFog.StartFactor = f.StartFactor
-            mesh.WowFog.Color1 = (f.Color1[2] / 255, f.Color1[1] / 255, f.Color1[0] / 255)
-            mesh.WowFog.EndDist2 = f.EndDist2
-            mesh.WowFog.StartFactor2 = f.StartFactor2
-            mesh.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)
+            fog.WowFog.EndDist = f.EndDist
+            fog.WowFog.StartFactor = f.StartFactor
+            fog.WowFog.Color1 = (f.Color1[2] / 255, f.Color1[1] / 255, f.Color1[0] / 255)
+            fog.WowFog.EndDist2 = f.EndDist2
+            fog.WowFog.StartFactor2 = f.StartFactor2
+            fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)
         
             
 
@@ -419,21 +419,25 @@ class WMO_root_file:
             faces.append(face)
             
             mesh = bpy.data.meshes.new(portal_name)
-            mesh.WowPortalPlane.Enabled = True
-            mesh.WowPortalPlane.First = -1
-            mesh.WowPortalPlane.Second = -1
-            mesh.WowPortalPlane.normalX = self.mopt.Infos[i].Normal[0]
-            mesh.WowPortalPlane.normalY = self.mopt.Infos[i].Normal[1]
-            mesh.WowPortalPlane.normalZ = self.mopt.Infos[i].Normal[2]
-            for j in range(len(self.mopr.Relationships)):
-                if(self.mopr.Relationships[j].PortalIndex == i):
-                    if(mesh.WowPortalPlane.First == -1):
-                        mesh.WowPortalPlane.First = self.mopr.Relationships[j].GroupIndex
-                    else:
-                        mesh.WowPortalPlane.Second = self.mopr.Relationships[j].GroupIndex
-                        break
 
             obj = bpy.data.objects.new(portal_name, mesh)  
+
+            obj.WowPortalPlane.Enabled = True
+            obj.WowPortalPlane.First = -1
+            obj.WowPortalPlane.Second = -1
+            obj.WowPortalPlane.normalX = self.mopt.Infos[i].Normal[0]
+            obj.WowPortalPlane.normalY = self.mopt.Infos[i].Normal[1]
+            obj.WowPortalPlane.normalZ = self.mopt.Infos[i].Normal[2]
+
+            
+            for j in range(len(self.mopr.Relationships)):
+                if(self.mopr.Relationships[j].PortalIndex == i):
+                    if(obj.WowPortalPlane.First == -1):
+                        obj.WowPortalPlane.First = self.mopr.Relationships[j].GroupIndex
+                    else:
+                        obj.WowPortalPlane.Second = self.mopr.Relationships[j].GroupIndex
+                        break
+
 
             mesh.from_pydata(verts,[],faces)
             bpy.context.scene.objects.link(obj)
@@ -572,7 +576,7 @@ class WMO_root_file:
                 if(ob.WowWMOGroup.Enabled):
                     global_object_count += 1
                     
-                if(obj_mesh.WowPortalPlane.Enabled):
+                if(ob.WowPortalPlane.Enabled):
                     print("Export portal "+ob.name)
                     portal_info = PortalInfo()
                     portal_info.StartVertex = global_vertices_count
@@ -604,7 +608,7 @@ class WMO_root_file:
                     global_vertices_count+=local_vertices_count
                     mopt.Infos.append(portal_info)
                     
-                if(obj_mesh.WowFog.Enabled):
+                if(ob.WowFog.Enabled):
                     print("Export fog "+ob.name)
                     fog = Fog()
                     
@@ -620,18 +624,18 @@ class WMO_root_file:
                             max_z = vertex.co[2] * ob.scale[2]
                     
                     fog.BigRadius = max_z - ob.location[2]
-                    fog.SmallRadius = fog.BigRadius * (obj_mesh.WowFog.InnerRadius / 100)
-                    fog.Color1 = (int(obj_mesh.WowFog.Color1[0] * 255), int(obj_mesh.WowFog.Color1[1] * 255), int(obj_mesh.WowFog.Color1[2] * 255), 0xFF)
-                    fog.Color2 = (int(obj_mesh.WowFog.Color2[0] * 255), int(obj_mesh.WowFog.Color2[1] * 255), int(obj_mesh.WowFog.Color2[2] * 255), 0xFF)
-                    fog.EndDist = obj_mesh.WowFog.EndDist
-                    fog.EndDist2 = obj_mesh.WowFog.EndDist2
+                    fog.SmallRadius = fog.BigRadius * (ob.WowFog.InnerRadius / 100)
+                    fog.Color1 = (int(ob.WowFog.Color1[0] * 255), int(ob.WowFog.Color1[1] * 255), int(ob.WowFog.Color1[2] * 255), 0xFF)
+                    fog.Color2 = (int(ob.WowFog.Color2[0] * 255), int(ob.WowFog.Color2[1] * 255), int(ob.WowFog.Color2[2] * 255), 0xFF)
+                    fog.EndDist = ob.WowFog.EndDist
+                    fog.EndDist2 = ob.WowFog.EndDist2
                     fog.Position = ob.location
-                    fog.StartFactor = obj_mesh.WowFog.StartFactor
-                    fog.StarFactor2 = obj_mesh.WowFog.StartFactor2
+                    fog.StartFactor = ob.WowFog.StartFactor
+                    fog.StarFactor2 = ob.WowFog.StartFactor2
                     
-                    if(obj_mesh.WowFog.IgnoreRadius):
+                    if(ob.WowFog.IgnoreRadius):
                         fog.Flags |= 0x01
-                    if(obj_mesh.WowFog.Unknown):
+                    if(ob.WowFog.Unknown):
                         fog.Flags |= 0x10
                         
                     global_fog_count += 1

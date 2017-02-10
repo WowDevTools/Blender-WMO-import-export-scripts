@@ -44,7 +44,7 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
             continue
         
         # check if object is portal
-        if(bpy.context.scene.objects[i].data.WowPortalPlane.Enabled):
+        if(bpy.context.scene.objects[i].WowPortalPlane.Enabled):
             continue
         
         # check if object is root source
@@ -52,7 +52,7 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
             continue
         
         # check if object is a fog
-        if(bpy.context.scene.objects[i].data.WowFog.Enabled):
+        if(bpy.context.scene.objects[i].WowFog.Enabled):
             continue
 
         # check if object is a liquid

@@ -308,7 +308,7 @@ def GetFogObjects(self, context):
     fogs.append(('0', "None", "")) # setting a default entry as a first element of our enum
     
     for object in bpy.context.scene.objects:
-        if object.type != 'LAMP' and object.data.WowFog.Enabled:
+        if object.WowFog.Enabled:
                 fogs.append((object.name, object.name, ""))
         
     return fogs
@@ -350,18 +350,15 @@ class WowPortalPlanePanel(bpy.types.Panel):
 
     def draw_header(self, context):
         layout = self.layout
-        self.layout.prop(context.object.data.WowPortalPlane, "Enabled")
+        self.layout.prop(context.object.WowPortalPlane, "Enabled")
 
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-        self.layout.prop(context.object.data.WowPortalPlane, "First")
-        self.layout.prop(context.object.data.WowPortalPlane, "Second")
-        #self.layout.prop(context.object.data.WowPortalPlane, "normalX")
-        #self.layout.prop(context.object.data.WowPortalPlane, "normalY")
-        #self.layout.prop(context.object.data.WowPortalPlane, "normalZ")
-        layout.enabled = context.object.data.WowPortalPlane.Enabled
-        self.layout.prop(context.object.data.WowPortalPlane, "Invert")
+        layout.enabled = context.object.WowPortalPlane.Enabled
+        self.layout.prop(context.object.WowPortalPlane, "First")
+        self.layout.prop(context.object.WowPortalPlane, "Second")
+        self.layout.prop(context.object.WowPortalPlane, "Invert")
 
     @classmethod
     def poll(cls, context):
@@ -378,10 +375,10 @@ class WowPortalPlanePropertyGroup(bpy.types.PropertyGroup):
     PortalID = bpy.props.IntProperty(name="Portal's ID", description="Portal ID")
 
 def RegisterWowPortalPlaneProperties():
-    bpy.types.Mesh.WowPortalPlane = bpy.props.PointerProperty(type=WowPortalPlanePropertyGroup)
+    bpy.types.Object.WowPortalPlane = bpy.props.PointerProperty(type=WowPortalPlanePropertyGroup)
 
 def UnregisterWowPortalPlaneProperties():
-    bpy.types.Mesh.WowPortalPlane = None
+    bpy.types.Object.WowPortalPlane = None
     
 ###############################
 ## Liquid
@@ -471,16 +468,16 @@ class WowFogPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-        layout.enabled = context.object.data.WowFog.Enabled
-        self.layout.prop(context.object.data.WowFog, "IgnoreRadius")
-        self.layout.prop(context.object.data.WowFog, "Unknown")
-        self.layout.prop(context.object.data.WowFog, "InnerRadius")
-        self.layout.prop(context.object.data.WowFog, "EndDist")
-        self.layout.prop(context.object.data.WowFog, "StartFactor")
-        self.layout.prop(context.object.data.WowFog, "Color1")
-        self.layout.prop(context.object.data.WowFog, "EndDist2")
-        self.layout.prop(context.object.data.WowFog, "StartFactor2")
-        self.layout.prop(context.object.data.WowFog, "Color2")
+        layout.enabled = context.object.WowFog.Enabled
+        self.layout.prop(context.object.WowFog, "IgnoreRadius")
+        self.layout.prop(context.object.WowFog, "Unknown")
+        self.layout.prop(context.object.WowFog, "InnerRadius")
+        self.layout.prop(context.object.WowFog, "EndDist")
+        self.layout.prop(context.object.WowFog, "StartFactor")
+        self.layout.prop(context.object.WowFog, "Color1")
+        self.layout.prop(context.object.WowFog, "EndDist2")
+        self.layout.prop(context.object.WowFog, "StartFactor2")
+        self.layout.prop(context.object.WowFog, "Color2")
 
     @classmethod
     def poll(cls, context):
@@ -503,10 +500,10 @@ class WowFogPropertyGroup(bpy.types.PropertyGroup):
     Color2 = bpy.props.FloatVectorProperty(name="Underwater Color", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)        
 
 def RegisterWowFogProperties():
-    bpy.types.Mesh.WowFog = bpy.props.PointerProperty(type=WowFogPropertyGroup)
+    bpy.types.Object.WowFog = bpy.props.PointerProperty(type=WowFogPropertyGroup)
 
 def UnregisterWowFogProperties():
-    bpy.types.Mesh.WowFog = None
+    bpy.types.Object.WowFog = None
 
 
 ###############################
@@ -916,7 +913,7 @@ class OBJECT_OP_Add_Fog(bpy.types.Operator):
         mesh.materials[0].use_transparency = True
         mesh.materials[0].alpha = 0.35
         
-        mesh.WowFog.Enabled = True
+        fog.WowFog.Enabled = True
         return {'FINISHED'}
     
         
@@ -928,9 +925,9 @@ class OBJECT_OP_Invert_Portals(bpy.types.Operator):
     
     def InvertPortal(self):
         for ob in bpy.context.selected_objects:
-            if(ob.data.WowPortalPlane.Enabled == True):
-                if(ob.data.WowPortalPlane.Invert == True):
-                    ob.data.WowPortalPlane.Invert = not ob.data.WowPortalPlane.Invert
+            if(ob.WowPortalPlane.Enabled == True):
+                if(ob.WowPortalPlane.Invert == True):
+                    ob.WowPortalPlane.Invert = not ob.WowPortalPlane.Invert
                     
     def execute(self, context):
         
@@ -1024,7 +1021,7 @@ class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
     
     def ToPortal(self):
         for ob in bpy.context.selected_objects:
-            ob.data.WowPortalPlane.Enabled = True
+            ob.WowPortalPlane.Enabled = True
             ob.WowWMOGroup.Enabled = False
 
     def execute(self, context):
@@ -1114,7 +1111,7 @@ class OBJECT_OP_Hide_Show_All(bpy.types.Operator):
     def execute(self, context):
         state = True
         for ob in bpy.context.scene.objects:
-            if((ob.WowWMOGroup.Enabled == True) or (ob.data.WowPortalPlane.Enabled == True)) or (ob.data.WowFog.Enabled == True) or (ob.WowLiquid.Enabled == True):
+            if((ob.WowWMOGroup.Enabled == True) or (ob.WowPortalPlane.Enabled == True)) or (ob.WowFog.Enabled == True) or (ob.WowLiquid.Enabled == True):
                 if(bpy.context.scene.WoWVisibility.All == True):
                     ob.hide = True
                     state = False
@@ -1151,7 +1148,7 @@ class OBJECT_OP_Hide_Show_Portals(bpy.types.Operator):
     def execute(self, context):
         state = True
         for ob in bpy.context.scene.objects:
-            if(ob.data.WowPortalPlane.Enabled == True):
+            if(ob.WowPortalPlane.Enabled == True):
                 if(bpy.context.scene.WoWVisibility.Portals == True):
                     ob.hide = True
                     state = False
@@ -1205,7 +1202,7 @@ class OBJECT_OP_Hide_Show_Fog(bpy.types.Operator):
     def execute(self, context):
         state = True
         for ob in bpy.context.scene.objects:
-            if(ob.data.WowFog.Enabled == True):
+            if(ob.WowFog.Enabled == True):
                 if(bpy.context.scene.WoWVisibility.Fog == True):
                     ob.hide = True
                     state = False
@@ -1260,6 +1257,6 @@ def unregister():
     # unregistered in __init__
     #bpy.utils.unregister_class(WowMaterialPanel)
 
-
+ 
 
 
