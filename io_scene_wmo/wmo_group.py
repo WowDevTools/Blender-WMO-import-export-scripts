@@ -884,9 +884,9 @@ class WMO_group_file:
                     fogMap[ob.name] = fog_id
                     fog_id += 1
                 
-                if(ob.WowLiquid.Enabled and ob.WowLiquid.WMOGroup == obj.name): # export liquids
+                if(ob.WowLiquid.Enabled and (ob.WowLiquid.WMOGroup == obj.name)): # export liquids
 
-                    HasWater = True
+                    hasWater = True
 
                     print("Exporting liquid:", ob.name )
                     mesh = ob.data
@@ -1021,7 +1021,7 @@ class WMO_group_file:
         mobr.Write(f)
         mocv.Write(f)
 
-        if HasWater:
+        if hasWater:
             mliq.Write(f)
 
 
