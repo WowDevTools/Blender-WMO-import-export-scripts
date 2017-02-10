@@ -967,7 +967,7 @@ class WMO_group_file:
                             if flag_0x80.data[loop_index].color == (0, 0, 255):
                                 tile_flag |= 0x80
 
-                            mliq.TileFlags[poly.index].append(tile_flag)
+                            mliq.TileFlags.append(tile_flag)
                             tile_flag = 0
 
          
