@@ -930,6 +930,7 @@ class WMO_group_file:
                             vertex.v = uvMap.get(mesh.vertices[i].index)[1]
 
                             vertex.height = mesh.vertices[i].co[2]
+                            mliq.VertexMap.append(vertex)
 
                     else:
 
@@ -937,6 +938,7 @@ class WMO_group_file:
                             vertex = WaterVertex()
 
                             vertex.height = mesh.vertices[i].co[2]
+                            mliq.VertexMap.append(vertex)
 
                     flag_0x1 = mesh.vertex_colors["flag_0x1"]
                     flag_0x2 = mesh.vertex_colors["flag_0x2"]
