@@ -1326,8 +1326,8 @@ class MLIQ_chunk:
         
         for vtx in self.VertexMap:
             vtx.Write(f)
-        for f in self.TileFlags:
-            f.write(struct.pack('B', f))
+        for tile_flag in self.TileFlags:
+            f.write(struct.pack('B', tile_flag))
 
 # RenderBatch
 class RenderBatch:
