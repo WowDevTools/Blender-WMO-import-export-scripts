@@ -856,7 +856,9 @@ class WMO_group_file:
         fog_id = 0
         fogMap = {}
     
-        mliq = MLIQ_chunk()        
+        mliq = MLIQ_chunk()
+
+        hasWater = False        
         
         for ob in bpy.context.scene.objects:
             if(ob.type == "MESH"):
@@ -883,6 +885,8 @@ class WMO_group_file:
                     fog_id += 1
                 
                 if(ob.WowLiquid.Enabled and ob.WowLiquid.WMOGroup == obj.name): # export liquids
+
+                    HasWater = True
 
                     print("Exporting liquid:", ob.name )
                     mesh = ob.data
@@ -1016,7 +1020,9 @@ class WMO_group_file:
         mobn.Write(f)
         mobr.Write(f)
         mocv.Write(f)
-        mliq.Write(f)
+
+        if HasWater:
+            mliq.Write(f)
 
 
         # get file size
