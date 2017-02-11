@@ -185,7 +185,7 @@ class WMO_group_file:
         return basic_liquid_type
                 
     # return array of vertice and array of faces in a tuple
-    def LoadLiquids(self, objName, pos, mohd_flags):
+    def LoadLiquids(self, objName, pos, root):
         
         # load vertices
         vertices = []
@@ -215,7 +215,7 @@ class WMO_group_file:
         #create mesh and object
         name = objName + "_Liquid"
         mesh = bpy.data.meshes.new(name)
-        object = bpy.data.objects.new(name, mesh)
+        obj = bpy.data.objects.new(name, mesh)
                     
         #create mesh from python data
         mesh.from_pydata(vertices,[],faces)
@@ -267,10 +267,10 @@ class WMO_group_file:
                     flag_0x80.data[loop].color = (0, 0, 255)
                     
         #set mesh location
-        object.location = pos
-        bpy.context.scene.objects.link(object)
+        obj.location = pos
+        bpy.context.scene.objects.link(obj)
         
-        bpy.context.scene.objects.active = object
+        bpy.context.scene.objects.active = obj
         
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
@@ -278,17 +278,17 @@ class WMO_group_file:
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.object.mode_set(mode='OBJECT')
         
-        object.lock_scale = [True, True, True]
-        object.lock_rotation[2] = True
+        obj.lock_scale = [True, True, True]
+        obj.lock_rotation[2] = True
         
-        object.WowLiquid.Enabled = True
+        obj.WowLiquid.Enabled = True
         
         # getting Liquid Type ID
         
         basic_liquid_type = self.mogp.LiquidType
         real_liquid_type = 0
         
-        if(mohd_flags & 0x4): # defining real liquid type ID from DBC. to understand what is being done here see wiki (MLIQ)
+        if(root.mohd.Flags & 0x4): # defining real liquid type ID from DBC. to understand what is being done here see wiki (MLIQ)
                 
             if basic_liquid_type < 21: 
                 real_liquid_type = self.ToWMOLiquid(basic_liquid_type - 1)
@@ -305,8 +305,8 @@ class WMO_group_file:
                     real_liquid_type = basic_liquid_type + 1
 
         
-        object.WowLiquid.LiquidType = str(real_liquid_type)
-        object.WowLiquid.WMOGroup = objName
+        obj.WowLiquid.LiquidType = str(real_liquid_type)
+        root.liquidReferences[name] = objName
 
                
     
@@ -338,7 +338,7 @@ class WMO_group_file:
         return indices
 
     # Create mesh from file data
-    def LoadObject(self, objName, materials, doodads, mogn, objId, base_name, mohd):
+    def LoadObject(self, objName, doodads, objId, base_name, root):
 
         vertices = []
         normals = []
@@ -448,7 +448,7 @@ class WMO_group_file:
 
         # add materials
         for i in range(len(self.moba.Batches)):
-            mesh.materials.append(materials[self.moba.Batches[i].MaterialID])
+            mesh.materials.append(root.materials[self.moba.Batches[i].MaterialID])
             
             material =  mesh.materials[i]
             
@@ -469,7 +469,7 @@ class WMO_group_file:
         for i in self.mopy.TriangleMaterials:
             if(i.MaterialID == 0xFF):
                 mat_ghost_ID = len(mesh.materials)
-                mesh.materials.append(materials[0xFF])
+                mesh.materials.append(root.materials[0xFF])
                 material_viewport_textures[mat_ghost_ID] = None
                 material_indices[0xFF] = mat_ghost_ID
                 break
@@ -523,9 +523,9 @@ class WMO_group_file:
 
         # add WMO group properties
         nobj.WowWMOGroup.Enabled = True
-        nobj.WowWMOGroup.GroupName = mogn.GetString(self.mogp.GroupNameOfs)
+        nobj.WowWMOGroup.GroupName = root.mogn.GetString(self.mogp.GroupNameOfs)
         #nobj.WowWMOGroup.PortalGroupID = objId
-        nobj.WowWMOGroup.GroupDesc = mogn.GetString(self.mogp.DescGroupNameOfs)
+        nobj.WowWMOGroup.GroupDesc = root.mogn.GetString(self.mogp.DescGroupNameOfs)
         nobj.WowWMOGroup.GroupID = int(self.mogp.GroupID)
         
         nobj.WowWMOGroup.Fog1 = base_name + "_Fog_" + str(self.mogp.FogIndices[0]).zfill(2)
@@ -535,7 +535,7 @@ class WMO_group_file:
 
         
         if(self.mogp.Flags & MOGP_FLAG.HasWater):
-            self.LoadLiquids(objName, nobj.location, mohd.Flags) 
+            self.LoadLiquids(objName, nobj.location, root) 
         
         if(self.mogp.Flags & MOGP_FLAG.HasDoodads):
             if(len(self.modr.DoodadRefs) > 0):
@@ -871,11 +871,11 @@ class WMO_group_file:
                     fogMap[ob.name] = fog_id
                     fog_id += 1
                 
-                if(ob.WowLiquid.Enabled and (new_obj.name == ob.WowLiquid.WMOGroup)): # export liquids
+                if(ob.WowLiquid.Enabled and (obj.name == ob.WowLiquid.WMOGroup)): # export liquids
 
                     hasWater = True
 
-                    print("Exporting liquid:", ob.name )
+                    print("Export liquid:", ob.name )
                     mesh = ob.data
                     StartVertex = 0
                     sum = 0

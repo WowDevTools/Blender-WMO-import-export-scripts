@@ -32,6 +32,7 @@ class WMO_root_file:
         self.PortalRCount = 0 #Portal references count
         self.PortalR = []
         self.WMOId = 0
+        self.liquidReferences = {}
 
     def Read(self, f):
         self.mver.Read(f)
@@ -61,6 +62,13 @@ class WMO_root_file:
     
     #def LoadDoodads(self):
         #for i in range(self.mods):
+
+    def LoadReferences(self, refType):
+        if refType == "LIQUID":
+            for ob in bpy.context.scene.objects:
+                if (ob.type == "MESH") and (ob.WowLiquid.Enabled):
+                    ob.WowLiquid.WMOGroup = self.liquidReferences.get(ob.name)
+
 
     # mat is a bpy.types.Material
     def AddMaterial(self, mat):
@@ -468,6 +476,7 @@ class WMO_root_file:
         
         mesh.from_pydata(self.convex_volume_planes, [], faces)
         bpy.context.scene.objects.link(obj)
+
             
     def LoadProperties(self, name, filepath):
         bpy.context.scene.WoWRoot.AmbientColor = [float(self.mohd.AmbientColor[0] / 255), float(self.mohd.AmbientColor[1] / 255), float(self.mohd.AmbientColor[2]) / 255]
