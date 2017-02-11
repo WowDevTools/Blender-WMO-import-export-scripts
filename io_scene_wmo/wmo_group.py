@@ -28,7 +28,14 @@ def GetAvg(list):
         normal[i] /= len(list)
         
     return normal
-    
+
+
+def CompColors(color1, color2):
+
+    for i in range(0, 3):
+        if color1[i] != color2[i]:
+            return False
+    return True
 
 def ret_min(a, b):
     return a if a < b else b
@@ -888,7 +895,7 @@ class WMO_group_file:
                             
                     mliq.xTiles = round(ob.dimensions[0] / 4.1666625)
                     mliq.yTiles = round(ob.dimensions[1] / 4.1666625)
-                    mliq.xVerts = mliq.xVerts + 1
+                    mliq.xVerts = mliq.xTiles + 1
                     mliq.yVerts = mliq.yTiles + 1
                     mliq.Position = mesh.vertices[StartVertex].co
 
@@ -910,6 +917,7 @@ class WMO_group_file:
 
                     mliq.materialID = root.AddMaterial(material) 
 
+
                     if mogp.LiquidType == 3:
 
                         uvMap = {}
@@ -930,10 +938,10 @@ class WMO_group_file:
 
                     else:
 
-                        for i in range(mliq.xVerts * mliq.yVerts):
+                        for j in range(mliq.xVerts * mliq.yVerts):
                             vertex = WaterVertex()
 
-                            vertex.height = mesh.vertices[i].co[2]
+                            vertex.height = mesh.vertices[j].co[2]
                             mliq.VertexMap.append(vertex)
 
                     flag_0x1 = mesh.vertex_colors["flag_0x1"]
@@ -946,29 +954,28 @@ class WMO_group_file:
                     flag_0x80 = mesh.vertex_colors["flag_0x80"]
 
 
-                    tile_flag = 0
-
                     for poly in mesh.polygons:
-                        for loop_index in poly.loop_indices:
-                            if flag_0x1.data[loop_index].color == (0, 0, 255): 
+                            tile_flag = 0
+                            blue = [0.0, 0.0, 1.0]
+
+                            if CompColors(flag_0x1.data[poly.loop_indices[0]].color, blue): 
                                 tile_flag |= 0x1
-                            if flag_0x2.data[loop_index].color == (0, 0, 255):
+                            if CompColors(flag_0x2.data[poly.loop_indices[0]].color, blue):
                                 tile_flag |= 0x2
-                            if flag_0x4.data[loop_index].color == (0, 0, 255):
+                            if CompColors(flag_0x4.data[poly.loop_indices[0]].color, blue):
                                 tile_flag |= 0x4
-                            if flag_0x8.data[loop_index].color == (0, 0, 255):
+                            if CompColors(flag_0x8.data[poly.loop_indices[0]].color, blue):
                                 tile_flag |= 0x8
-                            if flag_0x10.data[loop_index].color == (0, 0, 255):
+                            if CompColors(flag_0x10.data[poly.loop_indices[0]].color, blue):
                                 tile_flag |= 0x10
-                            if flag_0x20.data[loop_index].color == (0, 0, 255):
+                            if CompColors(flag_0x20.data[poly.loop_indices[0]].color, blue):
                                 tile_flag |= 0x20
-                            if flag_0x40.data[loop_index].color == (0, 0, 255):
+                            if CompColors(flag_0x40.data[poly.loop_indices[0]].color, blue):
                                 tile_flag |= 0x40
-                            if flag_0x80.data[loop_index].color == (0, 0, 255):
+                            if CompColors(flag_0x80.data[poly.loop_indices[0]].color, blue):
                                 tile_flag |= 0x80
 
                             mliq.TileFlags.append(tile_flag)
-                            tile_flag = 0
 
          
         
