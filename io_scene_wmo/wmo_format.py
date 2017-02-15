@@ -1331,9 +1331,10 @@ class MLIQ_chunk:
 
 # RenderBatch
 class RenderBatch:
-    def __init__(self):
+    def __init__(self, material_index):
         self.triangles = []
         self.vertex_infos = {}
+        self.blender_material_index = material_index 
 
 # VertexInfo
 class VertexInfo:

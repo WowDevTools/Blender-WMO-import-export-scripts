@@ -6,6 +6,24 @@ from .wmo_format import *
 
 import os
 
+def MaterialCompare(mat_a, mat_b):
+    return mat_a.WowMaterial.Enabled == mat_b.WowMaterial.Enabled and \
+    mat_a.WowMaterial.Shader == mat_b.WowMaterial.Shader and \
+    mat_a.WowMaterial.TerrainType == mat_b.WowMaterial.TerrainType and \
+    mat_a.WowMaterial.BlendingMode == mat_b.WowMaterial.BlendingMode and \
+    mat_a.WowMaterial.TwoSided == mat_b.WowMaterial.TwoSided and \
+    mat_a.WowMaterial.Darkened == mat_b.WowMaterial.Darkened and \
+    mat_a.WowMaterial.NightGlow == mat_b.WowMaterial.NightGlow and \
+    mat_a.WowMaterial.Texture1 == mat_b.WowMaterial.Texture1 and \
+    mat_a.WowMaterial.Color1 == mat_b.WowMaterial.Color1 and \
+    mat_a.WowMaterial.Flags1 == mat_b.WowMaterial.Flags1 and \
+    mat_a.WowMaterial.Texture2 == mat_b.WowMaterial.Texture2 and \
+    mat_a.WowMaterial.Color2 == mat_b.WowMaterial.Color2 and \
+    mat_a.WowMaterial.Texture3 == mat_b.WowMaterial.Texture3 and \
+    mat_a.WowMaterial.Color3 == mat_b.WowMaterial.Color3 and \
+    mat_a.WowMaterial.Flags3  == mat_b.WowMaterial.Flags3
+
+
 class WMO_root_file:
     def __init__(self):
         self.mver = MVER_chunk()
@@ -72,69 +90,69 @@ class WMO_root_file:
 
     # mat is a bpy.types.Material
     def AddMaterial(self, mat):
-        """ Add material if not already added, then return index in root file """
-
-        if mat in self.materialLookup:
-            # if material already added, return index
-            return self.materialLookup[mat]
+        
+        # add material if not already added, then return index in root file 
+        for material, index in self.materialLookup.items():
+            if MaterialCompare(mat, material):
+                return [index, material.WowMaterial.Texture1]
+          
+        # else add it then return index
+        if(not mat.WowMaterial.Enabled):
+            self.materialLookup[mat] = 0xFF
+            return [0xFF, "Collision"]
         else:
-            # else add it then return index
-            if(not mat.WowMaterial.Enabled):
-                self.materialLookup[mat] = 0xFF
-                return 0xFF
+            self.materialLookup[mat] = len(self.momt.Materials)
+
+            WowMat = WMO_Material()
+            WowMat.Flags1 = 0
+            
+            if(mat.WowMaterial.TwoSided):
+                WowMat.Flags1 = WowMat.Flags1 | 4
+                
+            if(mat.WowMaterial.Darkened):
+                WowMat.Flags1 = WowMat.Flags1 | 8              
+            
+            WowMat.Shader = int(mat.WowMaterial.Shader)
+            WowMat.BlendMode = int(mat.WowMaterial.BlendingMode)
+            WowMat.TerrainType = int(mat.WowMaterial.TerrainType)
+
+            if mat.WowMaterial.Texture1 in self.textureLookup:
+                WowMat.Texture1Ofs = self.textureLookup[mat.WowMaterial.Texture1]
             else:
-                self.materialLookup[mat] = len(self.momt.Materials)
+                self.textureLookup[mat.WowMaterial.Texture1] = self.motx.AddString(mat.WowMaterial.Texture1)
+                WowMat.Texture1Ofs = self.textureLookup[mat.WowMaterial.Texture1]
 
-                WowMat = WMO_Material()
-                WowMat.Flags1 = 0
-                
-                if(mat.WowMaterial.TwoSided):
-                    WowMat.Flags1 = WowMat.Flags1 | 4
-                    
-                if(mat.WowMaterial.Darkened):
-                    WowMat.Flags1 = WowMat.Flags1 | 8              
-                
-                WowMat.Shader = int(mat.WowMaterial.Shader)
-                WowMat.BlendMode = int(mat.WowMaterial.BlendingMode)
-                WowMat.TerrainType = int(mat.WowMaterial.TerrainType)
+            WowMat.Color1 = (mat.WowMaterial.Color1[0], mat.WowMaterial.Color1[1], mat.WowMaterial.Color1[2], 1)
+            WowMat.TextureFlags1 = 0
 
-                if mat.WowMaterial.Texture1 in self.textureLookup:
-                    WowMat.Texture1Ofs = self.textureLookup[mat.WowMaterial.Texture1]
-                else:
-                    self.textureLookup[mat.WowMaterial.Texture1] = self.motx.AddString(mat.WowMaterial.Texture1)
-                    WowMat.Texture1Ofs = self.textureLookup[mat.WowMaterial.Texture1]
+            if mat.WowMaterial.Texture2 in self.textureLookup:
+                WowMat.Texture2Ofs = self.textureLookup[mat.WowMaterial.Texture2]
+            else:
+                self.textureLookup[mat.WowMaterial.Texture2] = self.motx.AddString(mat.WowMaterial.Texture2)
+                WowMat.Texture2Ofs = self.textureLookup[mat.WowMaterial.Texture2]
 
-                WowMat.Color1 = (mat.WowMaterial.Color1[0], mat.WowMaterial.Color1[1], mat.WowMaterial.Color1[2], 1)
-                WowMat.TextureFlags1 = 0
+            WowMat.Color2 = (mat.WowMaterial.Color2[0], mat.WowMaterial.Color2[1], mat.WowMaterial.Color2[2], 1)
 
-                if mat.WowMaterial.Texture2 in self.textureLookup:
-                    WowMat.Texture2Ofs = self.textureLookup[mat.WowMaterial.Texture2]
-                else:
-                    self.textureLookup[mat.WowMaterial.Texture2] = self.motx.AddString(mat.WowMaterial.Texture2)
-                    WowMat.Texture2Ofs = self.textureLookup[mat.WowMaterial.Texture2]
+            if mat.WowMaterial.Texture3 in self.textureLookup:
+                WowMat.Texture3Ofs = self.textureLookup[mat.WowMaterial.Texture3]
+            else:
+                self.textureLookup[mat.WowMaterial.Texture3] = self.motx.AddString(mat.WowMaterial.Texture3)
+                WowMat.Texture3Ofs = self.textureLookup[mat.WowMaterial.Texture3]
 
-                WowMat.Color2 = (mat.WowMaterial.Color2[0], mat.WowMaterial.Color2[1], mat.WowMaterial.Color2[2], 1)
+            WowMat.Color3 = (mat.WowMaterial.Color3[0], mat.WowMaterial.Color3[1], mat.WowMaterial.Color3[2], 1)
 
-                if mat.WowMaterial.Texture3 in self.textureLookup:
-                    WowMat.Texture3Ofs = self.textureLookup[mat.WowMaterial.Texture3]
-                else:
-                    self.textureLookup[mat.WowMaterial.Texture3] = self.motx.AddString(mat.WowMaterial.Texture3)
-                    WowMat.Texture3Ofs = self.textureLookup[mat.WowMaterial.Texture3]
+            WowMat.DiffColor = (0, 0, 0)
+            WowMat.RunTimeData = (0, 0)
+            
+            if(mat.WowMaterial.NightGlow):
+                WowMat.Flags1 = WowMat.Flags1 | 16
+                WowMat.Shader = 1
+                #WowMat.Color1 = (255, 255, 255, 255)
+                #WowMat.TextureFlags2 = WowMat.TextureFlags2 | 10
 
-                WowMat.Color3 = (mat.WowMaterial.Color3[0], mat.WowMaterial.Color3[1], mat.WowMaterial.Color3[2], 1)
+            self.momt.Materials.append(WowMat)
 
-                WowMat.DiffColor = (0, 0, 0)
-                WowMat.RunTimeData = (0, 0)
-                
-                if(mat.WowMaterial.NightGlow):
-                    WowMat.Flags1 = WowMat.Flags1 | 16
-                    WowMat.Shader = 1
-                    #WowMat.Color1 = (255, 255, 255, 255)
-                    #WowMat.TextureFlags2 = WowMat.TextureFlags2 | 10
-
-                self.momt.Materials.append(WowMat)
-
-                return self.materialLookup[mat]
+            return [self.materialLookup[mat], mat.WowMaterial.Texture1]
 
     def AddGroupInfo(self, flags, boundingBox, name, desc):
         """ Add group info, then return offset of name and desc in a tuple """

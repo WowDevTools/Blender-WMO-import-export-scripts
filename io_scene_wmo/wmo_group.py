@@ -347,149 +347,107 @@ class WMO_group_file:
     # Create mesh from file data
     def LoadObject(self, objName, doodads, objId, base_name, root):
 
-        vertices = []
-        normals = []
         faces = []
 
-        texCoords = []
-        vertColors = []
-        
-        vertices = self.movt.Vertices
-        normals = self.monr.Normals
-        texCoords = self.motv.TexCoords
+        if(self.mogp.Flags & MOGP_FLAG.HasVertexColor):
+            vertColors = len(self.mocv.vertColors) * [[0, 0, 0]]
 
+        vertexBatchMap = {}
+        materialBatchMap = {}
 
-        #for i in range(0, len(self.mobr.Faces)):
-        #    faces.append((self.movi.Indices[self.mobr.Faces[i] * 3], self.movi.Indices[self.mobr.Faces[i] * 3 + 1], self.movi.Indices[self.mobr.Faces[i] * 3 + 2]))
+        # sort data by batches
+
+        for batch_index in range(len(self.moba.Batches)):
+
+            for i in range(self.moba.Batches[batch_index].StartTriangle, self.moba.Batches[batch_index].StartTriangle + self.moba.Batches[batch_index].nTriangle):
+
+                vertexBatchMap[self.movi.Indices[i]] = batch_index
+            
+            materialBatchMap.setdefault(self.moba.Batches[batch_index].MaterialID, []).append(batch_index)
+
 
         for i in range(0, len(self.movi.Indices), 3):
-            faces.append(self.movi.Indices[i:i+3])
-            
-        """for i in range(len(self.moba.Batches)):
-
-            batch = self.moba.Batches[i]
-
-            # add vertices BAAAAAD 
-            startVert = len(vertices)
-            vertices.extend(self.movt.Vertices[batch.StartVertex : batch.LastVertex + 1])
-            
-            # add faces
-            for iFace in range(batch.StartTriangle, batch.StartTriangle + batch.nTriangle, 3):
-                faces.append((self.movi.Indices[iFace] - batch.StartVertex + startVert, \
-                    self.movi.Indices[iFace + 1] - batch.StartVertex + startVert, \
-                    self.movi.Indices[iFace + 2] - batch.StartVertex + startVert))
-
-            # add vertex normals
-            normals.extend(self.monr.Normals[batch.StartVertex : batch.LastVertex + 1])
-
-            
-            # add vertex color
-            if(self.mogp.Flags & MOGP_FLAG.HasVertexColor):
-                vertColors.extend(self.mocv.vertColors[batch.StartVertex : batch.LastVertex + 1])
-
-            # add uv coords
-            texCoords.extend(self.motv.TexCoords[batch.StartVertex : batch.LastVertex + 1])
-
-            # add material
-            objMats.append(materials[batch.MaterialID])
+            faces.append(self.movi.Indices[i : i + 3])
 
         
-        geometryVerticesCount = len(vertices)
-
-        # load liquids
-        if(self.mogp.Flags & MOGP_FLAG.HasWater):
-            liquids_data = self.LoadLiquids()
-            liquidVerticesCount = len(liquids_data[0])
-
-            startVert = len(vertices)
-            vertices.extend(liquids_data[0])
-
-            for i in range(0, len(liquids_data[1]), 3):
-                faces.append((liquids_data[1][i] + startVert, liquids_data[1][i + 1] + startVert, liquids_data[1][i + 2] + startVert))"""
-
         # create mesh
         mesh = bpy.data.meshes.new(objName)
-        mesh.from_pydata(vertices, [], faces)
+        mesh.from_pydata(self.movt.Vertices, [], faces)
+
 
         # set normals
-        for i in range(len(normals)):
-            mesh.vertices[i].normal = normals[i]
-            
+        for i in range(len(self.monr.Normals)):
+            mesh.vertices[i].normal = self.monr.Normals[i]
+
         # set vertex color
         if(self.mogp.Flags & MOGP_FLAG.HasVertexColor):
             vertColor_layer1 = mesh.vertex_colors.new("Col")
-            # loops and vertex_color are in the same order, so we use it to find vertex index
-            for i in range(len(mesh.loops)):
-                #if(mesh.loops[i].vertex_index < geometryVerticesCount):
-                vertColor_layer1.data[i].color = (self.mocv.vertColors[mesh.loops[i].vertex_index][2] / 255, \
-                        self.mocv.vertColors[mesh.loops[i].vertex_index][1] / 255, \
-                        self.mocv.vertColors[mesh.loops[i].vertex_index][0] / 255)
-                
+            for poly in mesh.polygons:
+                for loop_index in poly.loop_indices:
+                    vertColor_layer1.data[loop_index].color = (self.mocv.vertColors[mesh.loops[loop_index].vertex_index][2] / 255, \
+                        self.mocv.vertColors[mesh.loops[loop_index].vertex_index][1] / 255, \
+                        self.mocv.vertColors[mesh.loops[loop_index].vertex_index][0] / 255)
+
+
         # set uv
         uv1 = mesh.uv_textures.new("UVMap")
         uv_layer1 = mesh.uv_layers[0]
         for i in range(len(uv_layer1.data)):
-            #if(mesh.loops[i].vertex_index < geometryVerticesCount):
-            uv = texCoords[mesh.loops[i].vertex_index]
+            uv = self.motv.TexCoords[mesh.loops[i].vertex_index]
             uv_layer1.data[i].uv = (uv[0], 1 - uv[1])
-            
-        # set material
-        """for i in range(len(objMats)):
-            mesh.materials.append(objMats[i])
 
-        # I guess mesh.polygons and faces are in the same order
-        iFace = 0
-        for i in range(len(self.moba.Batches)):
-            img = self.GetMaterialViewportImage(objMats[i])
-            iEndFace = iFace + (self.moba.Batches[i].nTriangle // 3)
-            for iFace in range(iFace, iEndFace):
-                mesh.polygons[iFace].material_index = i
-                mesh.polygons[iFace].use_smooth = True
-                if(img != None):
-                    uv1.data[iFace].image = img
-            iFace += 1"""
-            
         # map root material ID to index in mesh materials
-        material_indices = {}
         material_viewport_textures = {}
 
         # add materials
-        for i in range(len(self.moba.Batches)):
-            mesh.materials.append(root.materials[self.moba.Batches[i].MaterialID])
-            
-            material =  mesh.materials[i]
-            
-            material.WowMaterial.Enabled = True
-            
-            if(i < self.mogp.nBatchesA):
-                material.WowMaterial.BatchType = '0'
-            elif(i < self.mogp.nBatchesB):
-                material.WowMaterial.BatchType = '1'
-            else:
-                material.WowMaterial.BatchType = '2'
-                
-            
-            material_viewport_textures[i] = self.GetMaterialViewportImage(mesh.materials[i])
-            material_indices[self.moba.Batches[i].MaterialID] = i
+        for material_index, batches in materialBatchMap.items():
+            for batch_index in batches:
+
+                protoMaterial = root.materials[material_index]
+
+                batch_material = protoMaterial.copy()
+                batch_material.WowMaterial.Enabled = True
+
+                if(batch_index < self.mogp.nBatchesA):
+                    batch_material.name = protoMaterial.name + ".Batch_A"
+                    batch_material.WowMaterial.BatchType = '0'
+
+                elif(batch_index < self.mogp.nBatchesA + self.mogp.nBatchesB):
+                    batch_material.name = protoMaterial.name + ".Batch_B"
+                    batch_material.WowMaterial.BatchType = '1'
+
+                else:
+                    batch_material.name = protoMaterial.name + ".Batch_C"
+                    batch_material.WowMaterial.BatchType = '2'
+
+                mesh.materials.append(batch_material)
+                material_viewport_textures[batch_index] = self.GetMaterialViewportImage(batch_material)
             
         # add ghost material
+        mat_ghost_ID = 0
+
         for i in self.mopy.TriangleMaterials:
             if(i.MaterialID == 0xFF):
                 mat_ghost_ID = len(mesh.materials)
                 mesh.materials.append(root.materials[0xFF])
                 material_viewport_textures[mat_ghost_ID] = None
-                material_indices[0xFF] = mat_ghost_ID
                 break
 
         # set faces material
         for i in range(len(mesh.polygons)):
-            matID = self.mopy.TriangleMaterials[i].MaterialID
-            mesh.polygons[i].material_index = material_indices[matID]
             mesh.polygons[i].use_smooth = True
-            # set texture displayed in viewport
-            img = material_viewport_textures[material_indices[matID]]
-            if(img != None):
-                uv1.data[i].image = img
+
+            if self.mopy.TriangleMaterials[i].MaterialID != 0xFF:
+
+                mesh.polygons[i].material_index = vertexBatchMap.get(mesh.polygons[i].vertices[0])
+                # set texture displayed in viewport
+                img = material_viewport_textures[vertexBatchMap.get(mesh.polygons[i].vertices[0])]
+                if(img != None):
+                    uv1.data[i].image = img
+
+            else:
+                mesh.polygons[i].material_index = mat_ghost_ID
+
 
         # set textured solid in all 3D views and switch to textured mode
         for area in bpy.context.screen.areas:
@@ -656,22 +614,28 @@ class WMO_group_file:
         batchTypeMap = {}
         
         for i in range(len(mesh.materials)):
-            material_indices[i] = root.AddMaterial(mesh.materials[i]) # adding materials to root object. Returns the index of material if the passed one already exists.
+            ret_value = root.AddMaterial(mesh.materials[i])
+            material_indices[i] = ret_value[0]
+            # material_indices[i] = root.AddMaterial(mesh.materials[i], texture_name) # adding materials to root object. Returns the index of material if the passed one already exists.
+
+            if ret_value[1] != mesh.materials[i].WowMaterial.Texture1:
+                print(i, ret_value[0])
+                print(ret_value[1], mesh.materials[i].WowMaterial.Texture1)
             
-            if(mesh.materials[i].WowMaterial.Enabled == True and mesh.materials[i].WowMaterial.BatchType == '0'):
-                nBatchesA += 1
-                batchTypeMap[material_indices.get(i)] = 0
-            if(mesh.materials[i].WowMaterial.Enabled == True and mesh.materials[i].WowMaterial.BatchType == '1'):
-                nBatchesB += 1
-                batchTypeMap[material_indices.get(i)] = 1
-            if(mesh.materials[i].WowMaterial.Enabled == True and mesh.materials[i].WowMaterial.BatchType == '2'):
-                nBatchesC += 1
-                batchTypeMap[material_indices.get(i)] = 2
+            if material_indices.get(i) != 0xFF:
+                if(mesh.materials[i].WowMaterial.Enabled == True and mesh.materials[i].WowMaterial.BatchType == '0'):
+                    nBatchesA += 1
+                    batchTypeMap[i] = 0
+                elif(mesh.materials[i].WowMaterial.Enabled == True and mesh.materials[i].WowMaterial.BatchType == '1'):
+                    nBatchesB += 1
+                    batchTypeMap[i] = 1
+                elif(mesh.materials[i].WowMaterial.Enabled == True and mesh.materials[i].WowMaterial.BatchType == '2'):
+                    nBatchesC += 1
+                    batchTypeMap[i] = 2
 
             if(autofill_textures):
                 if( (mesh.materials[i].active_texture is not None) and not mesh.materials[i].WowMaterial.Texture1 and \
                     (mesh.materials[i].active_texture.type == 'IMAGE') and (mesh.materials[i].active_texture.image is not None) ):
-                        print ("test")
                         if(bpy.context.scene.WoWRoot.UseTextureRelPath):
                             mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
                             print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
@@ -684,7 +648,7 @@ class WMO_group_file:
             vg_collision = new_obj.vertex_groups.get(new_obj.WowCollision.VertexGroup)
         
         for poly in mesh.polygons:
-            batch_current = map_batches.setdefault(material_indices.get(poly.material_index), RenderBatch())
+            batch_current = map_batches.setdefault(material_indices.get(poly.material_index), RenderBatch(poly.material_index))
         
             triangle_current = []
             for vert_index in poly.vertices:
@@ -728,14 +692,12 @@ class WMO_group_file:
         
         # initializing chunks:
         total_size = 0 #                         --total_size:creation
-        count = 0
         for material_index, batch in map_batches.items():
             total_size += len(batch.vertex_infos)
-            count += 1
         
         movi = MOVI_chunk() #                    --movi:creation
         mopy = MOPY_chunk() #                    --mopy:creation
-        moba = MOBA_chunk(count) #                    --moba:creation
+        moba = MOBA_chunk(len(map_batches)) #                    --moba:creation
         
         movt = MOVT_chunk(total_size) #          --movt:creation
         monr = MONR_chunk(total_size) #          --monr:creation
@@ -747,7 +709,7 @@ class WMO_group_file:
         
         iA = 0
         iB = nBatchesA
-        iC = nBatchesB
+        iC = nBatchesA + nBatchesB
         
         # filling chunks:
         for material_index, batch in map_batches.items():
@@ -799,13 +761,13 @@ class WMO_group_file:
             batch_current.LastVertex = sentry_indices[1]
             batch_current.MaterialID = material_index
             
-            if(batchTypeMap.get(material_index) == 0):
+            if(batchTypeMap.get(batch.blender_material_index) == 0):
                 moba.Batches[iA] = batch_current
                 iA += 1
-            if(batchTypeMap.get(material_index) == 1):
+            elif(batchTypeMap.get(batch.blender_material_index) == 1):
                 moba.Batches[iB] = batch_current
                 iB += 1
-            if(batchTypeMap.get(material_index) == 2):
+            elif(batchTypeMap.get(batch.blender_material_index) == 2):
                 moba.Batches[iC] = batch_current
                 iC += 1                
         
