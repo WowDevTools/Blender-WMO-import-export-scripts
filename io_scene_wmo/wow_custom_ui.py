@@ -147,14 +147,10 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
                     ('2', "Blend_Alpha", ""), ('3', "Blend_Add", ""), ('4', "Blend_Mod", ""), \
                     ('5', "Blend_Mod2x", ""), ('6', "Blend_ModAdd", ""), ('7', "Blend_InvSrcAlphaAdd", ""), \
                     ('8', "Blend_InvSrcAlphaOpaque", ""), ('9', "Blend_SrcAlphaOpaque", ""), ('10', "Blend_NoAlphaAdd", ""), ('11', "Blend_ConstantAlpha", "")]
-    batchEnum = [('0', "A (Special)", "Both vertex shader and global lighting are used. (Mixing is done based on MOCV alpha or automatically depending on a flag)"), \
-                 ('1', "B (Indoor)", "Global lighting is ignored. Vertex shader modulates the texture and works as lighting."), \
-                 ('2', "C (Outdoor)", "Only global lighting is used. Vertex shader is just a color modulating the texture.")]
     
     Enabled = bpy.props.BoolProperty(name="", description="Enable WoW material properties")
     Shader = bpy.props.EnumProperty(items=shaderEnum, name="Shader", description="WoW shader assigned to this material")
     BlendingMode = bpy.props.EnumProperty(items=blendingEnum, name="Blending Mode", description="WoW material blending mode")
-    BatchType = bpy.props.EnumProperty(items=batchEnum, name="Batch Type", description="WoW batch type. See tutorial to learn what that is for.", default='2')
     Texture1 = bpy.props.StringProperty(name="Texture 1", description="Texture assigned to first slot in shader")
     Color1 = bpy.props.FloatVectorProperty(name="Emissive Color", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
     Flags1 = bpy.props.EnumProperty(items=[('0', "Clamp", ""), ('1', "Repeat", "")], name="Extension 2", description="Extension mode for texture 1")
@@ -228,41 +224,45 @@ def UnregisterWowLightProperties():
 
 
 ###############################
-## Collision
+## Vertex Info
 ###############################
 
-class WowCollisionPanel(bpy.types.Panel):
+class WowVertexInfoPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "data"
-    bl_label = "Wow collision"
+    bl_label = "Wow Vertex Info"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
-        self.layout.prop(context.object.WowCollision, "Enabled")
+        self.layout.prop(context.object.WowVertexInfo, "Enabled")
 
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-        self.layout.prop_search(context.object.WowCollision, "VertexGroup", context.object, "vertex_groups", text="Collision vertex group")
-        self.layout.prop(context.object.WowCollision, "NodeSize", slider=True)
-        layout.enabled = context.object.WowCollision.Enabled
+        self.layout.prop_search(context.object.WowVertexInfo, "VertexGroup", context.object, "vertex_groups", text="Collision vertex group")
+        self.layout.prop(context.object.WowVertexInfo, "NodeSize", slider=True)
+        self.layout.prop_search(context.object.WowVertexInfo, "BatchTypeA", context.object, "vertex_groups", text="Batch type A vertex group")
+        self.layout.prop_search(context.object.WowVertexInfo, "BatchTypeB", context.object, "vertex_groups", text="Batch type B vertex group")
+        layout.enabled = context.object.WowVertexInfo.Enabled
 
     @classmethod
     def poll(cls, context):
         return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
 
-class WowCollisionPropertyGroup(bpy.types.PropertyGroup):
+class WowVertexInfoPropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow collision properties")
     VertexGroup = bpy.props.StringProperty()
     NodeSize = bpy.props.IntProperty(name="Node max size", description="Max count of faces for a node in bsp tree", default=150, min=1, soft_max=500)
+    BatchTypeA = bpy.props.StringProperty()
+    BatchTypeB = bpy.props.StringProperty()
 
-def RegisterWowCollisionProperties():
-    bpy.types.Object.WowCollision = bpy.props.PointerProperty(type=WowCollisionPropertyGroup)
+def RegisterWowVertexInfoProperties():
+    bpy.types.Object.WowVertexInfo = bpy.props.PointerProperty(type=WowVertexInfoPropertyGroup)
 
-def UnregisterWowCollisionProperties():
-    bpy.types.Object.WowCollision = None
+def UnregisterWowVertexInfoProperties():
+    bpy.types.Object.WowVertexInfo = None
 
 
 ###############################
@@ -987,16 +987,16 @@ class OBJECT_OP_Quick_Collision(bpy.types.Operator):
     
     def QuickCollision(self, NodeSize):
         for ob in bpy.context.selected_objects:
-            ob.WowCollision.Enabled = True
+            ob.WowVertexInfo.Enabled = True
             bpy.context.scene.objects.active = ob
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
             # bpy.ops.object.vertex_group_remove(all = True)
             bpy.ops.object.vertex_group_assign_new()
-            ob.WowCollision.VertexGroup = ob.vertex_groups.active.name
+            ob.WowVertexInfo.VertexGroup = ob.vertex_groups.active.name
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT')
-            ob.WowCollision.NodeSize = NodeSize
+            ob.WowVertexInfo.NodeSize = NodeSize
 
     def execute(self, context):
         
@@ -1210,7 +1210,8 @@ class OBJECT_OP_Hide_Show_Fog(bpy.types.Operator):
                     ob.hide = False
                     state = True
         bpy.context.scene.WoWVisibility.Fog = state
-        return {'FINISHED'}       
+        return {'FINISHED'}
+
 ###############################
 ## Root source
 ###############################
@@ -1232,7 +1233,7 @@ def register():
     RegisterWowMaterialProperties()
     RegisterWowLiquidProperties()
     RegisterWowLightProperties()
-    RegisterWowCollisionProperties()
+    RegisterWowVertexInfoProperties()
     RegisterWowWMOGroupProperties()
     RegisterWowPortalPlaneProperties()
     RegisterWowWMORootProperties()
@@ -1247,7 +1248,7 @@ def unregister():
     UnregisterWowMaterialProperties()
     UnregisterWowLiquidProperties()
     UnregisterWowLightProperties()
-    UnregisterWowCollisionProperties()
+    UnregisterWowVertexInfoProperties()
     UnregisterWowWMOGroupProperties()
     UnregisterWowPortalPlaneProperties()
     UnregisterWowWMORootProperties()

@@ -1254,14 +1254,14 @@ class MagmaVertex(LiquidVertex):
         self.v = 0
     
     def Read(self, f):
-        LiquidVertex.Read(self, f)
         self.u = struct.unpack("h", f.read(2))[0]
         self.v = struct.unpack("h", f.read(2))[0]
+        LiquidVertex.Read(self, f)
         
     def Write(self, f):
-        LiquidVertex.Write(self, f)
         f.write(struct.pack('h', self.u))
-        f.write(struct.pack('h', self.v))
+        f.write(struct.pack('h', self.v))  
+        LiquidVertex.Write(self, f)
 
         
 class MLIQ_chunk:
@@ -1297,9 +1297,9 @@ class MLIQ_chunk:
                 vtx.Read(f)
                 self.VertexMap.append(vtx)
             else:
-                    vtx = MagmaVertex()
-                    vtx.Read(f)
-                    self.VertexMap.append(vtx)
+                vtx = MagmaVertex()
+                vtx.Read(f)
+                self.VertexMap.append(vtx)
         
         self.TileFlags = []
 
@@ -1331,10 +1331,9 @@ class MLIQ_chunk:
 
 # RenderBatch
 class RenderBatch:
-    def __init__(self, material_index):
+    def __init__(self):
         self.triangles = []
         self.vertex_infos = {}
-        self.blender_material_index = material_index 
 
 # VertexInfo
 class VertexInfo:
