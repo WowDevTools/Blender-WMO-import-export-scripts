@@ -566,13 +566,13 @@ class WMO_group_file:
 
         # perform vertex group split to keep batches accurate.
         bpy.ops.object.mode_set(mode='EDIT')
-        if new_obj.WowVertexInfo.BatchTypeA != "":
+        if new_obj.WowVertexInfo.BatchTypeA != "" and new_obj.WowVertexInfo.Enabled:
             bpy.ops.object.vertex_group_set_active(group=new_obj.WowVertexInfo.BatchTypeA)
             bpy.ops.object.vertex_group_select()
             bpy.ops.mesh.split()
             bpy.ops.mesh.select_all(action='DESELECT')
 
-        if new_obj.WowVertexInfo.BatchTypeB != "":
+        if new_obj.WowVertexInfo.BatchTypeB != "" and new_obj.WowVertexInfo.Enabled:
             bpy.ops.object.vertex_group_set_active(group=new_obj.WowVertexInfo.BatchTypeB)
             bpy.ops.object.vertex_group_select()
             bpy.ops.mesh.split()
@@ -655,17 +655,17 @@ class WMO_group_file:
 
         if new_obj.WowVertexInfo.Enabled:
 
-            if new_obj.WowVertexInfo.BatchTypeA != "":
+            if new_obj.WowVertexInfo.Enabled and new_obj.WowVertexInfo.BatchTypeA != "":
                 vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)                                                              
             else:
                 vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
 
-            if new_obj.WowVertexInfo.BatchTypeB != "":
+            if new_obj.WowVertexInfo.Enabled and new_obj.WowVertexInfo.BatchTypeB != "":
                 vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)                                                               
             else:
                 vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
 
-            if new_obj.WowVertexInfo.VertexGroup != "":
+            if new_obj.WowVertexInfo.Enabled and new_obj.WowVertexInfo.VertexGroup:
                 vg_collision = new_obj.vertex_groups.get(new_obj.WowVertexInfo.VertexGroup)
 
         for poly in mesh.polygons:
