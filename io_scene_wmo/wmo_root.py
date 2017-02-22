@@ -707,7 +707,7 @@ class WMO_root_file:
         if bpy.context.scene.WoWRoot.UseAmbient:
             self.mohd.Flags |= 0x02
         if fill_water:
-            self.mohd.Flags |= 0x04
+            self.mohd.Flags = self.mohd.Flags ^ 0x04
         if global_outdoor_object_count:
             self.mohd.Flags |= 0x08
 
