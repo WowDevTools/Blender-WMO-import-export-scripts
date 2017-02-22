@@ -95,6 +95,10 @@ class WMO_group_file:
         self.motv = MOTV_chunk()
         self.motv.Read(f)
 
+        if(self.mogp.Flags & MOGP_FLAG.HasTwoMOTV):
+            self.motv2 = MOTV_chunk()
+            self.motv2.Read(f)
+
         # read batches
         self.moba = MOBA_chunk()
         self.moba.Read(f)
@@ -120,6 +124,10 @@ class WMO_group_file:
         if(self.mogp.Flags & MOGP_FLAG.HasVertexColor):
             self.mocv = MOCV_chunk()
             self.mocv.Read(f)
+
+        if(self.mogp.Flags & MOGP_FLAG.HasTwoMOCV):
+            self.mocv2 = MOCV_chunk()
+            self.mocv2.Read(f)
 
         # read liquids
         if(self.mogp.Flags & MOGP_FLAG.HasWater):
@@ -382,33 +390,6 @@ class WMO_group_file:
         mesh = bpy.data.meshes.new(objName)
         mesh.from_pydata(vertices, [], faces)
 
-        # set normals
-        for i in range(len(normals)):
-            mesh.vertices[i].normal = normals[i]
-            
-        # set vertex color
-        if(self.mogp.Flags & MOGP_FLAG.HasVertexColor):
-            vertColor_layer1 = mesh.vertex_colors.new("Col")
-            # loops and vertex_color are in the same order, so we use it to find vertex index
-            for i in range(len(mesh.loops)):
-                #if(mesh.loops[i].vertex_index < geometryVerticesCount):
-                vertColor_layer1.data[i].color = (self.mocv.vertColors[mesh.loops[i].vertex_index][2] / 255, \
-                        self.mocv.vertColors[mesh.loops[i].vertex_index][1] / 255, \
-                        self.mocv.vertColors[mesh.loops[i].vertex_index][0] / 255)
-                
-        # set uv
-        uv1 = mesh.uv_textures.new("UVMap")
-        uv_layer1 = mesh.uv_layers[0]
-        for i in range(len(uv_layer1.data)):
-            #if(mesh.loops[i].vertex_index < geometryVerticesCount):
-            uv = texCoords[mesh.loops[i].vertex_index]
-            uv_layer1.data[i].uv = (uv[0], 1 - uv[1])
-            
-            
-        # map root material ID to index in mesh materials
-        material_indices = {}
-        material_viewport_textures = {}
-
         # create object
         scn = bpy.context.scene
                     
@@ -420,6 +401,62 @@ class WMO_group_file:
 
         nobj = bpy.data.objects.new(objName, mesh)
         scn.objects.link(nobj)
+
+        # set normals
+        for i in range(len(normals)):
+            mesh.vertices[i].normal = normals[i]
+            
+        # set vertex color
+        if self.mogp.Flags & MOGP_FLAG.HasVertexColor:
+            vertColor_layer1 = mesh.vertex_colors.new("Col")
+
+            if not root.mohd.Flags & 0x01: 
+                lightmap = nobj.vertex_groups.new("Lightmap")    
+                nobj.WowVertexInfo.Enabled = True
+                nobj.WowVertexInfo.Lightmap = lightmap.name
+                lightmap.add(self.movi.Indices, 1.0, 'ADD')
+
+            # loops and vertex_color are in the same order, so we use it to find vertex index
+            for i in range(len(mesh.loops)):
+
+                vertColor_layer1.data[i].color = (self.mocv.vertColors[mesh.loops[i].vertex_index][2] / 255, \
+                        self.mocv.vertColors[mesh.loops[i].vertex_index][1] / 255, \
+                        self.mocv.vertColors[mesh.loops[i].vertex_index][0] / 255)
+
+                if not root.mohd.Flags & 0x01: 
+                    mesh.vertices[mesh.loops[i].vertex_index].groups[lightmap.index].weight = self.mocv.vertColors[mesh.loops[i].vertex_index][3] / 255
+
+        if self.mogp.Flags & MOGP_FLAG.HasTwoMOCV:
+            blendmap = nobj.vertex_groups.new("Blendmap")    
+            nobj.WowVertexInfo.Enabled = True
+            nobj.WowVertexInfo.Blendmap = blendmap.name
+            blendmap.add(self.movi.Indices, 1.0, 'ADD')
+
+            for vertex in mesh.vertices:
+                vertex.groups[blendmap.index].weight = self.mocv.vertColors[vertex.index][3] / 255
+
+                
+        # set uv
+        uv1 = mesh.uv_textures.new("UVMap")
+        uv_layer1 = mesh.uv_layers[0]
+        for i in range(len(uv_layer1.data)):
+            #if(mesh.loops[i].vertex_index < geometryVerticesCount):
+            uv = texCoords[mesh.loops[i].vertex_index]
+            uv_layer1.data[i].uv = (uv[0], 1 - uv[1])
+
+        if self.mogp.Flags & MOGP_FLAG.HasTwoMOTV:
+            uv2 = mesh.uv_textures.new("UVMap_2")
+            nobj.WowVertexInfo.Enabled = True
+            nobj.WowVertexInfo.SecondUV = uv2.name
+            uv_layer2 = mesh.uv_layers[1]
+
+            for j in range(len(uv_layer2.data)):
+                uv2 = self.motv2.texCoords[mesh.loops[j].vertex_index]
+                uv_layer2.data[j].uv = (uv2[0], 1 - uv2[1])
+            
+        # map root material ID to index in mesh materials
+        material_indices = {}
+        material_viewport_textures = {}
 
         # create batch vertex groups
 
@@ -535,6 +572,8 @@ class WMO_group_file:
             scn.objects.active = nobj
 
     def Save(self, f, obj, root, objNumber, source_doodads, autofill_textures): #, material_indices, group_name_ofs, group_desc_ofs):
+
+        mohd_0x1 = True
 
         # check Wow WMO panel enabled
         if(not obj.WowWMOGroup.Enabled):
@@ -652,21 +691,37 @@ class WMO_group_file:
         vg_batch_a = None
         vg_batch_b = None
         vg_collision = None
+        vg_lightmap = None
+        vg_blendmap = None
+        uv_second_uv = None
 
         if new_obj.WowVertexInfo.Enabled:
 
-            if new_obj.WowVertexInfo.Enabled and new_obj.WowVertexInfo.BatchTypeA != "":
+            if new_obj.WowVertexInfo.BatchTypeA != "":
                 vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)                                                              
             else:
                 vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
 
-            if new_obj.WowVertexInfo.Enabled and new_obj.WowVertexInfo.BatchTypeB != "":
+            if new_obj.WowVertexInfo.BatchTypeB != "":
                 vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)                                                               
             else:
                 vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
 
-            if new_obj.WowVertexInfo.Enabled and new_obj.WowVertexInfo.VertexGroup:
+            if new_obj.WowVertexInfo.VertexGroup != "":
                 vg_collision = new_obj.vertex_groups.get(new_obj.WowVertexInfo.VertexGroup)
+            
+            if new_obj.WowVertexInfo.Lightmap != "":
+                vg_lightmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Lightmap)
+                mohd_0x1 = False
+
+            if new_obj.WowVertexInfo.Blendmap != "":
+                vg_blendmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Blendmap)
+                mogp.Flags |= MOGP_FLAG.HasTwoMOCV
+
+            if new_obj.WowVertexInfo.SecondUV != "":
+                uv_second_uv = new_obj.vertex_groups.get(new_obj.WowVertexInfo.SecondUV)
+                mogp.Flags |= MOGP_FLAG.HasTwoMOTV
+
 
         for poly in mesh.polygons:
             polyBatchMap.setdefault( (material_indices.get(poly.material_index), GetBatchType(poly, mesh, vg_batch_a.index, vg_batch_b.index)), [] ).append(poly.index)
@@ -696,7 +751,9 @@ class WMO_group_file:
         movt = MOVT_chunk()
         monr = MONR_chunk(vertex_size)
         motv = MOTV_chunk(vertex_size)
+        motv2 = MOTV_chunk(vertex_size)
         mocv = MOCV_chunk(vertex_size)
+        mocv2 = MOCV_chunk(vertex_size)
 
         for vertex in mesh.vertices:
             movt.Vertices.append(vertex.co)
@@ -736,11 +793,23 @@ class WMO_group_file:
                     if len(mesh.uv_layers) > 0:
                         motv.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers.active.data[loop_index].uv[0], 1.0 - mesh.uv_layers.active.data[loop_index].uv[1])
 
+                    if uv_second_uv != None:
+                        motv2.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers[uv_second_uv].data[loop_index].uv[0], 1.0 - mesh.uv_layers[uv_second_uv].data[loop_index].uv[1])
+
+
                     if len(mesh.vertex_colors) > 0:
                         vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
+                        vertex_color2 = [0x7F, 0x7F, 0x7F, 0x00]
+
                         for i in range(0, 3):
                             vertex_color[i] = round(mesh.vertex_colors.active.data[loop_index].color[3 - i - 1] * 255)
+                        if vg_lightmap != None:
+                            vertex_color[3] = round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_lightmap.index].weight * 255)
+                            
                         mocv.vertColors[mesh.loops[loop_index].vertex_index] = vertex_color
+
+                    if vg_blendmap != None:
+                        mocv2.vertColors[mesh.loops[loop_index].vertex_index][3] = round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255)
                     
                     normalMap.setdefault(mesh.loops[loop_index].vertex_index, []).append(mesh.loops[loop_index].normal)
 
@@ -975,7 +1044,11 @@ class WMO_group_file:
         movt.Write(f)
         monr.Write(f)
         motv.Write(f)
+
+        if new_obj.WowVertexInfo.Enabled and new_obj.WowVertexInfo.SecondUV != "":
+            motv2.Write(f)
         moba.Write(f)
+
         
         if(source_doodads):
             modr = MODR_chunk()
@@ -996,6 +1069,9 @@ class WMO_group_file:
         mobr.Write(f)
         mocv.Write(f)
 
+        if new_obj.WowVertexInfo.Enabled and new_obj.WowVertexInfo.Blendmap != "":
+            mocv2.Write(f)
+
         if hasWater:
             mliq.Write(f)
 
@@ -1015,4 +1091,4 @@ class WMO_group_file:
         # obj.select = True
         bpy.context.scene.objects.active = obj
 
-        return None
+        return mohd_0x1

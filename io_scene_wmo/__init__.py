@@ -54,7 +54,7 @@ class WMOImporter(bpy.types.Operator):
     bl_idname = "import_mesh.wmo"
     bl_label = "Import WMO"
     bl_options = {'UNDO'}
-
+    
     filepath = StringProperty(
             subtype='FILE_PATH',
             )

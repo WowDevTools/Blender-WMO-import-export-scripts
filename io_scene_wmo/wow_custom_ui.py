@@ -245,6 +245,9 @@ class WowVertexInfoPanel(bpy.types.Panel):
         self.layout.prop(context.object.WowVertexInfo, "NodeSize", slider=True)
         self.layout.prop_search(context.object.WowVertexInfo, "BatchTypeA", context.object, "vertex_groups", text="Batch type A vertex group")
         self.layout.prop_search(context.object.WowVertexInfo, "BatchTypeB", context.object, "vertex_groups", text="Batch type B vertex group")
+        self.layout.prop_search(context.object.WowVertexInfo, "Lightmap", context.object, "vertex_groups", text="Lightmap")
+        self.layout.prop_search(context.object.WowVertexInfo, "Blendmap", context.object, "vertex_groups", text="Blendmap")
+        self.layout.prop_search(context.object.WowVertexInfo, "SecondUV", context.object.data, "uv_textures", text="Second UV")
         layout.enabled = context.object.WowVertexInfo.Enabled
 
     @classmethod
@@ -257,6 +260,9 @@ class WowVertexInfoPropertyGroup(bpy.types.PropertyGroup):
     NodeSize = bpy.props.IntProperty(name="Node max size", description="Max count of faces for a node in bsp tree", default=150, min=1, soft_max=500)
     BatchTypeA = bpy.props.StringProperty()
     BatchTypeB = bpy.props.StringProperty()
+    Lightmap = bpy.props.StringProperty()
+    Blendmap = bpy.props.StringProperty()
+    SecondUV = bpy.props.StringProperty()
 
 def RegisterWowVertexInfoProperties():
     bpy.types.Object.WowVertexInfo = bpy.props.PointerProperty(type=WowVertexInfoPropertyGroup)
@@ -288,6 +294,9 @@ class WowWMOGroupPanel(bpy.types.Panel):
         self.layout.prop(context.object.WowWMOGroup, "PlaceType")
         self.layout.prop(context.object.WowWMOGroup, "GroupID")
         self.layout.prop(context.object.WowWMOGroup, "VertShad")
+        self.layout.prop(context.object.WowWMOGroup, "NoLocalLighting")
+        self.layout.prop(context.object.WowWMOGroup, "AlwaysDraw")
+        self.layout.prop(context.object.WowWMOGroup, "IsMountAllowed")
         self.layout.prop(context.object.WowWMOGroup, "SkyBox")
         self.layout.prop(context.object.WowWMOGroup, "Fog1")
         self.layout.prop(context.object.WowWMOGroup, "Fog2")
@@ -323,7 +332,10 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     placeTypeEnum = [('8', "Outdoor", ""), ('8192', "Indoor", "")]
     PlaceType = bpy.props.EnumProperty(items=placeTypeEnum, name="Place Type", description="Group is indoor or outdoor")
     GroupID = bpy.props.IntProperty(name="DBC Group ID", description="WMO Group ID in DBC file")
-    VertShad = bpy.props.BoolProperty(name="Vertex shading", description="Save gropu vertex shading", default = False)
+    VertShad = bpy.props.BoolProperty(name="Vertex color", description="Save group vertex shading", default = False)
+    NoLocalLighting = bpy.props.BoolProperty(name="No local lighting", description="Do not use local diffuse lightning", default = False)
+    AlwaysDraw = bpy.props.BoolProperty(name="Always draw", description="Always draw the group", default = False)
+    IsMountAllowed = bpy.props.BoolProperty(name="Mounts allowed", description="Allows or prohibits mounts in the group. Works only with generated navmesh delivered to server.", default = False)
     SkyBox = bpy.props.BoolProperty(name="Use Skybox", description="Use skybox in group", default = False)
     Fog1 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 1", description="Fog of an object")
     Fog2 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 2", description="Fog of an object")

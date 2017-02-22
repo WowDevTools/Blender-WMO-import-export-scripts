@@ -530,7 +530,7 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, f, fill_water, source_doodads, autofill_textures):
+    def Save(self, f, fill_water, source_doodads, autofill_textures, mohd_0x1):
     
         mver = MVER_chunk()                
         # set version header
@@ -561,6 +561,7 @@ class WMO_root_file:
         global_portal_count = 0
         global_object_count = 0
         global_fog_count = 0
+        global_outdoor_object_count = 0
         
         for ob in bpy.data.objects:
             if(ob.type == "LAMP"):
@@ -584,6 +585,8 @@ class WMO_root_file:
                 
                 if(ob.WowWMOGroup.Enabled):
                     global_object_count += 1
+                    if ob.WowWMOGroup.PlaceType == '8':
+                        global_outdoor_object_count += 1
                     
                 if(ob.WowPortalPlane.Enabled):
                     print("Export portal "+ob.name)
@@ -695,14 +698,19 @@ class WMO_root_file:
         self.mohd.ID =  bpy.context.scene.WoWRoot.WMOid
         self.mohd.BoundingBoxCorner1 = bb[0]
         self.mohd.BoundingBoxCorner2 = bb[1]
-        self.mohd.Flags = 5
+        self.mohd.Flags = 0
         
         mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
-        
-        if(bpy.context.scene.WoWRoot.UseAmbient):
+
+        if mohd_0x1:
+            self.mohd.Flags |= 0x01
+        if bpy.context.scene.WoWRoot.UseAmbient:
             self.mohd.Flags |= 0x02
-        if(fill_water):
-            self.mohd.Flags = self.mohd.Flags ^ 4
+        if fill_water:
+            self.mohd.Flags |= 0x04
+        if global_outdoor_object_count:
+            self.mohd.Flags |= 0x08
+
 
         # write all chunks
         self.mohd.Write(f)
