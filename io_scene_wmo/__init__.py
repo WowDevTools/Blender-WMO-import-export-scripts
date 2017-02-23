@@ -31,6 +31,15 @@ bl_info = {
         "Scripts/Import-Export/Wow_WMO_IO",
     "tracker_url": "https://developer.blender.org/T25692",
     "category": "Import-Export"}
+    
+# load and reload submodules
+##################################
+
+import importlib
+from . import developer_utils
+importlib.reload(developer_utils)
+modules = developer_utils.setup_addon_modules(__path__, __name__, "bpy" in locals())
+
 
 if "bpy" in locals():
     import imp

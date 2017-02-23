@@ -698,12 +698,12 @@ class WMO_group_file:
         if new_obj.WowVertexInfo.Enabled:
 
             if new_obj.WowVertexInfo.BatchTypeA != "":
-                vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)                                                              
+                vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)
             else:
                 vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
 
             if new_obj.WowVertexInfo.BatchTypeB != "":
-                vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)                                                               
+                vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)
             else:
                 vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
 
