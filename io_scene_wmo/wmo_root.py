@@ -698,7 +698,7 @@ class WMO_root_file:
         self.mohd.ID =  bpy.context.scene.WoWRoot.WMOid
         self.mohd.BoundingBoxCorner1 = bb[0]
         self.mohd.BoundingBoxCorner2 = bb[1]
-        self.mohd.Flags = 0
+        self.mohd.Flags = 4
         
         mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
 
