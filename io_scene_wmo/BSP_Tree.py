@@ -128,7 +128,7 @@ class BSP_Tree:
 
     def GenerateBSP(self, vertices, indices, maxFaceCount):
         resursLimit = sys.getrecursionlimit()
-        sys.setrecursionlimit(2000)
+        sys.setrecursionlimit(100000)
 
         faces = []
         for iFace in range(len(indices) // 3):
