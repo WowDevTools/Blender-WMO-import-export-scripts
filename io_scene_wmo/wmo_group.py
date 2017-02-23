@@ -438,7 +438,8 @@ class WMO_group_file:
             blendmap.add(self.movi.Indices, 1.0, 'ADD')
 
             for vertex in mesh.vertices:
-                vertex.groups[blendmap.index].weight = self.mocv.vertColors[vertex.index][3] / 255
+                vertex.groups[blendmap.index].weight = self.mocv2.vertColors[vertex.index][3] / 255
+                print(vertex.groups[blendmap.index].weight)
 
                 
         # set uv
