@@ -698,7 +698,7 @@ class WMO_root_file:
         self.mohd.ID =  bpy.context.scene.WoWRoot.WMOid
         self.mohd.BoundingBoxCorner1 = bb[0]
         self.mohd.BoundingBoxCorner2 = bb[1]
-        self.mohd.Flags = 4
+        self.mohd.Flags = 0
         
         mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
 
@@ -707,7 +707,7 @@ class WMO_root_file:
         if bpy.context.scene.WoWRoot.UseAmbient:
             self.mohd.Flags |= 0x02
         if fill_water:
-            self.mohd.Flags = self.mohd.Flags ^ 0x04
+            self.mohd.Flags |= 0x04
         if global_outdoor_object_count:
             self.mohd.Flags |= 0x08
 

@@ -413,6 +413,7 @@ class WMO_group_file:
             
         # set vertex color
         if self.mogp.Flags & MOGP_FLAG.HasVertexColor:
+            nobj.WowWMOGroup.VertShad = True
             vertColor_layer1 = mesh.vertex_colors.new("Col")
 
             if not root.mohd.Flags & 0x01: 
@@ -454,10 +455,10 @@ class WMO_group_file:
             nobj.WowVertexInfo.Enabled = True
             nobj.WowVertexInfo.SecondUV = uv2.name
             uv_layer2 = mesh.uv_layers[1]
-
+        
             for j in range(len(uv_layer2.data)):
-                uv2 = self.motv2.TexCoords[mesh.loops[j].vertex_index]
-                uv_layer2.data[j].uv = (uv2[0], 1 - uv2[1])
+                uv = self.motv2.TexCoords[mesh.loops[j].vertex_index]
+                uv_layer2.data[j].uv = (uv[0], 1 - uv[1])
             
         # map root material ID to index in mesh materials
         material_indices = {}
@@ -703,12 +704,12 @@ class WMO_group_file:
         if new_obj.WowVertexInfo.Enabled:
 
             if new_obj.WowVertexInfo.BatchTypeA != "":
-                vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)                                                              
+                vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)
             else:
                 vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
 
             if new_obj.WowVertexInfo.BatchTypeB != "":
-                vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)                                                               
+                vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)
             else:
                 vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
 
@@ -724,8 +725,12 @@ class WMO_group_file:
                 mogp.Flags |= MOGP_FLAG.HasTwoMOCV
 
             if new_obj.WowVertexInfo.SecondUV != "":
-                uv_second_uv = new_obj.vertex_groups.get(new_obj.WowVertexInfo.SecondUV)
+                uv_second_uv = new_obj.data.uv_textures.get(new_obj.WowVertexInfo.SecondUV)
                 mogp.Flags |= MOGP_FLAG.HasTwoMOTV
+        
+        else:
+            vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
+            vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
 
 
         for poly in mesh.polygons:
@@ -751,7 +756,6 @@ class WMO_group_file:
         movi = MOVI_chunk()
         mopy = MOPY_chunk()
         moba = MOBA_chunk(nBatchesA + nBatchesB + nBatchesC)
-        print(nBatchesA + nBatchesB + nBatchesC)
 
         movt = MOVT_chunk()
         monr = MONR_chunk(vertex_size)
@@ -799,10 +803,10 @@ class WMO_group_file:
                         motv.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers.active.data[loop_index].uv[0], 1.0 - mesh.uv_layers.active.data[loop_index].uv[1])
 
                     if uv_second_uv != None:
-                        motv2.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers[uv_second_uv].data[loop_index].uv[0], 1.0 - mesh.uv_layers[uv_second_uv].data[loop_index].uv[1])
+                        motv2.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[0], 1.0 - mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[1])
 
 
-                    if len(mesh.vertex_colors) > 0:
+                    if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192') and len(mesh.vertex_colors) > 0:
                         vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
                         vertex_color2 = [0x7F, 0x7F, 0x7F, 0x00]
 
@@ -882,13 +886,15 @@ class WMO_group_file:
                 mogp.BoundingBoxCorner2[i] = ret_max(mogp.BoundingBoxCorner2[i], ceil(vtx[i]))
             
 
-        mogp.Flags = MOGP_FLAG.HasCollision # /!\ MUST HAVE 0x1 FLAG ELSE THE GAME CRASH !
-        if(new_obj.WowWMOGroup.VertShad):
-            mogp.Flags = mogp.Flags | MOGP_FLAG.HasVertexColor
-        if(new_obj.WowWMOGroup.SkyBox):
-            mogp.Flags = mogp.Flags | MOGP_FLAG.HasSkybox
+        mogp.Flags |= MOGP_FLAG.HasCollision # /!\ MUST HAVE 0x1 FLAG ELSE THE GAME CRASH !
+        if new_obj.WowWMOGroup.VertShad:
+            mogp.Flags |= MOGP_FLAG.HasVertexColor
+        if new_obj.WowWMOGroup.SkyBox:
+            mogp.Flags |= MOGP_FLAG.HasSkybox
             
-        mogp.Flags = mogp.Flags | int(new_obj.WowWMOGroup.PlaceType)
+        mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
+        
+        mogp.LiquidType = 15 
 
 
         mogp.PortalStart = -1
@@ -1028,7 +1034,7 @@ class WMO_group_file:
         
         if(mogp.PortalStart == -1):
             mogp.PortalStart = root.PortalRCount
-        root.PortalRCount+=mogp.PortalCount
+        root.PortalRCount += mogp.PortalCount
         mogp.nBatchesA = nBatchesA
         mogp.nBatchesB = nBatchesB
         mogp.nBatchesC = nBatchesC
