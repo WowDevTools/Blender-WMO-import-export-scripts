@@ -20,5 +20,8 @@ If you want to actually use the script now, you should obtain a stable release v
 - Transport convex volume planes
 - Doodadset editing. (If the m2 plugin arrives by that time).
 
+# Donation
+There is a thing that can speed up the development of Blender addons for me. http://blendermarket.com/products/code-autocomplete/ So, if you want to help me out on getting this one, here is my PayPal: https://www.paypal.me/sergeishumakov2015. I will also share this purchased script with Miton who is at the moment working on a similar Blender plugin for .M2 models. So, by helping me, you can speed up the development of two tools at once.
+
 # Installation and usage:
 http://www.model-changing.net/files/file/56-wmo-importexport-blender-scripts-updated-25022016/ (relevant to last officially released version)
