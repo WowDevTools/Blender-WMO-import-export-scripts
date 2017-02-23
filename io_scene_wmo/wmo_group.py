@@ -1041,7 +1041,6 @@ class WMO_group_file:
         mogp.nBatchesC = nBatchesC
         mogp.nBatchesD = 0
         mogp.FogIndices = (fogMap.get(new_obj.WowWMOGroup.Fog1, 0), fogMap.get(new_obj.WowWMOGroup.Fog2, 0), fogMap.get(new_obj.WowWMOGroup.Fog3, 0), fogMap.get(new_obj.WowWMOGroup.Fog4, 0), )
-        mogp.LiquidType = 0
         mogp.GroupID = int(new_obj.WowWMOGroup.GroupID)
         mogp.Unknown1 = 0
         mogp.Unknown2 = 0
