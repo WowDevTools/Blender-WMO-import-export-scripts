@@ -670,22 +670,6 @@ class OBJECT_OP_FLAG_0x02(bpy.types.Operator):
         self.SwitchFlag()
         return {'FINISHED'}
 
-class OBJECT_OP_FLAG_0x03(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_flag_0x03'
-    bl_label = 'Flag 0x03'
-    bl_description = 'Currently displayed flag layer'
-    
-    def SwitchFlag(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            mesh.vertex_colors["flag_0x3"].active = True
-            mesh.use_paint_mask = True
-        
-    def execute(self, context):
-        self.SwitchFlag()
-        return {'FINISHED'}
-
 class OBJECT_OP_FLAG_0x04(bpy.types.Operator):
     bl_idname = 'scene.wow_mliq_flag_0x04'
     bl_label = 'Flag 0x04'
