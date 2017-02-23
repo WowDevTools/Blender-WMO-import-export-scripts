@@ -123,7 +123,8 @@ class WMO_group_file:
 
         # read liquids
         if(self.mogp.Flags & MOGP_FLAG.HasWater):
-            if self.mogp.LiquidType == 3:
+            if (self.mogp.LiquidType == 3) or (self.mogp.LiquidType == 4) or (self.mogp.LiquidType == 7) or \
+            (self.mogp.LiquidType == 8) or (self.mogp.LiquidType == 11) or (self.mogp.LiquidType == 12):
                 self.mliq = MLIQ_chunk(False)
             else:
                 self.mliq = MLIQ_chunk()
@@ -257,7 +258,9 @@ class WMO_group_file:
 
         #create uv map if liquid is lava
         
-        if self.mogp.LiquidType == 3:
+        if (self.mogp.LiquidType == 3) or (self.mogp.LiquidType == 4) or (self.mogp.LiquidType == 7) or \
+        (self.mogp.LiquidType == 8) or (self.mogp.LiquidType == 11) or (self.mogp.LiquidType == 12):
+                
             uvMap = {}
 
             for vertex in mesh.vertices:
