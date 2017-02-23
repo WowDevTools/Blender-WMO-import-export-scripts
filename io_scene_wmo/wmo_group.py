@@ -95,10 +95,6 @@ class WMO_group_file:
         self.motv = MOTV_chunk()
         self.motv.Read(f)
 
-        if(self.mogp.Flags & MOGP_FLAG.HasTwoMOTV):
-            self.motv2 = MOTV_chunk()
-            self.motv2.Read(f)
-
         # read batches
         self.moba = MOBA_chunk()
         self.moba.Read(f)
@@ -125,10 +121,6 @@ class WMO_group_file:
             self.mocv = MOCV_chunk()
             self.mocv.Read(f)
 
-        if(self.mogp.Flags & MOGP_FLAG.HasTwoMOCV):
-            self.mocv2 = MOCV_chunk()
-            self.mocv2.Read(f)
-
         # read liquids
         if(self.mogp.Flags & MOGP_FLAG.HasWater):
             if self.mogp.LiquidType == 3:
@@ -136,6 +128,16 @@ class WMO_group_file:
             else:
                 self.mliq = MLIQ_chunk()
             self.mliq.Read(f)
+            
+        # read second MOTV and mocv
+        if(self.mogp.Flags & MOGP_FLAG.HasTwoMOTV):
+            self.motv2 = MOTV_chunk()
+            self.motv2.Read(f)
+            
+        if(self.mogp.Flags & MOGP_FLAG.HasTwoMOCV):
+            self.mocv2 = MOCV_chunk()
+            self.mocv2.Read(f)
+        
             
     def CreateMeshFromBatch(self, meshName, batch, materials):
         # create mesh vertices / faces
@@ -411,7 +413,7 @@ class WMO_group_file:
             vertColor_layer1 = mesh.vertex_colors.new("Col")
 
             if not root.mohd.Flags & 0x01: 
-                lightmap = nobj.vertex_groups.new("Lightmap")    
+                lightmap = nobj.vertex_groups.new("Lightmap")
                 nobj.WowVertexInfo.Enabled = True
                 nobj.WowVertexInfo.Lightmap = lightmap.name
                 lightmap.add(self.movi.Indices, 1.0, 'ADD')
@@ -671,7 +673,7 @@ class WMO_group_file:
 
         mogp = MOGP_chunk()
         
-        material_indices = {} #                                                                                         --material_indices:creation
+        material_indices = {} 
         
         for i in range(len(mesh.materials)):
             material_indices[i] = root.AddMaterial(mesh.materials[i]) # adding materials to root object. Returns the index of material if the passed one already exists.
@@ -698,12 +700,12 @@ class WMO_group_file:
         if new_obj.WowVertexInfo.Enabled:
 
             if new_obj.WowVertexInfo.BatchTypeA != "":
-                vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)
+                vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)                                                              
             else:
                 vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
 
             if new_obj.WowVertexInfo.BatchTypeB != "":
-                vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)
+                vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)                                                               
             else:
                 vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
 
@@ -1044,9 +1046,6 @@ class WMO_group_file:
         movt.Write(f)
         monr.Write(f)
         motv.Write(f)
-
-        if new_obj.WowVertexInfo.Enabled and new_obj.WowVertexInfo.SecondUV != "":
-            motv2.Write(f)
         moba.Write(f)
 
         
@@ -1069,12 +1068,15 @@ class WMO_group_file:
         mobr.Write(f)
         mocv.Write(f)
 
-        if new_obj.WowVertexInfo.Enabled and new_obj.WowVertexInfo.Blendmap != "":
-            mocv2.Write(f)
-
         if hasWater:
             mliq.Write(f)
-
+            
+        # write second MOTV and MOCV
+        if vg_blendmap != None:
+            motv2.Write(f)
+            
+        if uv_second_uv != None:
+            mocv2.Write(f)
 
         # get file size
         f.seek(0, 2)
