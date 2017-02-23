@@ -818,9 +818,10 @@ class WMO_group_file:
                         mocv.vertColors[mesh.loops[loop_index].vertex_index] = vertex_color
 
                     if vg_blendmap != None:
-                        mocv2.vertColors[mesh.loops[loop_index].vertex_index][3] = round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255)
+                        mocv2.vertColors[mesh.loops[loop_index].vertex_index] = (0, 0, 0, round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255))
                     
                     normalMap.setdefault(mesh.loops[loop_index].vertex_index, []).append(mesh.loops[loop_index].normal)
+                    
 
             nIndices = len(movi.Indices) - firstIndex
 
@@ -1081,11 +1082,12 @@ class WMO_group_file:
             mliq.Write(f)
             
         # write second MOTV and MOCV
-        if vg_blendmap != None:
+        if uv_second_uv != None:
             motv2.Write(f)
             
-        if uv_second_uv != None:
+        if vg_blendmap != None:
             mocv2.Write(f)
+
 
         # get file size
         f.seek(0, 2)
