@@ -456,7 +456,7 @@ class WMO_group_file:
             uv_layer2 = mesh.uv_layers[1]
 
             for j in range(len(uv_layer2.data)):
-                uv2 = self.motv2.texCoords[mesh.loops[j].vertex_index]
+                uv2 = self.motv2.TexCoords[mesh.loops[j].vertex_index]
                 uv_layer2.data[j].uv = (uv2[0], 1 - uv2[1])
             
         # map root material ID to index in mesh materials
