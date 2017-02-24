@@ -768,19 +768,20 @@ class WMO_group_file:
             mopy = MOPY_chunk()
             moba = MOBA_chunk(nBatchesA + nBatchesB + nBatchesC)
 
-            movt = MOVT_chunk()
+            movt = MOVT_chunk(vertex_size)
             monr = MONR_chunk(vertex_size)
             motv = MOTV_chunk(vertex_size)
             motv2 = MOTV_chunk(vertex_size)
             mocv = MOCV_chunk(vertex_size)
             mocv2 = MOCV_chunk(vertex_size)
-
-            for vertex in mesh.vertices:
-                movt.Vertices.append(vertex.co)
-
+                
+                
+            vertexMap = {}
             normalMap = {}
             batchMap = {}
-
+        
+            new_index_last = 0
+                        
             # write geometry data and batches
 
             batch_counter_a = 0
@@ -790,12 +791,27 @@ class WMO_group_file:
             for batchKey, polyBatch in polyBatchMap.items():
 
                 firstIndex = len(movi.Indices)
+                
+                sentryIndices = [0xFFFF, 0x00]
 
                 for poly in polyBatch:
                     collision_counter = 0
 
                     for vertex_index in mesh.polygons[poly].vertices:
-                        movi.Indices.append(vertex_index)
+                        
+                        new_index_current = vertexMap.get(vertex_index)
+                        
+                        if new_index_current == None:
+                            vertexMap[vertex_index] = new_index_last
+                            new_index_current = new_index_last
+                            new_index_last += 1
+                            movt.Vertices[new_index_current] = mesh.vertices[vertex_index].co
+                            
+                        sentryIndices[0] = ret_min(sentryIndices[0], new_index_current)
+                        sentryIndices[1] = ret_max(sentryIndices[1], new_index_current)
+                            
+                        movi.Indices.append(new_index_current)
+                        
 
                         if vg_collision != None:
                             for group_info in mesh.vertices[vertex_index].groups:
@@ -809,12 +825,14 @@ class WMO_group_file:
                     mopy.TriangleMaterials.append(tri_mat)
 
                     for loop_index in mesh.polygons[poly].loop_indices:
+                        
+                        new_index = vertexMap.get(mesh.loops[loop_index].vertex_index)
 
                         if len(mesh.uv_layers) > 0:
-                            motv.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers.active.data[loop_index].uv[0], 1.0 - mesh.uv_layers.active.data[loop_index].uv[1])
+                            motv.TexCoords[new_index] = (mesh.uv_layers.active.data[loop_index].uv[0], 1.0 - mesh.uv_layers.active.data[loop_index].uv[1])
 
                         if uv_second_uv != None:
-                            motv2.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[0], 1.0 - mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[1])
+                            motv2.TexCoords[new_index] = (mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[0], 1.0 - mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[1])
 
 
                         if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192') and len(mesh.vertex_colors) > 0:
@@ -826,12 +844,12 @@ class WMO_group_file:
                             if vg_lightmap != None:
                                 vertex_color[3] = round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_lightmap.index].weight * 255)
                                 
-                            mocv.vertColors[mesh.loops[loop_index].vertex_index] = vertex_color
+                            mocv.vertColors[new_index] = vertex_color
 
                         if vg_blendmap != None:
-                            mocv2.vertColors[mesh.loops[loop_index].vertex_index] = (0, 0, 0, round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255))
+                            mocv2.vertColors[new_index] = (0, 0, 0, round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255))
                         
-                        normalMap.setdefault(mesh.loops[loop_index].vertex_index, []).append(mesh.loops[loop_index].normal)
+                        normalMap.setdefault(new_index, []).append(mesh.loops[loop_index].normal)
                         
 
                 nIndices = len(movi.Indices) - firstIndex
@@ -840,13 +858,14 @@ class WMO_group_file:
 
                 for poly in polyBatch:
                     for vertex_index in mesh.polygons[poly].vertices:
-                        monr.Normals[vertex_index] = GetAvg(normalMap.get(vertex_index))
+                        new_index = vertexMap.get(vertex_index)
+                        monr.Normals[new_index] = GetAvg(normalMap.get(new_index))
 
                         for i in range(0, 2):
                             for j in range(0, 3):
                                 idx = i * 3 + j
-                                BoundingBox[idx] = ret_min(BoundingBox[idx], floor(movt.Vertices[vertex_index][j])) if i == 0 \
-                                else ret_max(BoundingBox[idx], ceil(movt.Vertices[vertex_index][j]))
+                                BoundingBox[idx] = ret_min(BoundingBox[idx], floor(movt.Vertices[new_index][j])) if i == 0 \
+                                else ret_max(BoundingBox[idx], ceil(movt.Vertices[new_index][j]))
 
                 # skip batch writing if processed polyBatch is collision
 
@@ -863,8 +882,8 @@ class WMO_group_file:
                 batch.StartTriangle = firstIndex
                 batch.nTriangle = nIndices
 
-                batch.StartVertex = mesh.polygons[polyBatch[0]].vertices[0]
-                batch.LastVertex = mesh.polygons[polyBatch[len(polyBatch) - 1]].vertices[2]
+                batch.StartVertex = sentryIndices[0]
+                batch.LastVertex = sentryIndices[1]
 
                 batch.MaterialID = batchKey[0]
 
@@ -1066,6 +1085,7 @@ class WMO_group_file:
             mogp.DescGroupNameOfs = groupInfo[1]
             
             f.seek(0x58)
+            print(len(mopy.TriangleMaterials))
             mopy.Write(f)
             movi.Write(f)
             movt.Write(f)
@@ -1091,7 +1111,9 @@ class WMO_group_file:
 
             mobn.Write(f)
             mobr.Write(f)
-            mocv.Write(f)
+            
+            if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192') and len(mesh.vertex_colors) > 0:
+                mocv.Write(f)
 
             if hasWater:
                 mliq.Write(f)
@@ -1121,7 +1143,7 @@ class WMO_group_file:
             # obj.select = True
             bpy.context.scene.objects.active = obj
             
-            raise Exception("Something weant wrong while exporting " + str(obj.name) + " WMO group. See the error above for details.")
+            raise Exception("Something went wrong while exporting " + str(obj.name) + " WMO group. See the error above for details.")
             
         else:
             
