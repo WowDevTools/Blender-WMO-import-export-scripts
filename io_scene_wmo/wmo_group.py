@@ -961,34 +961,39 @@ class WMO_group_file:
                     material.WowMaterial.Enabled = True
                     material.WowMaterial.Flags3 = '1'
 
-                    material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
+                    material.WowMaterial.Texture1 = "UNGEONS\TEXTURES\STORMWIND\GRAY12.BLP"
 
-
-                    if mogp.LiquidType == 3:
+                    if mogp.LiquidType == 3 or mogp.LiquidType == 7 or mogp.LiquidType == 11:
                         material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\TRIM\BM_BRSPIRE_LAVAWALLTRANS.BLP"
-                    elif mogp.LiquidType == 4:
+                    elif mogp.LiquidType == 4 or mogp.LiquidType == 8 or mogp.LiquidType == 12:
                         material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
 
                     mliq.materialID = root.AddMaterial(material) 
 
 
-                    if mogp.LiquidType == 3:
+                    if mogp.LiquidType == 3 or mogp.LiquidType == 4 or mogp.LiquidType == 7 or \
+                    mogp.LiquidType == 8 or mogp.LiquidType == 11 or mogp.LiquidType == 12:
+                        
+                        if mesh.uv_layers.active is not None:
 
-                        uvMap = {}
+                            uvMap = {}
 
-                        for poly in mesh.polygons:
-                            for loop_index in poly.loop_indices:
-                                if mesh.loops[loop_index].vertex_index not in uvMap:
-                                    uvMap[mesh.loops[loop_index].vertex_index] = mesh.uv_layers.active.data[loop_index].uv
+                            for poly in mesh.polygons:
+                                for loop_index in poly.loop_indices:
+                                    if mesh.loops[loop_index].vertex_index not in uvMap:
+                                        uvMap[mesh.loops[loop_index].vertex_index] = mesh.uv_layers.active.data[loop_index].uv
 
-                        for i in range(mliq.xVerts * mliq.yVerts):
-                            vertex = MagmaVertex()
+                            for i in range(mliq.xVerts * mliq.yVerts):
+                                vertex = MagmaVertex()
 
-                            vertex.u = uvMap.get(mesh.vertices[i].index)[0]
-                            vertex.v = uvMap.get(mesh.vertices[i].index)[1]
+                                vertex.u = uvMap.get(mesh.vertices[i].index)[0]
+                                vertex.v = uvMap.get(mesh.vertices[i].index)[1]
 
-                            vertex.height = mesh.vertices[i].co[2]
-                            mliq.VertexMap.append(vertex)
+                                vertex.height = mesh.vertices[i].co[2]
+                                mliq.VertexMap.append(vertex)
+                        else:
+                            
+                            raise Exception("Slime and magma (lava) liquids require a UV map to be created.")
 
                     else:
 
