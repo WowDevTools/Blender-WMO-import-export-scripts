@@ -595,12 +595,18 @@ class WMO_group_file:
         mesh = new_obj.data
         original_mesh = obj.data
         
+        # apply all modifiers. Needs to optional.
+        bpy.ops.object.mode_set(mode='OBJECT')
+          for modifier in new_obj.modifiers:
+            bpy.ops.object.modifier_apply(modifier=modifier.name)
+        
+        
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.quads_convert_to_tris()
         bpy.ops.mesh.select_all(action='DESELECT')
         
-        # perform edge split. Needs to be optional.
+        # perform edge split. 
         bpy.ops.uv.select_all(action='TOGGLE')
         bpy.ops.uv.seams_from_islands(mark_seams=False, mark_sharp=True)
         bpy.ops.object.mode_set(mode='OBJECT')
