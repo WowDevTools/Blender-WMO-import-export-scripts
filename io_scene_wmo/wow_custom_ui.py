@@ -550,7 +550,13 @@ class WoWVisibilityPropertyGroup(bpy.types.PropertyGroup):
         name="Fog",
         description="Show/hide fog objects",
         default= True,
-    )  
+    )
+    
+    Fog = bpy.props.BoolProperty(
+        name="Light",
+        description="Show/hide light objects",
+        default= True,
+    ) 
     
     Water = bpy.props.BoolProperty(
         name="Water",
@@ -599,6 +605,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_hide_show_portals", text = 'Portals', icon = 'MOD_PARTICLES')
         col.operator("scene.wow_hide_show_fog", text = 'Fog', icon = 'FORCE_TURBULENCE')
         col.operator("scene.wow_hide_show_water", text = 'Water', icon = 'MOD_FLUIDSIM')
+        col.operator("scene.wow_hide_show_light", text = 'Light', icon = 'LAMP_SPOT')
         col.operator("scene.wow_hide_show_all_objects", text = 'All', icon = 'VISIBLE_IPO_ON') 
 
     def RegisterWMOToolsPanelObjectMode():
@@ -1196,7 +1203,7 @@ class OBJECT_OP_Hide_Show_Outdoor(bpy.types.Operator):
 class OBJECT_OP_Hide_Show_Fog(bpy.types.Operator):
     bl_idname = 'scene.wow_hide_show_fog'
     bl_label = 'Hide/Show all WoW fog objects'
-    bl_description = 'Hide/Show all WoW fog objects'
+    bl_description = 'Hide/Show all WoW WMO fog objects'
 
     def execute(self, context):
         state = True
@@ -1210,7 +1217,26 @@ class OBJECT_OP_Hide_Show_Fog(bpy.types.Operator):
                     state = True
         bpy.context.scene.WoWVisibility.Fog = state
         return {'FINISHED'}
-
+    
+    
+class OBJECT_OP_Hide_Show_Light(bpy.types.Operator):
+    bl_idname = "scene.wow_hide_show_light"
+    bl_label = "Hide/Show all WoW light objects"
+    bl_description = "Hide/Show all WoW WMO light objects"
+    
+    def execute(self, context):
+        state = True
+        for ob in bpy.context.scene.objects:
+            if(ob.type == 'LAMP' and ob.WowLight.Enabled):
+                if(bpy.context.scene.WoWVisibility.Light == True):
+                    ob.hide = True
+                    state = False
+                else:
+                    ob.hide = False
+                    state = True
+        bpy.context.scene.WoWVisibility.Light = state    
+        return {"FINISHED"}
+        
 ###############################
 ## Root source
 ###############################
