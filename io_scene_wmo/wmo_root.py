@@ -708,8 +708,9 @@ class WMO_root_file:
             self.mohd.Flags |= 0x02
         if fill_water:
             self.mohd.Flags |= 0x04
-        if global_outdoor_object_count:
-            self.mohd.Flags |= 0x08
+        
+#        if global_outdoor_object_count: -- makes mesh overbrightaa
+#            self.mohd.Flags |= 0x08
 
 
         # write all chunks

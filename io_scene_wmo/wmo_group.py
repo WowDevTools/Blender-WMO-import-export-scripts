@@ -581,6 +581,7 @@ class WMO_group_file:
         
 
         mohd_0x1 = True
+        bpy.ops.object.select_all(action='DESELECT')
 
         # check Wow WMO panel enabled
         if(not obj.WowWMOGroup.Enabled):
@@ -600,8 +601,9 @@ class WMO_group_file:
             
             # apply all modifiers. Needs to optional.
             bpy.ops.object.mode_set(mode='OBJECT')
-            for modifier in new_obj.modifiers:
-                bpy.ops.object.modifier_apply(modifier=modifier.name)
+            if len(new_obj.modifiers) != 0:
+                for modifier in new_obj.modifiers:
+                    bpy.ops.object.modifier_apply(modifier=modifier.name)
             
             # triangualate mesh
             bpy.ops.object.mode_set(mode='EDIT')
@@ -641,8 +643,8 @@ class WMO_group_file:
             
             auto_normal_smooth = False
             if (original_mesh.has_custom_normals == False):
+                original_mesh.use_auto_smooth = True
                 bpy.ops.mesh.customdata_custom_splitnormals_add()
-                bpy.ops.mesh.masked_soften_normals()
                 original_mesh.calc_normals_split()
                 auto_normal_smooth = True
                 
@@ -1112,8 +1114,6 @@ class WMO_group_file:
         
         except:
             
-            print("Something went wrong while exporting", obj.name, "WMO group. See the error above for details.")
-            
             # bpy.context.scene.objects.unlink(new_obj)
             bpy.data.objects.remove(new_obj, do_unlink = True)
             
@@ -1121,7 +1121,7 @@ class WMO_group_file:
             # obj.select = True
             bpy.context.scene.objects.active = obj
             
-            sys.exit(1)
+            raise Exception("Something weant wrong while exporting " + str(obj.name) + " WMO group. See the error above for details.")
             
         else:
             
