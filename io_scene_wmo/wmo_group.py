@@ -597,10 +597,10 @@ class WMO_group_file:
         
         # apply all modifiers. Needs to optional.
         bpy.ops.object.mode_set(mode='OBJECT')
-          for modifier in new_obj.modifiers:
+        for modifier in new_obj.modifiers:
             bpy.ops.object.modifier_apply(modifier=modifier.name)
         
-        
+        # triangualate mesh
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.quads_convert_to_tris()
