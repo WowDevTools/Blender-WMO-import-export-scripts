@@ -986,8 +986,8 @@ class WMO_group_file:
                             for i in range(mliq.xVerts * mliq.yVerts):
                                 vertex = MagmaVertex()
 
-                                vertex.u = uvMap.get(mesh.vertices[i].index)[0]
-                                vertex.v = uvMap.get(mesh.vertices[i].index)[1]
+                                vertex.u = int( uvMap.get(mesh.vertices[i].index)[0] ) 
+                                vertex.v = int( uvMap.get(mesh.vertices[i].index)[1] )
 
                                 vertex.height = mesh.vertices[i].co[2]
                                 mliq.VertexMap.append(vertex)
