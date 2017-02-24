@@ -552,7 +552,7 @@ class WoWVisibilityPropertyGroup(bpy.types.PropertyGroup):
         default= True,
     )
     
-    Fog = bpy.props.BoolProperty(
+    Light = bpy.props.BoolProperty(
         name="Light",
         description="Show/hide light objects",
         default= True,
@@ -1117,8 +1117,8 @@ class OBJECT_OP_Hide_Show_All(bpy.types.Operator):
     def execute(self, context):
         state = True
         for ob in bpy.context.scene.objects:
-            if((ob.WowWMOGroup.Enabled == True) or (ob.WowPortalPlane.Enabled == True)) or (ob.WowFog.Enabled == True) or (ob.WowLiquid.Enabled == True):
-                if(bpy.context.scene.WoWVisibility.All == True):
+            if ob.WowWMOGroup.Enabled or ob.WowPortalPlane.Enabled or ob.WowFog.Enabled or ob.WowLiquid.Enabled or ob.data.WowLight.Enabled:
+                if bpy.context.scene.WoWVisibility.All:
                     ob.hide = True
                     state = False
                 else:
@@ -1227,7 +1227,7 @@ class OBJECT_OP_Hide_Show_Light(bpy.types.Operator):
     def execute(self, context):
         state = True
         for ob in bpy.context.scene.objects:
-            if(ob.type == 'LAMP' and ob.WowLight.Enabled):
+            if(ob.type == 'LAMP' and ob.data.WowLight.Enabled):
                 if(bpy.context.scene.WoWVisibility.Light == True):
                     ob.hide = True
                     state = False
