@@ -961,7 +961,7 @@ class WMO_group_file:
                     material.WowMaterial.Enabled = True
                     material.WowMaterial.Flags3 = '1'
 
-                    material.WowMaterial.Texture1 = "UNGEONS\TEXTURES\STORMWIND\GRAY12.BLP"
+                    material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\STORMWIND\GRAY12.BLP"
 
                     if mogp.LiquidType == 3 or mogp.LiquidType == 7 or mogp.LiquidType == 11:
                         material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\TRIM\BM_BRSPIRE_LAVAWALLTRANS.BLP"
