@@ -577,14 +577,15 @@ class WMO_group_file:
         if scn.objects.active is None or scn.objects.active.mode == 'OBJECT':
             scn.objects.active = nobj
 
-    def Save(self, f, obj, root, objNumber, source_doodads, autofill_textures): #, material_indices, group_name_ofs, group_desc_ofs):
+    def Save(self, f, obj, root, objNumber, source_doodads, autofill_textures):
+        
 
         mohd_0x1 = True
 
         # check Wow WMO panel enabled
         if(not obj.WowWMOGroup.Enabled):
             #bpy.ops.error.message(message="Error: Trying to export " + obj.name + " but Wow WMO Group properties not enabled")
-            raise Exception("Error: Trying to export " + obj.name + " but Wow WMO Group properties not enabled")
+            raise Exception("Error: Trying to export " + obj.name + " but WoW WMO Group properties not enabled")
 
         bpy.context.scene.objects.active = obj
         new_obj = obj.copy()
@@ -595,523 +596,540 @@ class WMO_group_file:
         mesh = new_obj.data
         original_mesh = obj.data
         
-        # apply all modifiers. Needs to optional.
-        bpy.ops.object.mode_set(mode='OBJECT')
-        for modifier in new_obj.modifiers:
-            bpy.ops.object.modifier_apply(modifier=modifier.name)
-        
-        # triangualate mesh
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.mesh.quads_convert_to_tris()
-        bpy.ops.mesh.select_all(action='DESELECT')
-        
-        # perform edge split. 
-        bpy.ops.uv.select_all(action='TOGGLE')
-        bpy.ops.uv.seams_from_islands(mark_seams=False, mark_sharp=True)
-        bpy.ops.object.mode_set(mode='OBJECT')
-        
-        bpy.ops.object.modifier_add(type='EDGE_SPLIT')
-        bpy.context.object.modifiers["EdgeSplit"].use_edge_angle = False
-        bpy.ops.object.modifier_apply(apply_as='DATA', modifier="EdgeSplit")
-
-        # perform vertex group split to keep batches accurate.
-        bpy.ops.object.mode_set(mode='EDIT')
-        if new_obj.WowVertexInfo.BatchTypeA != "" and new_obj.WowVertexInfo.Enabled:
-            bpy.ops.object.vertex_group_set_active(group=new_obj.WowVertexInfo.BatchTypeA)
-            bpy.ops.object.vertex_group_select()
-            bpy.ops.mesh.split()
-            bpy.ops.mesh.select_all(action='DESELECT')
-
-        if new_obj.WowVertexInfo.BatchTypeB != "" and new_obj.WowVertexInfo.Enabled:
-            bpy.ops.object.vertex_group_set_active(group=new_obj.WowVertexInfo.BatchTypeB)
-            bpy.ops.object.vertex_group_select()
-            bpy.ops.mesh.split()
-            bpy.ops.mesh.select_all(action='DESELECT')
-
-        bpy.ops.object.mode_set(mode='OBJECT')
-        
-        # perform custom normal data calculation if not yet calculated by the user
-        bpy.context.scene.objects.active = obj
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        
-        auto_normal_smooth = False
-        if (original_mesh.has_custom_normals == False):
-            bpy.ops.mesh.customdata_custom_splitnormals_add()
-            bpy.ops.mesh.masked_soften_normals()
-            original_mesh.calc_normals_split()
-            auto_normal_smooth = True
+        try:
             
-        bpy.ops.mesh.select_all(action='DESELECT')
-        bpy.ops.object.mode_set(mode='OBJECT')
-        
-        # perform custom normal data transfer to a temporary object
-        obj.select = True
-        bpy.context.scene.objects.active = new_obj
-        bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='CUSTOM_NORMAL')
-        obj.select = False
-        
-        # clear auto-generated custom normal data on original scene object to avoid changes of original scene on export. If normals are user defined, we do not touch them.
-        bpy.context.scene.objects.active = obj 
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        if (original_mesh.has_custom_normals == True) and (auto_normal_smooth == True):
-            bpy.ops.mesh.customdata_custom_splitnormals_clear()
-        bpy.ops.mesh.select_all(action='DESELECT')
-        bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.context.scene.objects.active = new_obj
-        
-        # apply object transformation to geometry. Needs to be optional.
-        new_obj.select = True
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        new_obj.select = False
-
-        #mesh.calc_normals_split() -- We seem to not need that after transfer
-        
-        # doing some safety checks to notify the user if the object is badly formed
-        if(len(mesh.vertices) > 65535):
-            raise Exception("Object " + str(obj.name) + " contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")
-        
-        if len(mesh.materials) > 254 or len(root.momt.Materials) > 255:
-            raise Exception("Scene has excceeded the maximum allowed number of WoW materials (255). Your scene now has " + len(root.momt.Materials) + " materials. So, " + (len(root.momt.Materials) - 255) + " extra ones." )
-        
-        
-        mver = MVER_chunk()
-        mver.Version = 17
-        mver.Write(f)
-
-        mogp = MOGP_chunk()
-        
-        material_indices = {} 
-        
-        for i in range(len(mesh.materials)):
-            material_indices[i] = root.AddMaterial(mesh.materials[i]) # adding materials to root object. Returns the index of material if the passed one already exists.
+            # apply all modifiers. Needs to optional.
+            bpy.ops.object.mode_set(mode='OBJECT')
+            for modifier in new_obj.modifiers:
+                bpy.ops.object.modifier_apply(modifier=modifier.name)
             
-            if(autofill_textures):
-                if( (mesh.materials[i].active_texture is not None) and not mesh.materials[i].WowMaterial.Texture1 and \
-                    (mesh.materials[i].active_texture.type == 'IMAGE') and (mesh.materials[i].active_texture.image is not None) ):
-                        if(bpy.context.scene.WoWRoot.UseTextureRelPath):
-                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
-                            print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
-                        else:
-                            mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( mesh.materials[i].active_texture.image.filepath )[0] + ".blp"
-                            print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
+            # triangualate mesh
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.mesh.quads_convert_to_tris()
+            bpy.ops.mesh.select_all(action='DESELECT')
+            
+            # perform edge split. 
+            bpy.ops.uv.select_all(action='TOGGLE')
+            bpy.ops.uv.seams_from_islands(mark_seams=False, mark_sharp=True)
+            bpy.ops.object.mode_set(mode='OBJECT')
+            
+            bpy.ops.object.modifier_add(type='EDGE_SPLIT')
+            bpy.context.object.modifiers["EdgeSplit"].use_edge_angle = False
+            bpy.ops.object.modifier_apply(apply_as='DATA', modifier="EdgeSplit")
 
-        polyBatchMap = {}
+            # perform vertex group split to keep batches accurate.
+            bpy.ops.object.mode_set(mode='EDIT')
+            if new_obj.WowVertexInfo.BatchTypeA != "" and new_obj.WowVertexInfo.Enabled:
+                bpy.ops.object.vertex_group_set_active(group=new_obj.WowVertexInfo.BatchTypeA)
+                bpy.ops.object.vertex_group_select()
+                bpy.ops.mesh.split()
+                bpy.ops.mesh.select_all(action='DESELECT')
 
-        vg_batch_a = None
-        vg_batch_b = None
-        vg_collision = None
-        vg_lightmap = None
-        vg_blendmap = None
-        uv_second_uv = None
+            if new_obj.WowVertexInfo.BatchTypeB != "" and new_obj.WowVertexInfo.Enabled:
+                bpy.ops.object.vertex_group_set_active(group=new_obj.WowVertexInfo.BatchTypeB)
+                bpy.ops.object.vertex_group_select()
+                bpy.ops.mesh.split()
+                bpy.ops.mesh.select_all(action='DESELECT')
 
-        if new_obj.WowVertexInfo.Enabled:
+            bpy.ops.object.mode_set(mode='OBJECT')
+            
+            # perform custom normal data calculation if not yet calculated by the user
+            bpy.context.scene.objects.active = obj
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            
+            auto_normal_smooth = False
+            if (original_mesh.has_custom_normals == False):
+                bpy.ops.mesh.customdata_custom_splitnormals_add()
+                bpy.ops.mesh.masked_soften_normals()
+                original_mesh.calc_normals_split()
+                auto_normal_smooth = True
+                
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
+            
+            # perform custom normal data transfer to a temporary object
+            obj.select = True
+            bpy.context.scene.objects.active = new_obj
+            bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='CUSTOM_NORMAL')
+            obj.select = False
+            
+            # clear auto-generated custom normal data on original scene object to avoid changes of original scene on export. If normals are user defined, we do not touch them.
+            bpy.context.scene.objects.active = obj 
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            if (original_mesh.has_custom_normals == True) and (auto_normal_smooth == True):
+                bpy.ops.mesh.customdata_custom_splitnormals_clear()
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.context.scene.objects.active = new_obj
+            
+            # apply object transformation to geometry. Needs to be optional.
+            new_obj.select = True
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+            new_obj.select = False
 
-            if new_obj.WowVertexInfo.BatchTypeA != "":
-                vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)
+            #mesh.calc_normals_split() -- We seem to not need that after transfer
+            
+            # doing some safety checks to notify the user if the object is badly formed
+            if(len(mesh.vertices) > 65535):
+                raise Exception("Object " + str(obj.name) + " contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")
+            
+            if len(mesh.materials) > 254 or len(root.momt.Materials) > 255:
+                raise Exception("Scene has excceeded the maximum allowed number of WoW materials (255). Your scene now has " + len(root.momt.Materials) + " materials. So, " + (len(root.momt.Materials) - 255) + " extra ones." )
+            
+            
+            mver = MVER_chunk()
+            mver.Version = 17
+            mver.Write(f)
+
+            mogp = MOGP_chunk()
+            
+            material_indices = {} 
+            
+            for i in range(len(mesh.materials)):
+                material_indices[i] = root.AddMaterial(mesh.materials[i]) # adding materials to root object. Returns the index of material if the passed one already exists.
+                
+                if(autofill_textures):
+                    if( (mesh.materials[i].active_texture is not None) and not mesh.materials[i].WowMaterial.Texture1 and \
+                        (mesh.materials[i].active_texture.type == 'IMAGE') and (mesh.materials[i].active_texture.image is not None) ):
+                            if(bpy.context.scene.WoWRoot.UseTextureRelPath):
+                                mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
+                                print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
+                            else:
+                                mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( mesh.materials[i].active_texture.image.filepath )[0] + ".blp"
+                                print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
+
+            polyBatchMap = {}
+
+            vg_batch_a = None
+            vg_batch_b = None
+            vg_collision = None
+            vg_lightmap = None
+            vg_blendmap = None
+            uv_second_uv = None
+
+            if new_obj.WowVertexInfo.Enabled:
+
+                if new_obj.WowVertexInfo.BatchTypeA != "":
+                    vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)
+                else:
+                    vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
+
+                if new_obj.WowVertexInfo.BatchTypeB != "":
+                    vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)
+                else:
+                    vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
+
+                if new_obj.WowVertexInfo.VertexGroup != "":
+                    vg_collision = new_obj.vertex_groups.get(new_obj.WowVertexInfo.VertexGroup)
+                
+                if new_obj.WowVertexInfo.Lightmap != "":
+                    vg_lightmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Lightmap)
+                    mohd_0x1 = False
+
+                if new_obj.WowVertexInfo.Blendmap != "":
+                    vg_blendmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Blendmap)
+                    mogp.Flags |= MOGP_FLAG.HasTwoMOCV
+
+                if new_obj.WowVertexInfo.SecondUV != "":
+                    uv_second_uv = new_obj.data.uv_textures.get(new_obj.WowVertexInfo.SecondUV)
+                    mogp.Flags |= MOGP_FLAG.HasTwoMOTV
+            
             else:
                 vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
-
-            if new_obj.WowVertexInfo.BatchTypeB != "":
-                vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)
-            else:
                 vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
 
-            if new_obj.WowVertexInfo.VertexGroup != "":
-                vg_collision = new_obj.vertex_groups.get(new_obj.WowVertexInfo.VertexGroup)
-            
-            if new_obj.WowVertexInfo.Lightmap != "":
-                vg_lightmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Lightmap)
-                mohd_0x1 = False
 
-            if new_obj.WowVertexInfo.Blendmap != "":
-                vg_blendmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Blendmap)
-                mogp.Flags |= MOGP_FLAG.HasTwoMOCV
+            for poly in mesh.polygons:
+                polyBatchMap.setdefault( (material_indices.get(poly.material_index), GetBatchType(poly, mesh, vg_batch_a.index, vg_batch_b.index)), [] ).append(poly.index)
 
-            if new_obj.WowVertexInfo.SecondUV != "":
-                uv_second_uv = new_obj.data.uv_textures.get(new_obj.WowVertexInfo.SecondUV)
-                mogp.Flags |= MOGP_FLAG.HasTwoMOTV
-        
-        else:
-            vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
-            vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
+            vertex_size = len(mesh.vertices)
+
+            # count A and B batches amount
+
+            nBatchesA = 0
+            nBatchesB = 0
+            nBatchesC = 0
+
+            for batchKey, polyBatch in polyBatchMap.items():
+                if batchKey[0] != 0xFF:
+                    if batchKey[1] == 0:
+                        nBatchesA += 1
+                    elif batchKey[1] == 1:
+                        nBatchesB += 1
+                    else:
+                        nBatchesC += 1
+
+            movi = MOVI_chunk()
+            mopy = MOPY_chunk()
+            moba = MOBA_chunk(nBatchesA + nBatchesB + nBatchesC)
+
+            movt = MOVT_chunk()
+            monr = MONR_chunk(vertex_size)
+            motv = MOTV_chunk(vertex_size)
+            motv2 = MOTV_chunk(vertex_size)
+            mocv = MOCV_chunk(vertex_size)
+            mocv2 = MOCV_chunk(vertex_size)
+
+            for vertex in mesh.vertices:
+                movt.Vertices.append(vertex.co)
+
+            normalMap = {}
+            batchMap = {}
+
+            # write geometry data and batches
+
+            batch_counter_a = 0
+            batch_counter_b = 0
+            batch_counter_c = 0
+
+            for batchKey, polyBatch in polyBatchMap.items():
+
+                firstIndex = len(movi.Indices)
+
+                for poly in polyBatch:
+                    collision_counter = 0
+
+                    for vertex_index in mesh.polygons[poly].vertices:
+                        movi.Indices.append(vertex_index)
+
+                        if vg_collision != None:
+                            for group_info in mesh.vertices[vertex_index].groups:
+                                if group_info.group == vg_collision.index:
+                                    collision_counter += 1
+
+                    tri_mat = TriangleMaterial()
+                    tri_mat.MaterialID = batchKey[0]
+                    tri_mat.Flags = 0x0 if tri_mat.MaterialID == 0xFF else 0x20
+                    tri_mat.Flags |= 0x48 if collision_counter == len(mesh.polygons[poly].vertices) else 0x4
+                    mopy.TriangleMaterials.append(tri_mat)
+
+                    for loop_index in mesh.polygons[poly].loop_indices:
+
+                        if len(mesh.uv_layers) > 0:
+                            motv.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers.active.data[loop_index].uv[0], 1.0 - mesh.uv_layers.active.data[loop_index].uv[1])
+
+                        if uv_second_uv != None:
+                            motv2.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[0], 1.0 - mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[1])
 
 
-        for poly in mesh.polygons:
-            polyBatchMap.setdefault( (material_indices.get(poly.material_index), GetBatchType(poly, mesh, vg_batch_a.index, vg_batch_b.index)), [] ).append(poly.index)
+                        if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192') and len(mesh.vertex_colors) > 0:
+                            vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
+                            vertex_color2 = [0x7F, 0x7F, 0x7F, 0x00]
 
-        vertex_size = len(mesh.vertices)
+                            for i in range(0, 3):
+                                vertex_color[i] = round(mesh.vertex_colors.active.data[loop_index].color[3 - i - 1] * 255)
+                            if vg_lightmap != None:
+                                vertex_color[3] = round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_lightmap.index].weight * 255)
+                                
+                            mocv.vertColors[mesh.loops[loop_index].vertex_index] = vertex_color
 
-        # count A and B batches amount
+                        if vg_blendmap != None:
+                            mocv2.vertColors[mesh.loops[loop_index].vertex_index] = (0, 0, 0, round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255))
+                        
+                        normalMap.setdefault(mesh.loops[loop_index].vertex_index, []).append(mesh.loops[loop_index].normal)
+                        
 
-        nBatchesA = 0
-        nBatchesB = 0
-        nBatchesC = 0
+                nIndices = len(movi.Indices) - firstIndex
 
-        for batchKey, polyBatch in polyBatchMap.items():
-            if batchKey[0] != 0xFF:
+                BoundingBox = [32767, 32767, 32767, -32768, -32768, -32768]
+
+                for poly in polyBatch:
+                    for vertex_index in mesh.polygons[poly].vertices:
+                        monr.Normals[vertex_index] = GetAvg(normalMap.get(vertex_index))
+
+                        for i in range(0, 2):
+                            for j in range(0, 3):
+                                idx = i * 3 + j
+                                BoundingBox[idx] = ret_min(BoundingBox[idx], floor(movt.Vertices[vertex_index][j])) if i == 0 \
+                                else ret_max(BoundingBox[idx], ceil(movt.Vertices[vertex_index][j]))
+
+                # skip batch writing if processed polyBatch is collision
+
+                if batchKey[0] == 0xFF:
+                    continue
+
+                # write current batch
+
+                batch = Batch()
+
+                batch.BoundingBox = BoundingBox
+
+
+                batch.StartTriangle = firstIndex
+                batch.nTriangle = nIndices
+
+                batch.StartVertex = mesh.polygons[polyBatch[0]].vertices[0]
+                batch.LastVertex = mesh.polygons[polyBatch[len(polyBatch) - 1]].vertices[2]
+
+                batch.MaterialID = batchKey[0]
+
+
+                # sort and write batches
+
                 if batchKey[1] == 0:
-                    nBatchesA += 1
+                    moba.Batches[batch_counter_a] = batch
+                    batch_counter_a += 1
                 elif batchKey[1] == 1:
-                    nBatchesB += 1
+                    moba.Batches[nBatchesA + batch_counter_b] = batch
+                    batch_counter_b += 1
                 else:
-                    nBatchesC += 1
-
-        movi = MOVI_chunk()
-        mopy = MOPY_chunk()
-        moba = MOBA_chunk(nBatchesA + nBatchesB + nBatchesC)
-
-        movt = MOVT_chunk()
-        monr = MONR_chunk(vertex_size)
-        motv = MOTV_chunk(vertex_size)
-        motv2 = MOTV_chunk(vertex_size)
-        mocv = MOCV_chunk(vertex_size)
-        mocv2 = MOCV_chunk(vertex_size)
-
-        for vertex in mesh.vertices:
-            movt.Vertices.append(vertex.co)
-
-        normalMap = {}
-        batchMap = {}
-
-        # write geometry data and batches
-
-        batch_counter_a = 0
-        batch_counter_b = 0
-        batch_counter_c = 0
-
-        for batchKey, polyBatch in polyBatchMap.items():
-
-            firstIndex = len(movi.Indices)
-
-            for poly in polyBatch:
-                collision_counter = 0
-
-                for vertex_index in mesh.polygons[poly].vertices:
-                    movi.Indices.append(vertex_index)
-
-                    if vg_collision != None:
-                        for group_info in mesh.vertices[vertex_index].groups:
-                            if group_info.group == vg_collision.index:
-                                collision_counter += 1
-
-                tri_mat = TriangleMaterial()
-                tri_mat.MaterialID = batchKey[0]
-                tri_mat.Flags = 0x0 if tri_mat.MaterialID == 0xFF else 0x20
-                tri_mat.Flags |= 0x48 if collision_counter == len(mesh.polygons[poly].vertices) else 0x4
-                mopy.TriangleMaterials.append(tri_mat)
-
-                for loop_index in mesh.polygons[poly].loop_indices:
-
-                    if len(mesh.uv_layers) > 0:
-                        motv.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers.active.data[loop_index].uv[0], 1.0 - mesh.uv_layers.active.data[loop_index].uv[1])
-
-                    if uv_second_uv != None:
-                        motv2.TexCoords[mesh.loops[loop_index].vertex_index] = (mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[0], 1.0 - mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[1])
-
-
-                    if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192') and len(mesh.vertex_colors) > 0:
-                        vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
-                        vertex_color2 = [0x7F, 0x7F, 0x7F, 0x00]
-
-                        for i in range(0, 3):
-                            vertex_color[i] = round(mesh.vertex_colors.active.data[loop_index].color[3 - i - 1] * 255)
-                        if vg_lightmap != None:
-                            vertex_color[3] = round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_lightmap.index].weight * 255)
-                            
-                        mocv.vertColors[mesh.loops[loop_index].vertex_index] = vertex_color
-
-                    if vg_blendmap != None:
-                        mocv2.vertColors[mesh.loops[loop_index].vertex_index] = (0, 0, 0, round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255))
-                    
-                    normalMap.setdefault(mesh.loops[loop_index].vertex_index, []).append(mesh.loops[loop_index].normal)
-                    
-
-            nIndices = len(movi.Indices) - firstIndex
-
-            BoundingBox = [32767, 32767, 32767, -32768, -32768, -32768]
-
-            for poly in polyBatch:
-                for vertex_index in mesh.polygons[poly].vertices:
-                    monr.Normals[vertex_index] = GetAvg(normalMap.get(vertex_index))
-
-                    for i in range(0, 2):
-                        for j in range(0, 3):
-                            idx = i * 3 + j
-                            BoundingBox[idx] = ret_min(BoundingBox[idx], floor(movt.Vertices[vertex_index][j])) if i == 0 \
-                            else ret_max(BoundingBox[idx], ceil(movt.Vertices[vertex_index][j]))
-
-            # skip batch writing if processed polyBatch is collision
-
-            if batchKey[0] == 0xFF:
-                continue
-
-            # write current batch
-
-            batch = Batch()
-
-            batch.BoundingBox = BoundingBox
-
-
-            batch.StartTriangle = firstIndex
-            batch.nTriangle = nIndices
-
-            batch.StartVertex = mesh.polygons[polyBatch[0]].vertices[0]
-            batch.LastVertex = mesh.polygons[polyBatch[len(polyBatch) - 1]].vertices[2]
-
-            batch.MaterialID = batchKey[0]
-
-
-            # sort and write batches
-
-            if batchKey[1] == 0:
-                moba.Batches[batch_counter_a] = batch
-                batch_counter_a += 1
-            elif batchKey[1] == 1:
-                moba.Batches[nBatchesA + batch_counter_b] = batch
-                batch_counter_b += 1
-            else:
-                moba.Batches[nBatchesA + nBatchesB + batch_counter_c] = batch
-                batch_counter_c += 1
-            
-        
-        # write BSP nodes
-        mobn = MOBN_chunk()
-
-        # write BSP faces
-        mobr = MOBR_chunk()
-
-        # write header
-        mogp.BoundingBoxCorner1 = [32767, 32767, 32767]
-        mogp.BoundingBoxCorner2 = [-32768, -32768, -32768]        
-        
-        for vtx in movt.Vertices:
-            for i in range(0, 3):
-                mogp.BoundingBoxCorner1[i] = ret_min(mogp.BoundingBoxCorner1[i], floor(vtx[i]))
-                mogp.BoundingBoxCorner2[i] = ret_max(mogp.BoundingBoxCorner2[i], ceil(vtx[i]))
-            
-
-        mogp.Flags |= MOGP_FLAG.HasCollision # /!\ MUST HAVE 0x1 FLAG ELSE THE GAME CRASH !
-        if new_obj.WowWMOGroup.VertShad:
-            mogp.Flags |= MOGP_FLAG.HasVertexColor
-        if new_obj.WowWMOGroup.SkyBox:
-            mogp.Flags |= MOGP_FLAG.HasSkybox
-            
-        mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
-        
-        mogp.LiquidType = 15 
-
-
-        mogp.PortalStart = -1
-        mogp.PortalCount = 0
-        
-        fog_id = 0
-        fogMap = {}
-    
-        mliq = MLIQ_chunk()
-
-        hasWater = False        
-        
-        for ob in bpy.context.scene.objects:
-            if(ob.type == "MESH"):
-                obj_mesh = ob.data
-                if(ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == objNumber or ob.WowPortalPlane.Second == objNumber)):
-                    portalRef = [0,0,0]
-                    if(mogp.PortalStart == -1):
-                        mogp.PortalStart = root.PortalRCount
-                    portalRef[0] = ob.WowPortalPlane.PortalID
-                    modify = 1
-                    if(ob.WowPortalPlane.First == objNumber):
-                        portalRef[1] = ob.WowPortalPlane.Second
-                        portalRef[2] = 1
-                    else:
-                        portalRef[1] = ob.WowPortalPlane.First
-                        portalRef[2] = -1
-                    if(ob.WowPortalPlane.Invert):
-                        modify = -1
-                    portalRef[2] = portalRef[2] * modify
-                    root.PortalR.append(portalRef)
-                    mogp.PortalCount+=1
-                if(ob.WowFog.Enabled):
-                    fogMap[ob.name] = fog_id
-                    fog_id += 1
+                    moba.Batches[nBatchesA + nBatchesB + batch_counter_c] = batch
+                    batch_counter_c += 1
                 
-                if(ob.WowLiquid.Enabled and (obj.name == ob.WowLiquid.WMOGroup)): # export liquids
+            
+            # write BSP nodes
+            mobn = MOBN_chunk()
 
-                    hasWater = True
+            # write BSP faces
+            mobr = MOBR_chunk()
 
-                    print("Export liquid:", ob.name )
-                    mesh = ob.data
-                    StartVertex = 0
-                    sum = 0
-                    for vertex in obj_mesh.vertices:
-                        curSum = vertex.co[0] + vertex.co[1]
-                        
-                        if (curSum < sum):
-                            StartVertex = vertex.index
-                            sum = curSum
-                            
-                    mliq.xTiles = round(ob.dimensions[0] / 4.1666625)
-                    mliq.yTiles = round(ob.dimensions[1] / 4.1666625)
-                    mliq.xVerts = mliq.xTiles + 1
-                    mliq.yVerts = mliq.yTiles + 1
-                    mliq.Position = mesh.vertices[StartVertex].co
+            # write header
+            mogp.BoundingBoxCorner1 = [32767, 32767, 32767]
+            mogp.BoundingBoxCorner2 = [-32768, -32768, -32768]        
+            
+            for vtx in movt.Vertices:
+                for i in range(0, 3):
+                    mogp.BoundingBoxCorner1[i] = ret_min(mogp.BoundingBoxCorner1[i], floor(vtx[i]))
+                    mogp.BoundingBoxCorner2[i] = ret_max(mogp.BoundingBoxCorner2[i], ceil(vtx[i]))
+                
 
-                    mogp.Flags |= 0x1000
-                    mogp.LiquidType = self.FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
-                    root.mohd.Flags |= 0x4 # needs checking
-
-                    material = bpy.data.materials.new(ob.name)
-                    material.WowMaterial.Enabled = True
-                    material.WowMaterial.Flags3 = '1'
-
-                    material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\STORMWIND\GRAY12.BLP"
-
-                    if mogp.LiquidType == 3 or mogp.LiquidType == 7 or mogp.LiquidType == 11:
-                        material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\TRIM\BM_BRSPIRE_LAVAWALLTRANS.BLP"
-                    elif mogp.LiquidType == 4 or mogp.LiquidType == 8 or mogp.LiquidType == 12:
-                        material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
-
-                    mliq.materialID = root.AddMaterial(material) 
+            mogp.Flags |= MOGP_FLAG.HasCollision # /!\ MUST HAVE 0x1 FLAG ELSE THE GAME CRASH !
+            if new_obj.WowWMOGroup.VertShad:
+                mogp.Flags |= MOGP_FLAG.HasVertexColor
+            if new_obj.WowWMOGroup.SkyBox:
+                mogp.Flags |= MOGP_FLAG.HasSkybox
+                
+            mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
+            
+            mogp.LiquidType = 15 
 
 
-                    if mogp.LiquidType == 3 or mogp.LiquidType == 4 or mogp.LiquidType == 7 or \
-                    mogp.LiquidType == 8 or mogp.LiquidType == 11 or mogp.LiquidType == 12:
-                        
-                        if mesh.uv_layers.active is not None:
+            mogp.PortalStart = -1
+            mogp.PortalCount = 0
+            
+            fog_id = 0
+            fogMap = {}
+        
+            mliq = MLIQ_chunk()
 
-                            uvMap = {}
-
-                            for poly in mesh.polygons:
-                                for loop_index in poly.loop_indices:
-                                    if mesh.loops[loop_index].vertex_index not in uvMap:
-                                        uvMap[mesh.loops[loop_index].vertex_index] = mesh.uv_layers.active.data[loop_index].uv
-
-                            for i in range(mliq.xVerts * mliq.yVerts):
-                                vertex = MagmaVertex()
-
-                                vertex.u = int( uvMap.get(mesh.vertices[i].index)[0] ) 
-                                vertex.v = int( uvMap.get(mesh.vertices[i].index)[1] )
-
-                                vertex.height = mesh.vertices[i].co[2]
-                                mliq.VertexMap.append(vertex)
+            hasWater = False        
+            
+            for ob in bpy.context.scene.objects:
+                if(ob.type == "MESH"):
+                    obj_mesh = ob.data
+                    if(ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == objNumber or ob.WowPortalPlane.Second == objNumber)):
+                        portalRef = [0,0,0]
+                        if(mogp.PortalStart == -1):
+                            mogp.PortalStart = root.PortalRCount
+                        portalRef[0] = ob.WowPortalPlane.PortalID
+                        modify = 1
+                        if(ob.WowPortalPlane.First == objNumber):
+                            portalRef[1] = ob.WowPortalPlane.Second
+                            portalRef[2] = 1
                         else:
+                            portalRef[1] = ob.WowPortalPlane.First
+                            portalRef[2] = -1
+                        if(ob.WowPortalPlane.Invert):
+                            modify = -1
+                        portalRef[2] = portalRef[2] * modify
+                        root.PortalR.append(portalRef)
+                        mogp.PortalCount+=1
+                    if(ob.WowFog.Enabled):
+                        fogMap[ob.name] = fog_id
+                        fog_id += 1
+                    
+                    if(ob.WowLiquid.Enabled and (obj.name == ob.WowLiquid.WMOGroup)): # export liquids
+
+                        hasWater = True
+
+                        print("Export liquid:", ob.name )
+                        mesh = ob.data
+                        StartVertex = 0
+                        sum = 0
+                        for vertex in obj_mesh.vertices:
+                            curSum = vertex.co[0] + vertex.co[1]
                             
-                            raise Exception("Slime and magma (lava) liquids require a UV map to be created.")
+                            if (curSum < sum):
+                                StartVertex = vertex.index
+                                sum = curSum
+                                
+                        mliq.xTiles = round(ob.dimensions[0] / 4.1666625)
+                        mliq.yTiles = round(ob.dimensions[1] / 4.1666625)
+                        mliq.xVerts = mliq.xTiles + 1
+                        mliq.yVerts = mliq.yTiles + 1
+                        mliq.Position = mesh.vertices[StartVertex].co
 
-                    else:
+                        mogp.Flags |= 0x1000
+                        mogp.LiquidType = self.FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
+                        root.mohd.Flags |= 0x4 # needs checking
 
-                        for j in range(mliq.xVerts * mliq.yVerts):
-                            vertex = WaterVertex()
+                        material = bpy.data.materials.new(ob.name)
+                        material.WowMaterial.Enabled = True
+                        material.WowMaterial.Flags3 = '1'
 
-                            vertex.height = mesh.vertices[j].co[2]
-                            mliq.VertexMap.append(vertex)
+                        material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\STORMWIND\GRAY12.BLP"
 
-                    flag_0x1 = mesh.vertex_colors["flag_0x1"]
-                    flag_0x2 = mesh.vertex_colors["flag_0x2"]
-                    flag_0x4 = mesh.vertex_colors["flag_0x4"]
-                    flag_0x8 = mesh.vertex_colors["flag_0x8"]
-                    flag_0x10 = mesh.vertex_colors["flag_0x10"]
-                    flag_0x20 = mesh.vertex_colors["flag_0x20"]
-                    flag_0x40 = mesh.vertex_colors["flag_0x40"]
-                    flag_0x80 = mesh.vertex_colors["flag_0x80"]
+                        if mogp.LiquidType == 3 or mogp.LiquidType == 7 or mogp.LiquidType == 11:
+                            material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\TRIM\BM_BRSPIRE_LAVAWALLTRANS.BLP"
+                        elif mogp.LiquidType == 4 or mogp.LiquidType == 8 or mogp.LiquidType == 12:
+                            material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
+
+                        mliq.materialID = root.AddMaterial(material) 
 
 
-                    for poly in mesh.polygons:
-                            tile_flag = 0
-                            blue = [0.0, 0.0, 1.0]
+                        if mogp.LiquidType == 3 or mogp.LiquidType == 4 or mogp.LiquidType == 7 or \
+                        mogp.LiquidType == 8 or mogp.LiquidType == 11 or mogp.LiquidType == 12:
+                            
+                            if mesh.uv_layers.active is not None:
 
-                            if CompColors(flag_0x1.data[poly.loop_indices[0]].color, blue): 
-                                tile_flag |= 0x1
-                            if CompColors(flag_0x2.data[poly.loop_indices[0]].color, blue):
-                                tile_flag |= 0x2
-                            if CompColors(flag_0x4.data[poly.loop_indices[0]].color, blue):
-                                tile_flag |= 0x4
-                            if CompColors(flag_0x8.data[poly.loop_indices[0]].color, blue):
-                                tile_flag |= 0x8
-                            if CompColors(flag_0x10.data[poly.loop_indices[0]].color, blue):
-                                tile_flag |= 0x10
-                            if CompColors(flag_0x20.data[poly.loop_indices[0]].color, blue):
-                                tile_flag |= 0x20
-                            if CompColors(flag_0x40.data[poly.loop_indices[0]].color, blue):
-                                tile_flag |= 0x40
-                            if CompColors(flag_0x80.data[poly.loop_indices[0]].color, blue):
-                                tile_flag |= 0x80
+                                uvMap = {}
 
-                            mliq.TileFlags.append(tile_flag)
+                                for poly in mesh.polygons:
+                                    for loop_index in poly.loop_indices:
+                                        if mesh.loops[loop_index].vertex_index not in uvMap:
+                                            uvMap[mesh.loops[loop_index].vertex_index] = mesh.uv_layers.active.data[loop_index].uv
 
-         
-        
-        if(mogp.PortalStart == -1):
-            mogp.PortalStart = root.PortalRCount
-        root.PortalRCount += mogp.PortalCount
-        mogp.nBatchesA = nBatchesA
-        mogp.nBatchesB = nBatchesB
-        mogp.nBatchesC = nBatchesC
-        mogp.nBatchesD = 0
-        mogp.FogIndices = (fogMap.get(new_obj.WowWMOGroup.Fog1, 0), fogMap.get(new_obj.WowWMOGroup.Fog2, 0), fogMap.get(new_obj.WowWMOGroup.Fog3, 0), fogMap.get(new_obj.WowWMOGroup.Fog4, 0), )
-        mogp.GroupID = int(new_obj.WowWMOGroup.GroupID)
-        mogp.Unknown1 = 0
-        mogp.Unknown2 = 0
-        
-        groupInfo = root.AddGroupInfo(mogp.Flags, [mogp.BoundingBoxCorner1, mogp.BoundingBoxCorner2], new_obj.WowWMOGroup.GroupName, new_obj.WowWMOGroup.GroupDesc)
-        mogp.GroupNameOfs = groupInfo[0]
-        mogp.DescGroupNameOfs = groupInfo[1]
-        
-        f.seek(0x58)
-        mopy.Write(f)
-        movi.Write(f)
-        movt.Write(f)
-        monr.Write(f)
-        motv.Write(f)
-        moba.Write(f)
+                                for i in range(mliq.xVerts * mliq.yVerts):
+                                    vertex = MagmaVertex()
 
-        
-        if(source_doodads):
-            modr = MODR_chunk()
-            if(len(new_obj.WowWMOGroup.MODR) > 0):
-                print("has doodads")
-                for doodad in new_obj.WowWMOGroup.MODR:
-                    modr.DoodadRefs.append(doodad.value)
-                mogp.Flags = mogp.Flags | MOGP_FLAG.HasDoodads
-            modr.Write(f)
-        
-        bsp_tree = BSP_Tree()
-        bsp_tree.GenerateBSP(movt.Vertices, movi.Indices, new_obj.WowVertexInfo.NodeSize)
+                                    vertex.u = int( uvMap.get(mesh.vertices[i].index)[0] ) 
+                                    vertex.v = int( uvMap.get(mesh.vertices[i].index)[1] )
 
-        mobn.Nodes = bsp_tree.Nodes
-        mobr.Faces = bsp_tree.Faces
+                                    vertex.height = mesh.vertices[i].co[2]
+                                    mliq.VertexMap.append(vertex)
+                            else:
+                                
+                                raise Exception("Slime and magma (lava) liquids require a UV map to be created.")
 
-        mobn.Write(f)
-        mobr.Write(f)
-        mocv.Write(f)
+                        else:
 
-        if hasWater:
-            mliq.Write(f)
+                            for j in range(mliq.xVerts * mliq.yVerts):
+                                vertex = WaterVertex()
+
+                                vertex.height = mesh.vertices[j].co[2]
+                                mliq.VertexMap.append(vertex)
+
+                        flag_0x1 = mesh.vertex_colors["flag_0x1"]
+                        flag_0x2 = mesh.vertex_colors["flag_0x2"]
+                        flag_0x4 = mesh.vertex_colors["flag_0x4"]
+                        flag_0x8 = mesh.vertex_colors["flag_0x8"]
+                        flag_0x10 = mesh.vertex_colors["flag_0x10"]
+                        flag_0x20 = mesh.vertex_colors["flag_0x20"]
+                        flag_0x40 = mesh.vertex_colors["flag_0x40"]
+                        flag_0x80 = mesh.vertex_colors["flag_0x80"]
+
+
+                        for poly in mesh.polygons:
+                                tile_flag = 0
+                                blue = [0.0, 0.0, 1.0]
+
+                                if CompColors(flag_0x1.data[poly.loop_indices[0]].color, blue): 
+                                    tile_flag |= 0x1
+                                if CompColors(flag_0x2.data[poly.loop_indices[0]].color, blue):
+                                    tile_flag |= 0x2
+                                if CompColors(flag_0x4.data[poly.loop_indices[0]].color, blue):
+                                    tile_flag |= 0x4
+                                if CompColors(flag_0x8.data[poly.loop_indices[0]].color, blue):
+                                    tile_flag |= 0x8
+                                if CompColors(flag_0x10.data[poly.loop_indices[0]].color, blue):
+                                    tile_flag |= 0x10
+                                if CompColors(flag_0x20.data[poly.loop_indices[0]].color, blue):
+                                    tile_flag |= 0x20
+                                if CompColors(flag_0x40.data[poly.loop_indices[0]].color, blue):
+                                    tile_flag |= 0x40
+                                if CompColors(flag_0x80.data[poly.loop_indices[0]].color, blue):
+                                    tile_flag |= 0x80
+
+                                mliq.TileFlags.append(tile_flag)
+
+             
             
-        # write second MOTV and MOCV
-        if uv_second_uv != None:
-            motv2.Write(f)
+            if(mogp.PortalStart == -1):
+                mogp.PortalStart = root.PortalRCount
+            root.PortalRCount += mogp.PortalCount
+            mogp.nBatchesA = nBatchesA
+            mogp.nBatchesB = nBatchesB
+            mogp.nBatchesC = nBatchesC
+            mogp.nBatchesD = 0
+            mogp.FogIndices = (fogMap.get(new_obj.WowWMOGroup.Fog1, 0), fogMap.get(new_obj.WowWMOGroup.Fog2, 0), fogMap.get(new_obj.WowWMOGroup.Fog3, 0), fogMap.get(new_obj.WowWMOGroup.Fog4, 0), )
+            mogp.GroupID = int(new_obj.WowWMOGroup.GroupID)
+            mogp.Unknown1 = 0
+            mogp.Unknown2 = 0
             
-        if vg_blendmap != None:
-            mocv2.Write(f)
+            groupInfo = root.AddGroupInfo(mogp.Flags, [mogp.BoundingBoxCorner1, mogp.BoundingBoxCorner2], new_obj.WowWMOGroup.GroupName, new_obj.WowWMOGroup.GroupDesc)
+            mogp.GroupNameOfs = groupInfo[0]
+            mogp.DescGroupNameOfs = groupInfo[1]
+            
+            f.seek(0x58)
+            mopy.Write(f)
+            movi.Write(f)
+            movt.Write(f)
+            monr.Write(f)
+            motv.Write(f)
+            moba.Write(f)
+
+            
+            if(source_doodads):
+                modr = MODR_chunk()
+                if(len(new_obj.WowWMOGroup.MODR) > 0):
+                    print("has doodads")
+                    for doodad in new_obj.WowWMOGroup.MODR:
+                        modr.DoodadRefs.append(doodad.value)
+                    mogp.Flags = mogp.Flags | MOGP_FLAG.HasDoodads
+                modr.Write(f)
+            
+            bsp_tree = BSP_Tree()
+            bsp_tree.GenerateBSP(movt.Vertices, movi.Indices, new_obj.WowVertexInfo.NodeSize)
+
+            mobn.Nodes = bsp_tree.Nodes
+            mobr.Faces = bsp_tree.Faces
+
+            mobn.Write(f)
+            mobr.Write(f)
+            mocv.Write(f)
+
+            if hasWater:
+                mliq.Write(f)
+                
+            # write second MOTV and MOCV
+            if uv_second_uv != None:
+                motv2.Write(f)
+                
+            if vg_blendmap != None:
+                mocv2.Write(f)
 
 
-        # get file size
-        f.seek(0, 2)
-        mogp.Header.Size = f.tell() - 20
+            # get file size
+            f.seek(0, 2)
+            mogp.Header.Size = f.tell() - 20
 
-        # write header
-        f.seek(0xC)
-        mogp.Write(f)
+            # write header
+            f.seek(0xC)
+            mogp.Write(f)
         
-        # bpy.context.scene.objects.unlink(new_obj)
-        bpy.data.objects.remove(new_obj, do_unlink = True)
+        except:
+            
+            print("Something went wrong while exporting", obj.name, "WMO group. See the error above for details.")
+            
+            # bpy.context.scene.objects.unlink(new_obj)
+            bpy.data.objects.remove(new_obj, do_unlink = True)
+            
         
-    
-        # obj.select = True
-        bpy.context.scene.objects.active = obj
+            # obj.select = True
+            bpy.context.scene.objects.active = obj
+            
+            sys.exit(1)
+            
+        else:
+            
+            # bpy.context.scene.objects.unlink(new_obj)
+            bpy.data.objects.remove(new_obj, do_unlink = True)
+            
+        
+            # obj.select = True
+            bpy.context.scene.objects.active = obj
 
-        return mohd_0x1
+            return mohd_0x1
