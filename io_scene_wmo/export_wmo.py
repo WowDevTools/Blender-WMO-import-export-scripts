@@ -13,6 +13,7 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
     root_filename = filepath
 
     wmo_root = WMO_root_file()
+    wmo_groups = []
     
     base_name = os.path.splitext(filepath)[0]
     
@@ -25,6 +26,7 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
     
     iObj = 0
     mohd_0x1 = True
+    
     
     for i in range(len(bpy.context.scene.objects)):
         
@@ -59,24 +61,29 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         if(bpy.context.scene.objects[i].WowLiquid.Enabled):
             continue
         
-        print("Export group "+bpy.context.scene.objects[i].name)
         group_filename = base_name + "_" + str(iObj).zfill(3) + ".wmo"
-        group_file = open(group_filename, "wb")
 
-        # write group file
+        # prepare group files for writing
         wmo_group = WMO_group_file()
         
         wmo_root.groupMap[iObj] = bpy.context.scene.objects[i]
         
         if mohd_0x1:
-            mohd_0x1 = wmo_group.Save(group_file, bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures)
+            mohd_0x1 = wmo_group.Save(bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures, group_filename)
         else:
-            wmo_group.Save(group_file, bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures)
+            wmo_group.Save(bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures, group_filename)
             
+        # append groups files for writing
+        wmo_groups.append(wmo_group)
 
         iObj+=1
         
+    # write group files
+    print("Writing group files")
+    for group in wmo_groups:
+        group.Write()
+        
     # write root file
-    print("Export root file") 
+    print("Exporting root file") 
     wmo_root.Save(f, fill_water, source_doodads, autofill_textures, mohd_0x1)
     return
