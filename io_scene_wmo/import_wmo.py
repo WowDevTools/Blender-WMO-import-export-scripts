@@ -58,7 +58,6 @@ def read(filename, file_format):
 
     # load all WMO components
     root.LoadLights(bpy.path.display_name_from_filepath(rootName))
-    root.LoadPortals(bpy.path.display_name_from_filepath(rootName))
     root.LoadProperties(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\")
     root.LoadFogs(bpy.path.display_name_from_filepath(rootName))
     # root.LoadConvexVolumePlanes(bpy.path.display_name_from_filepath(rootName))
@@ -66,9 +65,11 @@ def read(filename, file_format):
     # create meshes
     for i in range(len(group_list)):
         objName = bpy.path.display_name_from_filepath(group_list[i].filename)
-        print(objName)
+        print("Importing group", objName)
         group_list[i].LoadObject(objName, None, i, bpy.path.display_name_from_filepath(rootName), root)
 
     # set cross references
     root.LoadReferences("LIQUID")
+    
+    root.LoadPortals(bpy.path.display_name_from_filepath(rootName), root)
 

@@ -33,6 +33,7 @@ class WMO_root_file:
         self.PortalR = []
         self.WMOId = 0
         self.liquidReferences = {}
+        self.groupMap = {}
 
     def Read(self, f):
         self.mver.Read(f)
@@ -409,7 +410,7 @@ class WMO_root_file:
         mesh.WowWMORoot.MFOG.Fogs = self.mfog.Fogs
         obj = bpy.data.objects.new(name, mesh)
     
-    def LoadPortals(self, name):
+    def LoadPortals(self, name, root):
         self.portals = []
         self.vert_count = 0
         for i in range(len(self.mopt.Infos)):
@@ -431,19 +432,16 @@ class WMO_root_file:
             obj = bpy.data.objects.new(portal_name, mesh)  
 
             obj.WowPortalPlane.Enabled = True
-            obj.WowPortalPlane.First = -1
-            obj.WowPortalPlane.Second = -1
-            obj.WowPortalPlane.normalX = self.mopt.Infos[i].Normal[0]
-            obj.WowPortalPlane.normalY = self.mopt.Infos[i].Normal[1]
-            obj.WowPortalPlane.normalZ = self.mopt.Infos[i].Normal[2]
-
+            first_relationship = True
+            print(root.groupMap)
             
             for j in range(len(self.mopr.Relationships)):
                 if(self.mopr.Relationships[j].PortalIndex == i):
-                    if(obj.WowPortalPlane.First == -1):
-                        obj.WowPortalPlane.First = self.mopr.Relationships[j].GroupIndex
+                    if(first_relationship):
+                        obj.WowPortalPlane.First = root.groupMap.get(self.mopr.Relationships[j].GroupIndex)
+                        first_relationship = False
                     else:
-                        obj.WowPortalPlane.Second = self.mopr.Relationships[j].GroupIndex
+                        obj.WowPortalPlane.Second = root.groupMap.get(self.mopr.Relationships[j].GroupIndex)
                         break
 
 

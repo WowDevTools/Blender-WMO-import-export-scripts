@@ -65,11 +65,14 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
 
         # write group file
         wmo_group = WMO_group_file()
-        #wmo_group.Save(group_file, bpy.context.selected_objects[iObj], wmo_root, iObj)
+        
+        wmo_root.groupMap[iObj] = bpy.context.scene.objects[i]
+        
         if mohd_0x1:
             mohd_0x1 = wmo_group.Save(group_file, bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures)
         else:
             wmo_group.Save(group_file, bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures)
+            
 
         iObj+=1
         

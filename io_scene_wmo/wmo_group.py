@@ -58,6 +58,14 @@ def GetBatchType(polygon, mesh, vg_index_a, vg_index_b):
         return 0
     else:
         return 1 if counter_b == len(polygon.vertices) else 2
+    
+def GetKeyByValue(value, map, namespace=None):
+    for id, obj in map.items():
+        if obj == value:
+            return id
+        
+    return None
+    
 
 class WMO_group_file:
     def __init__(self):
@@ -576,6 +584,8 @@ class WMO_group_file:
 
         if scn.objects.active is None or scn.objects.active.mode == 'OBJECT':
             scn.objects.active = nobj
+            
+        root.groupMap[objId] = nobj.name
 
     def Save(self, f, obj, root, objNumber, source_doodads, autofill_textures):
         
@@ -941,21 +951,18 @@ class WMO_group_file:
             for ob in bpy.context.scene.objects:
                 if(ob.type == "MESH"):
                     obj_mesh = ob.data
-                    if(ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == objNumber or ob.WowPortalPlane.Second == objNumber)):
+                    if(ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == root.groupMap.get(objNumber).name or root.groupMap.get(objNumber).name)):
                         portalRef = [0,0,0]
                         if(mogp.PortalStart == -1):
                             mogp.PortalStart = root.PortalRCount
                         portalRef[0] = ob.WowPortalPlane.PortalID
-                        modify = 1
-                        if(ob.WowPortalPlane.First == objNumber):
-                            portalRef[1] = ob.WowPortalPlane.Second
+
+                        if ob.WowPortalPlane.First == root.groupMap.get(objNumber).name and root.groupMap.get(objNumber).WowWMOGroup.PlaceType == '8192':
+                            portalRef[1] = GetKeyByValue( bpy.context.scene.objects[ob.WowPortalPlane.Second + ".001"], root.groupMap, root )
                             portalRef[2] = 1
                         else:
-                            portalRef[1] = ob.WowPortalPlane.First
+                            portalRef[1] = GetKeyByValue( bpy.context.scene.objects[ob.WowPortalPlane.First], root.groupMap, root )
                             portalRef[2] = -1
-                        if(ob.WowPortalPlane.Invert):
-                            modify = -1
-                        portalRef[2] = portalRef[2] * modify
                         root.PortalR.append(portalRef)
                         mogp.PortalCount+=1
                     if(ob.WowFog.Enabled):
@@ -1085,7 +1092,6 @@ class WMO_group_file:
             mogp.DescGroupNameOfs = groupInfo[1]
             
             f.seek(0x58)
-            print(len(mopy.TriangleMaterials))
             mopy.Write(f)
             movi.Write(f)
             movt.Write(f)
@@ -1153,5 +1159,7 @@ class WMO_group_file:
         
             # obj.select = True
             bpy.context.scene.objects.active = obj
+            
+            print("Succesfully exported " + str(obj.name) + " WMO group")
 
             return mohd_0x1

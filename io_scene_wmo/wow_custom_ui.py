@@ -353,6 +353,30 @@ def UnregisterWowWMOGroupProperties():
 ###############################
 ## Portal plane
 ###############################
+
+def GetGroupObjectsReferences(self, context):
+    
+    groups = []
+    groups.append(('0', "None", "")) # setting a default entry as a first element of our enum
+
+    for obj in bpy.context.scene.objects:
+        if obj.WowWMOGroup.Enabled:
+            groups.append((obj.name, obj.name, ""))
+           
+    return groups
+
+
+def UpdateFirstGroupObjectReference(self, context):
+
+    if context.object.WowPortalPlane.First == context.object.WowPortalPlane.Second and context.object.WowPortalPlane.First != '0':
+        context.object.WowPortalPlane.Second = '0'          
+            
+def UpdateSecondGroupObjectReference(self, context):
+        
+    if context.object.WowPortalPlane.Second == context.object.WowPortalPlane.First and context.object.WowPortalPlane.Second != '0':
+        context.object.WowPortalPlane.First = '0'
+   
+
 class WowPortalPlanePanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -369,8 +393,7 @@ class WowPortalPlanePanel(bpy.types.Panel):
         row = layout.row()
         layout.enabled = context.object.WowPortalPlane.Enabled
         self.layout.prop(context.object.WowPortalPlane, "First")
-        self.layout.prop(context.object.WowPortalPlane, "Second")
-        self.layout.prop(context.object.WowPortalPlane, "Invert")
+        self.layout.prop(context.object.WowPortalPlane, "Second")     
 
     @classmethod
     def poll(cls, context):
@@ -378,12 +401,8 @@ class WowPortalPlanePanel(bpy.types.Panel):
 
 class WowPortalPlanePropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow WMO group properties")
-    First = bpy.props.IntProperty(name="First GroupID", description="Portal Reference")
-    Second = bpy.props.IntProperty(name="Second GroupID", description="Portal Reference")
-    normalX = bpy.props.FloatProperty(name="Normal X", description="Portal Normal")
-    normalY = bpy.props.FloatProperty(name="Normal Y", description="Portal Normal")
-    normalZ = bpy.props.FloatProperty(name="Normal Z", description="Portal Normal")
-    Invert = bpy.props.BoolProperty(name="Invert direction", description="Invert portal direction", default = False)
+    First = bpy.props.EnumProperty(items=GetGroupObjectsReferences, name="First group", description="First group", update=UpdateFirstGroupObjectReference)
+    Second = bpy.props.EnumProperty(items=GetGroupObjectsReferences, name="Second group", description="Second group", update=UpdateSecondGroupObjectReference)
     PortalID = bpy.props.IntProperty(name="Portal's ID", description="Portal ID")
 
 def RegisterWowPortalPlaneProperties():
