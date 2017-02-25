@@ -59,13 +59,6 @@ def GetBatchType(polygon, mesh, vg_index_a, vg_index_b):
     else:
         return 1 if counter_b == len(polygon.vertices) else 2
     
-def GetKeyByValue(value, map, namespace=None):
-    for id, obj in map.items():
-        if obj == value:
-            return id
-        
-    return None
-    
 
 class WMO_group_file:
     def __init__(self):
@@ -74,6 +67,7 @@ class WMO_group_file:
 
     def Read(self, f):
         self.filename = f.name
+        self.index = None
 
         # read version header
         self.mver = MVER_chunk()
@@ -951,20 +945,21 @@ class WMO_group_file:
             for ob in bpy.context.scene.objects:
                 if(ob.type == "MESH"):
                     obj_mesh = ob.data
+                    
                     if(ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == root.groupMap.get(objNumber).name or root.groupMap.get(objNumber).name)):
-                        portalRef = [0,0,0]
+                        portalRef = [0, "", 1]
                         if(self.mogp.PortalStart == -1):
                             self.mogp.PortalStart = root.PortalRCount
                         portalRef[0] = ob.WowPortalPlane.PortalID
 
                         if ob.WowPortalPlane.First == root.groupMap.get(objNumber).name and root.groupMap.get(objNumber).WowWMOGroup.PlaceType == '8192':
-                            portalRef[1] = GetKeyByValue( bpy.context.scene.objects[ob.WowPortalPlane.Second + ".001"], root.groupMap, root )
-                            portalRef[2] = 1
+                            portalRef[1] = ob.WowPortalPlane.Second
                         else:
-                            portalRef[1] = GetKeyByValue( bpy.context.scene.objects[ob.WowPortalPlane.First], root.groupMap, root )
+                            portalRef[1] = ob.WowPortalPlane.First
                             portalRef[2] = -1
                         root.PortalR.append(portalRef)
                         self.mogp.PortalCount+=1
+                        
                     if(ob.WowFog.Enabled):
                         fogMap[ob.name] = fog_id
                         fog_id += 1
@@ -1095,7 +1090,6 @@ class WMO_group_file:
             if(source_doodads):
                 self.modr = MODR_chunk()
                 if(len(new_obj.WowWMOGroup.MODR) > 0):
-                    print("has doodads")
                     for doodad in new_obj.WowWMOGroup.MODR:
                         self.modr.DoodadRefs.append(doodad.value)
                     self.mogp.Flags = self.mogp.Flags | MOGP_FLAG.HasDoodads
@@ -1125,22 +1119,16 @@ class WMO_group_file:
         
         except:
             
-            # bpy.context.scene.objects.unlink(new_obj)
             bpy.data.objects.remove(new_obj, do_unlink = True)
             
-        
-            # obj.select = True
             bpy.context.scene.objects.active = obj
             
             raise Exception("Something went wrong while exporting " + str(obj.name) + " WMO group. See the error above for details.")
             
         else:
             
-            # bpy.context.scene.objects.unlink(new_obj)
             bpy.data.objects.remove(new_obj, do_unlink = True)
-            
-        
-            # obj.select = True
+
             bpy.context.scene.objects.active = obj
             
             print("Succesfully exported " + str(obj.name) + " WMO group")

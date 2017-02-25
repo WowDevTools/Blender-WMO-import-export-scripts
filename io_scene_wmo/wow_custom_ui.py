@@ -365,7 +365,7 @@ def GetGroupObjectsReferences(self, context):
            
     return groups
 
-
+''' 
 def UpdateFirstGroupObjectReference(self, context):
 
     if context.object.WowPortalPlane.First == context.object.WowPortalPlane.Second and context.object.WowPortalPlane.First != '0':
@@ -375,6 +375,7 @@ def UpdateSecondGroupObjectReference(self, context):
         
     if context.object.WowPortalPlane.Second == context.object.WowPortalPlane.First and context.object.WowPortalPlane.Second != '0':
         context.object.WowPortalPlane.First = '0'
+'''
    
 
 class WowPortalPlanePanel(bpy.types.Panel):
@@ -392,8 +393,8 @@ class WowPortalPlanePanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         layout.enabled = context.object.WowPortalPlane.Enabled
-        self.layout.prop(context.object.WowPortalPlane, "First")
-        self.layout.prop(context.object.WowPortalPlane, "Second")     
+        self.layout.prop_search(context.object.WowPortalPlane, "First", bpy.context.scene, "objects", text="First group")
+        self.layout.prop_search(context.object.WowPortalPlane, "Second", bpy.context.scene, "objects", text="Second group")
 
     @classmethod
     def poll(cls, context):
@@ -401,8 +402,11 @@ class WowPortalPlanePanel(bpy.types.Panel):
 
 class WowPortalPlanePropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow WMO group properties")
-    First = bpy.props.EnumProperty(items=GetGroupObjectsReferences, name="First group", description="First group", update=UpdateFirstGroupObjectReference)
-    Second = bpy.props.EnumProperty(items=GetGroupObjectsReferences, name="Second group", description="Second group", update=UpdateSecondGroupObjectReference)
+#    First = bpy.props.EnumProperty(items=GetGroupObjectsReferences, name="First group", description="First group")
+#    Second = bpy.props.EnumProperty(items=GetGroupObjectsReferences, name="Second group", description="Second group")
+
+    First = bpy.props.StringProperty()
+    Second = bpy.props.StringProperty()
     PortalID = bpy.props.IntProperty(name="Portal's ID", description="Portal ID")
 
 def RegisterWowPortalPlaneProperties():

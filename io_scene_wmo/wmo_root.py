@@ -528,7 +528,7 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, f, fill_water, source_doodads, autofill_textures, mohd_0x1):
+    def Save(self, f, fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups):
     
         mver = MVER_chunk()                
         # set version header
@@ -678,7 +678,7 @@ class WMO_root_file:
         for i in range(len(self.PortalR)):
             relation = PortalRelationship()
             relation.PortalIndex = self.PortalR[i][0]
-            relation.GroupIndex = self.PortalR[i][1]
+            relation.GroupIndex = wmo_groups.get(self.PortalR[i][1]).index
             relation.Side = self.PortalR[i][2]
             mopr.Relationships.append(relation)
 
