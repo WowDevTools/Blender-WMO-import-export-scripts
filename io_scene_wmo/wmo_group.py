@@ -229,7 +229,7 @@ class WMO_group_file:
             y_pos = self.mliq.Position[1] + y * 4.1666625
             for x in range(0 , self.mliq.xVerts):
                 x_pos = self.mliq.Position[0] + x * 4.1666625
-                vertices.append((x_pos, y_pos, self.mliq.VertexMap[y * self.mliq.xVerts + x].height[0] + self.mliq.Position[2]))
+                vertices.append((x_pos, y_pos, self.mliq.VertexMap[y * self.mliq.xVerts + x].height[0]))
                 # print(x_pos, y_pos, self.mliq.VertexMap[y * self.mliq.xVerts + x].height[0] + self.mliq.Position[2])
                 # second float seems to be VERY low (e.g -3.271161e+35), or NAN or whatever when vertice is shown (or maybe it indicate a volume?)
                 #vertices.append((x_pos, y_pos, self.mliq.HeightMap[y * self.mliq.xVerts + x][1] + self.mliq.Position[2]))
@@ -946,13 +946,13 @@ class WMO_group_file:
                 if(ob.type == "MESH"):
                     obj_mesh = ob.data
                     
-                    if(ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == root.groupMap.get(objNumber).name or root.groupMap.get(objNumber).name)):
+                    if(ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == obj.name or ob.WowPortalPlane.Second == obj.name)):
                         portalRef = [0, "", 1]
                         if(self.mogp.PortalStart == -1):
                             self.mogp.PortalStart = root.PortalRCount
                         portalRef[0] = ob.WowPortalPlane.PortalID
 
-                        if ob.WowPortalPlane.First == root.groupMap.get(objNumber).name and root.groupMap.get(objNumber).WowWMOGroup.PlaceType == '8192':
+                        if ob.WowPortalPlane.First == obj.name:
                             portalRef[1] = ob.WowPortalPlane.Second
                         else:
                             portalRef[1] = ob.WowPortalPlane.First
@@ -968,7 +968,7 @@ class WMO_group_file:
 
                         hasWater = True
 
-                        print("Export liquid:", ob.name )
+                        print("Exporting liquid:", ob.name )
                         mesh = ob.data
                         StartVertex = 0
                         sum = 0
@@ -1138,7 +1138,7 @@ class WMO_group_file:
         
     
     def Write(self):
-        print("Writing group " + self.filename)
+        print("Writing file " +  os.path.basename(self.filename))
         
         try:
             f = open(self.filename, "wb")
@@ -1181,6 +1181,6 @@ class WMO_group_file:
             
         except:
             
-            raise Exception("Something went wrong while writing file: " + str(filename))
+            raise Exception("Something went wrong while writing file: " +  os.path.basename(filename))
             
-        print("Done writing file " + self.filename)
+        print("Done writing file " + os.path.basename(self.filename))

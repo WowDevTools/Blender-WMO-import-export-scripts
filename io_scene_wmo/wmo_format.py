@@ -361,9 +361,9 @@ class PortalInfo:
 
 # portal infos
 class MOPT_chunk:
-    def __init__(self):
+    def __init__(self, nPortals = 0):
         self.Header = ChunkHeader()
-        self.Infos = []
+        self.Infos = nPortals * [PortalInfo]
 
     def Read(self, f):
         # read header
@@ -1232,20 +1232,20 @@ class WaterVertex(LiquidVertex):
         
     def Read(self, f):
         
-        LiquidVertex.Read(self, f) # Python, wtf?
         self.flow1 = struct.unpack("B", f.read(1))[0]
         self.flow2 = struct.unpack("B", f.read(1))[0]
         self.flow1Pct = struct.unpack("B", f.read(1))[0]
         self.filler = struct.unpack("B", f.read(1))[0]
+        LiquidVertex.Read(self, f) # Python, wtf?
         
         
     def Write(self, f):
         
-        LiquidVertex.Write(self, f) # Python, wtf?
         f.write(struct.pack('B', self.flow1))
         f.write(struct.pack('B', self.flow2))
         f.write(struct.pack('B', self.flow1Pct))
         f.write(struct.pack('B', self.filler))
+        LiquidVertex.Write(self, f) # Python, wtf?
         
         
 class MagmaVertex(LiquidVertex):
@@ -1292,14 +1292,9 @@ class MLIQ_chunk:
         
 
         for i in range(self.xVerts * self.yVerts):
-            if(self.LiquidMaterial):
-                vtx = WaterVertex()
-                vtx.Read(f)
-                self.VertexMap.append(vtx)
-            else:
-                vtx = MagmaVertex()
-                vtx.Read(f)
-                self.VertexMap.append(vtx)
+            vtx = WaterVertex() if self.LiquidMaterial else MagmaVertex()
+            vtx.Read(f)
+            self.VertexMap.append(vtx)
         
         self.TileFlags = []
 

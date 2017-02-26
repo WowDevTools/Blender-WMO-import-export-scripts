@@ -433,7 +433,6 @@ class WMO_root_file:
 
             obj.WowPortalPlane.Enabled = True
             first_relationship = True
-            print(root.groupMap)
             
             for j in range(len(self.mopr.Relationships)):
                 if(self.mopr.Relationships[j].PortalIndex == i):
@@ -528,7 +527,7 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, f, fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups):
+    def Save(self, f, fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups, nPortals):
     
         mver = MVER_chunk()                
         # set version header
@@ -550,18 +549,15 @@ class WMO_root_file:
         
         molt = MOLT_chunk()
         mopv = MOPV_chunk()
-        mopt = MOPT_chunk()
-        # set lights
-        molt.Lights = []
-        mopv.PortalVertices = []
-        mopt.Infos = []
+        mopt = MOPT_chunk(nPortals)
+
         global_vertices_count = 0
         global_portal_count = 0
         global_object_count = 0
         global_fog_count = 0
         global_outdoor_object_count = 0
         
-        for ob in bpy.data.objects:
+        for ob in bpy.context.scene.objects:
             if(ob.type == "LAMP"):
                 obj_light = ob.data
                 if(obj_light.WowLight.Enabled):
@@ -587,7 +583,7 @@ class WMO_root_file:
                         global_outdoor_object_count += 1
                     
                 if(ob.WowPortalPlane.Enabled):
-                    print("Export portal "+ob.name)
+                    print("Exporting portal "+ob.name)
                     portal_info = PortalInfo()
                     portal_info.StartVertex = global_vertices_count
                     local_vertices_count = 0
@@ -616,10 +612,10 @@ class WMO_root_file:
                     #portal_info.Normal = (norm_x, norm_y, morm_z)
                     
                     global_vertices_count+=local_vertices_count
-                    mopt.Infos.append(portal_info)
+                    mopt.Infos[ob.WowPortalPlane.PortalID] = portal_info
                     
                 if(ob.WowFog.Enabled):
-                    print("Export fog "+ob.name)
+                    print("Exporting fog "+ob.name)
                     fog = Fog()
                     
                     
@@ -679,8 +675,13 @@ class WMO_root_file:
             relation = PortalRelationship()
             relation.PortalIndex = self.PortalR[i][0]
             relation.GroupIndex = wmo_groups.get(self.PortalR[i][1]).index
+            print(self.PortalR[i][1])
             relation.Side = self.PortalR[i][2]
             mopr.Relationships.append(relation)
+            
+        for name, group in wmo_groups.items():
+            for i in range(group.mogp.PortalStart, group.mogp.PortalStart + group.mogp.PortalCount):
+                print( name, "-", self.PortalR[i][1])
 
         # set header
         bb = self.GetGlobalBoundingBox()

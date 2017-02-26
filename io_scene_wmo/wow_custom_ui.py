@@ -85,6 +85,7 @@ class WowRootPropertyGroup(bpy.types.PropertyGroup):
         name="TextureRelPath",
         description="A relative path to your texture folder. WARNING: changing that property is recommended only on brand new scenes. Do not change on scenes with imported WMOs.",
         default= '',
+        
     )
 
 def RegisterWowRootProperties():
@@ -298,10 +299,15 @@ class WowWMOGroupPanel(bpy.types.Panel):
         self.layout.prop(context.object.WowWMOGroup, "AlwaysDraw")
         self.layout.prop(context.object.WowWMOGroup, "IsMountAllowed")
         self.layout.prop(context.object.WowWMOGroup, "SkyBox")
-        self.layout.prop(context.object.WowWMOGroup, "Fog1")
-        self.layout.prop(context.object.WowWMOGroup, "Fog2")
-        self.layout.prop(context.object.WowWMOGroup, "Fog3")
-        self.layout.prop(context.object.WowWMOGroup, "Fog4")
+#        self.layout.prop(context.object.WowWMOGroup, "Fog1")
+#        self.layout.prop(context.object.WowWMOGroup, "Fog2")
+#        self.layout.prop(context.object.WowWMOGroup, "Fog3")
+#        self.layout.prop(context.object.WowWMOGroup, "Fog4")
+        self.layout.prop_search(context.object.WowWMOGroup, "Fog1", bpy.context.scene, "objects", text="Fog1")
+        self.layout.prop_search(context.object.WowWMOGroup, "Fog2", bpy.context.scene, "objects", text="Fog2")
+        self.layout.prop_search(context.object.WowWMOGroup, "Fog3", bpy.context.scene, "objects", text="Fog3")
+        self.layout.prop_search(context.object.WowWMOGroup, "Fog4", bpy.context.scene, "objects", text="Fog4")
+        
         layout.enabled = context.object.WowWMOGroup.Enabled
 
     @classmethod
@@ -337,10 +343,14 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     AlwaysDraw = bpy.props.BoolProperty(name="Always draw", description="Always draw the group", default = False)
     IsMountAllowed = bpy.props.BoolProperty(name="Mounts allowed", description="Allows or prohibits mounts in the group. Works only with generated navmesh delivered to server.", default = False)
     SkyBox = bpy.props.BoolProperty(name="Use Skybox", description="Use skybox in group", default = False)
-    Fog1 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 1", description="Fog of an object")
-    Fog2 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 2", description="Fog of an object")
-    Fog3 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 3", description="Fog of an object")
-    Fog4 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 4", description="Fog of an object")
+#    Fog1 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 1", description="Fog of an object")
+#    Fog2 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 2", description="Fog of an object")
+#    Fog3 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 3", description="Fog of an object")
+#    Fog4 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 4", description="Fog of an object")
+    Fog1 = bpy.props.StringProperty()
+    Fog2 = bpy.props.StringProperty()
+    Fog3 = bpy.props.StringProperty()
+    Fog4 = bpy.props.StringProperty()
     MODR = bpy.props.CollectionProperty(type=WowWMOMODRStore)
 
 def RegisterWowWMOGroupProperties():
@@ -353,6 +363,7 @@ def UnregisterWowWMOGroupProperties():
 ###############################
 ## Portal plane
 ###############################
+''' 
 
 def GetGroupObjectsReferences(self, context):
     
@@ -365,7 +376,7 @@ def GetGroupObjectsReferences(self, context):
            
     return groups
 
-''' 
+
 def UpdateFirstGroupObjectReference(self, context):
 
     if context.object.WowPortalPlane.First == context.object.WowPortalPlane.Second and context.object.WowPortalPlane.First != '0':

@@ -11,9 +11,6 @@ import os
 def write(filepath, fill_water, source_doodads, autofill_textures, export_selected):
     f = open(filepath, "wb")
     root_filename = filepath
-
-    wmo_root = WMO_root_file()
-    wmo_groups = {}
     
     base_name = os.path.splitext(filepath)[0]
     
@@ -24,14 +21,22 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
                 ob.WowPortalPlane.PortalID = portal_count
                 portal_count+=1
     
+    
+    wmo_root = WMO_root_file()
+    wmo_groups = {}
+    
     iObj = 0
     mohd_0x1 = True
     
     
     for i in range(len(bpy.context.scene.objects)):
         
+        # check if object is hidden
+        if bpy.context.scene.objects[i].hide == True:
+            continue
+        
         #check if selected (optional)
-        if bpy.data.objects[i].select != True and export_selected:
+        if bpy.context.scene.objects[i].select != True and export_selected:
             continue
     
         # check if object is mesh
@@ -89,5 +94,5 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         
     # write root file
     print("Exporting root file") 
-    wmo_root.Save(f, fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups)
+    wmo_root.Save(f, fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups, portal_count)
     return
