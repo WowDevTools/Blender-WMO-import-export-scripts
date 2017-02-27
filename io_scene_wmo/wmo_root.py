@@ -631,8 +631,8 @@ class WMO_root_file:
                     
                     fog.BigRadius = max_z - ob.location[2]
                     fog.SmallRadius = fog.BigRadius * (ob.WowFog.InnerRadius / 100)
-                    fog.Color1 = (int(ob.WowFog.Color1[0] * 255), int(ob.WowFog.Color1[1] * 255), int(ob.WowFog.Color1[2] * 255), 0xFF)
-                    fog.Color2 = (int(ob.WowFog.Color2[0] * 255), int(ob.WowFog.Color2[1] * 255), int(ob.WowFog.Color2[2] * 255), 0xFF)
+                    fog.Color1 = (int(ob.WowFog.Color1[2] * 255), int(ob.WowFog.Color1[1] * 255), int(ob.WowFog.Color1[0] * 255), 0xFF)
+                    fog.Color2 = (int(ob.WowFog.Color2[2] * 255), int(ob.WowFog.Color2[1] * 255), int(ob.WowFog.Color2[0] * 255), 0xFF)
                     fog.EndDist = ob.WowFog.EndDist
                     fog.EndDist2 = ob.WowFog.EndDist2
                     fog.Position = ob.location
