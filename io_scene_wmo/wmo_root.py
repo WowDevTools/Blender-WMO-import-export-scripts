@@ -614,6 +614,7 @@ class WMO_root_file:
                     global_vertices_count+=local_vertices_count
                     mopt.Infos[ob.WowPortalPlane.PortalID] = portal_info
                     
+                    
                 if(ob.WowFog.Enabled):
                     print("Exporting fog "+ob.name)
                     fog = Fog()
@@ -675,13 +676,8 @@ class WMO_root_file:
             relation = PortalRelationship()
             relation.PortalIndex = self.PortalR[i][0]
             relation.GroupIndex = wmo_groups.get(self.PortalR[i][1]).index
-            print(self.PortalR[i][1])
             relation.Side = self.PortalR[i][2]
             mopr.Relationships.append(relation)
-            
-        for name, group in wmo_groups.items():
-            for i in range(group.mogp.PortalStart, group.mogp.PortalStart + group.mogp.PortalCount):
-                print( name, "-", self.PortalR[i][1])
 
         # set header
         bb = self.GetGlobalBoundingBox()
