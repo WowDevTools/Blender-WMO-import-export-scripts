@@ -476,7 +476,7 @@ class WowLiquidPanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         self.layout.prop(context.object.WowLiquid, "LiquidType")
-        self.layout.prop(context.object.WowLiquid, "WMOGroup")
+        self.layout.prop_search(context.object.WowWMOGroup, "WMOGroup", bpy.context.scene, "objects", text="WMO Group")
         layout.enabled = context.object.WowLiquid.Enabled
 
     @classmethod
@@ -493,7 +493,7 @@ class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
         ('61', "Hyjal Past - Water", ""), ('100', "Basic Procedural Water", ""), ('0', "Unsupported", "")]
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
     LiquidType = bpy.props.EnumProperty(items=liquidTypeEnum, name="Liquid Type", description="Type of the liquid present in this WMO group")
-    WMOGroup = bpy.props.EnumProperty(items=GetGroupObjects, name="WMO Group", description = "WMO Group this liquid is bound to")
+    WMOGroup = bpy.props.StringProperty()
 
 def RegisterWowLiquidProperties():
     bpy.types.Object.WowLiquid = bpy.props.PointerProperty(type=WowLiquidPropertyGroup)
