@@ -1031,7 +1031,6 @@ class OBJECT_OP_Quick_Collision(bpy.types.Operator):
             bpy.context.scene.objects.active = ob
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
-            # bpy.ops.object.vertex_group_remove(all = True)
             bpy.ops.object.vertex_group_assign_new()
             ob.WowVertexInfo.VertexGroup = ob.vertex_groups.active.name
             bpy.ops.mesh.select_all(action='DESELECT')
@@ -1049,6 +1048,8 @@ class OBJECT_OP_Texface_to_material(bpy.types.Operator):
     bl_description = 'Generate materials out of texfaces in selected objects'
 
     def execute(self, context):
+        if bpy.context.selected_objects[0] != None:
+            bpy.context.scene.objects.active = bpy.context.selected_objects[0]
         bpy.ops.view3d.material_remove()
         bpy.ops.view3d.texface_to_material()
         return {'FINISHED'}   
