@@ -19,7 +19,7 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         if(ob.type == "MESH"):
             if(ob.WowPortalPlane.Enabled):
                 ob.WowPortalPlane.PortalID = portal_count
-                portal_count+=1
+                portal_count += 1
     
     
     wmo_root = WMO_root_file()
@@ -39,14 +39,7 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         if bpy.context.scene.objects[i].select != True and export_selected:
             continue
     
-        # check if object is mesh
-        """"if (not isinstance(bpy.context.selected_objects[iObj].data, bpy.types.Mesh)):
-            continue
-        
-        # check if object is portal
-        if(bpy.context.selected_objects[iObj].data.WowPortalPlane.Enabled):
-            continue"""
-        
+        # check if object is mesh       
         if (not isinstance(bpy.context.scene.objects[i].data, bpy.types.Mesh)):
             continue
         
