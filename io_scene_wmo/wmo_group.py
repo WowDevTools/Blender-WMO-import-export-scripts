@@ -958,10 +958,11 @@ class WMO_group_file:
                             portalRef[1] = ob.WowPortalPlane.First
                             portalRef[2] = -1
                         root.PortalR.append(portalRef)
-                        self.mogp.PortalCount+=1
+                        self.mogp.PortalCount += 1
                         
                     if(ob.WowFog.Enabled):
-                        fogMap[ob.name] = fog_id
+                        if (obj.name == ob.name):
+                            fogMap[ob.name] = fog_id
                         fog_id += 1
                     
                     if(ob.WowLiquid.Enabled and (obj.name == ob.WowLiquid.WMOGroup)): # export liquids
