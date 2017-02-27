@@ -541,7 +541,7 @@ class WMO_group_file:
         collision_indices = self.GetCollisionIndices()
 
         if(collision_indices):
-            collision_vg = nobj.vertex_groups.new("collision")    
+            collision_vg = nobj.vertex_groups.new("Collision")    
             collision_vg.add(collision_indices, 1.0, 'ADD')
             nobj.WowVertexInfo.Enabled = True
             nobj.WowVertexInfo.VertexGroup = collision_vg.name

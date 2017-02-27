@@ -1004,7 +1004,6 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
             for i in range(len(mesh.materials)):
                 if( (mesh.materials[i].active_texture is not None) and not mesh.materials[i].WowMaterial.Texture1 and \
                     (mesh.materials[i].active_texture.type == 'IMAGE') and (mesh.materials[i].active_texture.image is not None) ):
-                        print ("test")
                         if(bpy.context.scene.WoWRoot.UseTextureRelPath):
                             mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
                             print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
@@ -1023,23 +1022,37 @@ class OBJECT_OP_Quick_Collision(bpy.types.Operator):
     bl_description = 'Generates WoW collision equal to geometry of the selected objects'
     bl_options = {'REGISTER', 'UNDO'}
         
-    NodeSize = bpy.props.IntProperty(name="Node max size", description="Max count of faces for a node in bsp tree", default=150, min=1, soft_max=500)        
+    NodeSize = bpy.props.IntProperty(name="Node max size", description="Max count of faces for a node in bsp tree", default=150, min=1, soft_max=500)
+    CleanUp = bpy.props.BoolProperty(name="Clean up", description="Remove unreferenced vertex groups", default = False)
     
-    def QuickCollision(self, NodeSize):
+    def QuickCollision(self, NodeSize, CleanUp):
         for ob in bpy.context.selected_objects:
             ob.WowVertexInfo.Enabled = True
             bpy.context.scene.objects.active = ob
+            
+            if CleanUp:
+                for vertex_group in ob.vertex_groups:
+                    if (vertex_group.name != ob.WowVertexInfo.VertexGroup) and (vertex_group.name != ob.WowVertexInfo.BatchTypeA) and (vertex_group.name != ob.WowVertexInfo.BatchTypeB) and \
+                    (vertex_group.name != ob.WowVertexInfo.Lightmap) and (vertex_group.name != ob.WowVertexInfo.Blendmap) and (vertex_group.name != ob.WowVertexInfo.SecondUV):
+                        ob.vertex_groups.remove(vertex_group)
+                        
+            if ob.vertex_groups.get(ob.WowVertexInfo.VertexGroup) != None:
+                bpy.ops.object.vertex_group_set_active(group=ob.WowVertexInfo.VertexGroup)
+            else:
+                new_vertex_group = ob.vertex_groups.new(name="Collision")
+                bpy.ops.object.vertex_group_set_active(group=new_vertex_group.name)
+                ob.WowVertexInfo.VertexGroup = new_vertex_group.name
+            
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.object.vertex_group_assign_new()
-            ob.WowVertexInfo.VertexGroup = ob.vertex_groups.active.name
+            bpy.ops.object.vertex_group_assign()
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT')
             ob.WowVertexInfo.NodeSize = NodeSize
 
     def execute(self, context):
         
-        self.QuickCollision(self.NodeSize)
+        self.QuickCollision(self.NodeSize, self.CleanUp)
         return {'FINISHED'}        
         
 class OBJECT_OP_Texface_to_material(bpy.types.Operator):
