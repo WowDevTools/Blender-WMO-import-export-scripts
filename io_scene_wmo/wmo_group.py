@@ -946,6 +946,7 @@ class WMO_group_file:
                 if(ob.type == "MESH"):
                     obj_mesh = ob.data
                     
+                    # save portal relations and MOGP indexing data
                     if(ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == obj.name or ob.WowPortalPlane.Second == obj.name)):
                         portalRef = [0, "", 1]
                         if(self.mogp.PortalStart == -1):
@@ -960,12 +961,17 @@ class WMO_group_file:
                         root.PortalR.append(portalRef)
                         self.mogp.PortalCount += 1
                         
+                    # save fog references
                     if(ob.WowFog.Enabled):
-                        if (obj.name == ob.name):
+                        
+                        if (obj.WowWMOGroup.Fog1 == ob.name) or (obj.WowWMOGroup.Fog2 == ob.name) or \
+                        (obj.WowWMOGroup.Fog3 == ob.name) or (obj.WowWMOGroup.Fog4 == ob.name):
                             fogMap[ob.name] = fog_id
+                            
                         fog_id += 1
                     
-                    if(ob.WowLiquid.Enabled and (obj.name == ob.WowLiquid.WMOGroup)): # export liquids
+                    # export liquids
+                    if(ob.WowLiquid.Enabled and (obj.name == ob.WowLiquid.WMOGroup)):
 
                         hasWater = True
 

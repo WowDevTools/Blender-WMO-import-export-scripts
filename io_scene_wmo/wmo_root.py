@@ -621,6 +621,7 @@ class WMO_root_file:
                     
                     
                     ob.select = True
+                    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
                     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
                     ob.select = False
                     
