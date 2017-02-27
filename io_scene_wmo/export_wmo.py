@@ -31,16 +31,16 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
     
     for i in range(len(bpy.context.scene.objects)):
         
+        # check if object is mesh       
+        if bpy.context.scene.objects[i].type != 'MESH':
+            continue
+        
         # check if object is hidden
         if bpy.context.scene.objects[i].hide == True:
             continue
         
         #check if selected (optional)
         if bpy.context.scene.objects[i].select != True and export_selected:
-            continue
-    
-        # check if object is mesh       
-        if (not isinstance(bpy.context.scene.objects[i].data, bpy.types.Mesh)):
             continue
         
         # check if object is portal
