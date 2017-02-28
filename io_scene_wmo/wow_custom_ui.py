@@ -476,7 +476,7 @@ class WowLiquidPanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         self.layout.prop(context.object.WowLiquid, "LiquidType")
-        self.layout.prop_search(context.object.WowWMOGroup, "WMOGroup", bpy.context.scene, "objects", text="WMO Group")
+        self.layout.prop_search(context.object.WowLiquid, "WMOGroup", bpy.context.scene, "objects", text="WMO Group")
         layout.enabled = context.object.WowLiquid.Enabled
 
     @classmethod
