@@ -349,7 +349,7 @@ class WMO_root_file:
             
             # applying real object transformation
             fog.location = f.Position
-            bpy.ops.transform.resize( value=(f.BigRadius / 0.5, f.BigRadius / 0.5, f.BigRadius / 0.5) ) # 0.5 is the default radius of sphere primitive in Blender
+            bpy.ops.transform.resize( value=(f.BigRadius, f.BigRadius, f.BigRadius) ) # 0.5 is the default radius of sphere primitive in Blender
             
             bpy.ops.object.shade_smooth()
             fog.draw_type = 'SOLID'
@@ -574,6 +574,7 @@ class WMO_root_file:
                     light.AttenuationStart = obj_light.WowLight.AttenuationStart
                     light.AttenuationEnd = obj_light.WowLight.AttenuationEnd                
                     molt.Lights.append(light)
+                    
             if(ob.type == "MESH"):
                 obj_mesh = ob.data
                 
@@ -619,19 +620,13 @@ class WMO_root_file:
                     print("Exporting fog "+ob.name)
                     fog = Fog()
                     
-                    
                     ob.select = True
-                    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+                    bpy.ops.object.transform_apply(location = True, rotation = True, scale = True)
                     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
                     ob.select = False
                     
-                    max_z = 0
-                    
-                    for vertex in obj_mesh.vertices:
-                        if(max_z < vertex.co[2] * ob.scale[2]):
-                            max_z = vertex.co[2] * ob.scale[2]
-                    
-                    fog.BigRadius = max_z - ob.location[2]
+                    fog.BigRadius = ob.dimensions[2]
+                    print(fog.BigRadius)
                     fog.SmallRadius = fog.BigRadius * (ob.WowFog.InnerRadius / 100)
                     fog.Color1 = (int(ob.WowFog.Color1[2] * 255), int(ob.WowFog.Color1[1] * 255), int(ob.WowFog.Color1[0] * 255), 0xFF)
                     fog.Color2 = (int(ob.WowFog.Color2[2] * 255), int(ob.WowFog.Color2[1] * 255), int(ob.WowFog.Color2[0] * 255), 0xFF)

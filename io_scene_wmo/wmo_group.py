@@ -964,9 +964,7 @@ class WMO_group_file:
                     # save fog references
                     if(ob.WowFog.Enabled):
                         
-                        if (obj.WowWMOGroup.Fog1 == ob.name) or (obj.WowWMOGroup.Fog2 == ob.name) or \
-                        (obj.WowWMOGroup.Fog3 == ob.name) or (obj.WowWMOGroup.Fog4 == ob.name):
-                            fogMap[ob.name] = fog_id
+                        fogMap[ob.name] = fog_id
                             
                         fog_id += 1
                     
