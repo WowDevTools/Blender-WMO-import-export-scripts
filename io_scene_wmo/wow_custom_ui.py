@@ -115,7 +115,6 @@ class WowMaterialPanel(bpy.types.Panel):
         self.layout.prop(context.material.WowMaterial, "Shader")
         self.layout.prop(context.material.WowMaterial, "TerrainType")
         self.layout.prop(context.material.WowMaterial, "BlendingMode")
-        self.layout.prop(context.material.WowMaterial, "BatchType")
         self.layout.prop(context.material.WowMaterial, "TwoSided")
         self.layout.prop(context.material.WowMaterial, "Darkened")
         self.layout.prop(context.material.WowMaterial, "NightGlow")
