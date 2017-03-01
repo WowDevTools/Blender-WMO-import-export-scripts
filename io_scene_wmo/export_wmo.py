@@ -5,6 +5,8 @@ from . import wmo_root
 from .wmo_root import *
 from . import wmo_group
 from .wmo_group import *
+from . import debug_utils
+from .debug_utils import *
 
 import os
 
@@ -51,7 +53,7 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
             continue
         
         #check if selected (optional)
-        if selectedMap.get(bpy.context.scene.objects[i], True):
+        if export_selected and selectedMap.get(bpy.context.scene.objects[i], True):
             continue
         
         # check if object is portal
@@ -78,6 +80,8 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         wmo_root.groupMap[iObj] = bpy.context.scene.objects[i]
         
         bpy.context.scene.objects[i].select = False
+        
+        LogDebug()
         
         if mohd_0x1:
             mohd_0x1 = wmo_group.Save(bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures, group_filename)
