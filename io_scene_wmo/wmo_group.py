@@ -586,7 +586,6 @@ class WMO_group_file:
         self.filename = group_filename
         
         mohd_0x1 = True
-        bpy.ops.object.select_all(action='DESELECT')
 
         # check Wow WMO panel enabled
         if(not obj.WowWMOGroup.Enabled):
@@ -605,7 +604,6 @@ class WMO_group_file:
         try:
             
             # apply all modifiers. Needs to optional.
-            bpy.ops.object.mode_set(mode='OBJECT')
             if len(new_obj.modifiers) != 0:
                 for modifier in new_obj.modifiers:
                     bpy.ops.object.modifier_apply(modifier=modifier.name)

@@ -14,12 +14,23 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
     
     base_name = os.path.splitext(filepath)[0]
     
+    selectedMap = {}
+    
     portal_count = 0
     for ob in bpy.context.scene.objects:
         if(ob.type == "MESH"):
             if(ob.WowPortalPlane.Enabled):
                 ob.WowPortalPlane.PortalID = portal_count
                 portal_count += 1
+                
+        bpy.context.scene.objects.active = ob
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
+        if export_selected:
+            if ob.select == True:
+                selectedMap[ob] = False
+                ob.select = False
+            
     
     
     wmo_root = WMO_root_file()
@@ -40,7 +51,7 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
             continue
         
         #check if selected (optional)
-        if bpy.context.scene.objects[i].select != True and export_selected:
+        if selectedMap.get(bpy.context.scene.objects[i], True):
             continue
         
         # check if object is portal
@@ -65,6 +76,8 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         wmo_group = WMO_group_file()
         
         wmo_root.groupMap[iObj] = bpy.context.scene.objects[i]
+        
+        bpy.context.scene.objects[i].select = False
         
         if mohd_0x1:
             mohd_0x1 = wmo_group.Save(bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures, group_filename)
