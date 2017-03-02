@@ -1137,7 +1137,7 @@ class WMO_group_file:
 
             bpy.context.scene.objects.active = obj
             
-            Log(1, False, "Succesfully saved <<" + str(obj.name) + ">> WMO group")
+            Log(1, False, "Successfully saved <<" + str(obj.name) + ">> WMO group")
 
             return mohd_0x1
         
