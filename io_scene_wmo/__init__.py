@@ -56,6 +56,7 @@ from bpy.props import IntProperty, StringProperty, BoolProperty, FloatVectorProp
 from bpy_extras.io_utils import ExportHelper
 
 from . import wow_custom_ui
+from . import debug_utils
 #from . import Utility
 
 class WMOImporter(bpy.types.Operator):

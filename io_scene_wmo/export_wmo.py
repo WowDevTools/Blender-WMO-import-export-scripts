@@ -41,6 +41,7 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
     iObj = 0
     mohd_0x1 = True
     
+    Log(2, True, "Saving group files")
     
     for i in range(len(bpy.context.scene.objects)):
         
@@ -81,8 +82,6 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         
         bpy.context.scene.objects[i].select = False
         
-        LogDebug()
-        
         if mohd_0x1:
             mohd_0x1 = wmo_group.Save(bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures, group_filename)
         else:
@@ -98,11 +97,11 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         iObj+=1
         
     # write group files
-    print("Writing group files")
+    Log(2, True, "Writing group files")
     for name, group in wmo_groups.items():
         group.Write()
         
     # write root file
-    print("Exporting root file") 
+    Log(2, True, "Writing root file")
     wmo_root.Save(f, fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups, portal_count)
     return

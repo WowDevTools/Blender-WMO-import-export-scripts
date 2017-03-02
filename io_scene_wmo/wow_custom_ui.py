@@ -5,6 +5,9 @@ import bpy.types
 import os
 from . import wmo_format
 from .wmo_format import *
+from . import debug_utils
+from .debug_utils import *
+
 from bpy.app.handlers import persistent
 
 ###############################
@@ -1005,10 +1008,10 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
                     (mesh.materials[i].active_texture.type == 'IMAGE') and (mesh.materials[i].active_texture.image is not None) ):
                         if(bpy.context.scene.WoWRoot.UseTextureRelPath):
                             mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
-                            print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
+                            LogDebug(1, False, os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
                         else:
                             mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( mesh.materials[i].active_texture.image.filepath )[0] + ".blp"
-                            print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")              
+                            LogDebug(1, False, os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")              
 
     def execute(self, context):
         

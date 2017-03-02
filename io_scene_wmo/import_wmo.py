@@ -5,6 +5,8 @@ from . import wmo_root
 from .wmo_root import *
 from . import wmo_group
 from .wmo_group import *
+from . import debug_utils
+from .debug_utils import *
 
 import os
 
@@ -51,7 +53,7 @@ def read(filename, file_format):
         group.Read(f)
         group_list.append(group)
     else:
-        raise Exception("File seems to be corrupted")
+        LogError(2, "File seems to be corrupted")
 
     # load all materials in root file
     root.LoadMaterials(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\", file_format)
@@ -65,7 +67,7 @@ def read(filename, file_format):
     # create meshes
     for i in range(len(group_list)):
         objName = bpy.path.display_name_from_filepath(group_list[i].filename)
-        print("Importing group", objName)
+        Log(2, True, "Importing group", objName)
         group_list[i].LoadObject(objName, None, i, bpy.path.display_name_from_filepath(rootName), root)
 
     # set cross references

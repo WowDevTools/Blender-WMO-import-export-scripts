@@ -11,6 +11,9 @@ from .Collision import *
 import math
 from math import *
 
+from . import debug_utils
+from .debug_utils import *
+
 import os
 import sys
 
@@ -582,7 +585,7 @@ class WMO_group_file:
         root.groupMap[objId] = nobj.name
 
     def Save(self, obj, root, objNumber, source_doodads, autofill_textures, group_filename):
-        
+        Log(1, False, "Saving group: <<" + obj.name + ">>")
         self.filename = group_filename
         
         mohd_0x1 = True
@@ -590,7 +593,7 @@ class WMO_group_file:
         # check Wow WMO panel enabled
         if(not obj.WowWMOGroup.Enabled):
             #bpy.ops.error.message(message="Error: Trying to export " + obj.name + " but Wow WMO Group properties not enabled")
-            raise Exception("Error: Trying to export " + obj.name + " but WoW WMO Group properties not enabled")
+            LogError(2, "Trying to export object: <<" + obj.name + ">> but WoW WMO Group properties not enabled")
 
         bpy.context.scene.objects.active = obj
         new_obj = obj.copy()
@@ -679,10 +682,10 @@ class WMO_group_file:
             
             # doing some safety checks to notify the user if the object is badly formed
             if(len(mesh.vertices) > 65535):
-                raise Exception("Object " + str(obj.name) + " contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")
+                LogError(2, "Object " + str(obj.name) + " contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")
             
             if len(mesh.materials) > 254 or len(root.momt.Materials) > 255:
-                raise Exception("Scene has excceeded the maximum allowed number of WoW materials (255). Your scene now has " + len(root.momt.Materials) + " materials. So, " + (len(root.momt.Materials) - 255) + " extra ones." )
+                LogError(2, "Scene has excceeded the maximum allowed number of WoW materials (255). Your scene now has " + len(root.momt.Materials) + " materials. So, " + (len(root.momt.Materials) - 255) + " extra ones." )
             
             
             self.mver = MVER_chunk()
@@ -700,10 +703,10 @@ class WMO_group_file:
                         (mesh.materials[i].active_texture.type == 'IMAGE') and (mesh.materials[i].active_texture.image is not None) ):
                             if(bpy.context.scene.WoWRoot.UseTextureRelPath):
                                 mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp"
-                                print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
+                                LogDebug(1, False, os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
                             else:
                                 mesh.materials[i].WowMaterial.Texture1 = os.path.splitext( mesh.materials[i].active_texture.image.filepath )[0] + ".blp"
-                                print(os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
+                                LogDebug(1, False, os.path.splitext( os.path.relpath( mesh.materials[i].active_texture.image.filepath, bpy.context.scene.WoWRoot.TextureRelPath ))[0] + ".blp")
 
             polyBatchMap = {}
 
@@ -971,7 +974,7 @@ class WMO_group_file:
 
                         hasWater = True
 
-                        print("Exporting liquid:", ob.name )
+                        Log(1, False, "Exporting liquid: <<" + ob.name + ">>")
                         mesh = ob.data
                         StartVertex = 0
                         sum = 0
@@ -1028,7 +1031,7 @@ class WMO_group_file:
                                     self.mliq.VertexMap.append(vertex)
                             else:
                                 
-                                raise Exception("Slime and magma (lava) liquids require a UV map to be created.")
+                                LogError(2, "Slime and magma (lava) liquids require a UV map to be created.")
 
                         else:
 
@@ -1126,7 +1129,7 @@ class WMO_group_file:
             
             bpy.context.scene.objects.active = obj
             
-            raise Exception("Something went wrong while exporting " + str(obj.name) + " WMO group. See the error above for details.")
+            LogError(2, "Something went wrong while exporting <<" + str(obj.name) + ">> WMO group. See the error above for details.")
             
         else:
             
@@ -1134,14 +1137,14 @@ class WMO_group_file:
 
             bpy.context.scene.objects.active = obj
             
-            print("Succesfully exported " + str(obj.name) + " WMO group")
+            Log(1, False, "Succesfully saved <<" + str(obj.name) + ">> WMO group")
 
             return mohd_0x1
         
         
     
     def Write(self):
-        print("Writing file " +  os.path.basename(self.filename))
+        Log(1, False, "Writing file: <<" +  os.path.basename(self.filename) + ">>")
         
         try:
             f = open(self.filename, "wb")
@@ -1184,6 +1187,6 @@ class WMO_group_file:
             
         except:
             
-            raise Exception("Something went wrong while writing file: " +  os.path.basename(filename))
+            LogError(2, "Something went wrong while writing file: <<" + os.path.basename(filename) + ">>")
             
-        print("Done writing file " + os.path.basename(self.filename))
+        Log(1, False, "Done writing file: <<" + os.path.basename(self.filename) + ">>")

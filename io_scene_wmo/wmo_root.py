@@ -3,6 +3,8 @@ import bpy
 import math
 from . import wmo_format
 from .wmo_format import *
+from . import debug_utils
+from .debug_utils import *
 
 import os
 
@@ -39,7 +41,6 @@ class WMO_root_file:
         self.mver.Read(f)
         self.mohd.Read(f)
         self.WMOId = self.mohd.ID
-        print("WMO DBC Id: " + str(self.WMOId))
         self.motx.Read(f)
         self.momt.Read(f)
         self.mogn.Read(f)
@@ -404,7 +405,6 @@ class WMO_root_file:
         mesh = bpy.data.meshes.new(name)
         mesh.WowWMORoot.IsRoot = True
         mesh.WowWMORoot.MODS.Sets = self.mods.Sets
-        #print(mesh.WowWMORoot.MODS.Sets[0].Name)
         mesh.WowWMORoot.MODN.StringTable = self.modn.StringTable
         mesh.WowWMORoot.MODD.Definitions = self.modd.Definitions
         mesh.WowWMORoot.MFOG.Fogs = self.mfog.Fogs
@@ -584,7 +584,7 @@ class WMO_root_file:
                         global_outdoor_object_count += 1
                     
                 if(ob.WowPortalPlane.Enabled):
-                    print("Exporting portal "+ob.name)
+                    Log(1, False, "Exporting portal: <<" + ob.name + ">>")
                     portal_info = PortalInfo()
                     portal_info.StartVertex = global_vertices_count
                     local_vertices_count = 0
@@ -617,7 +617,7 @@ class WMO_root_file:
                     
                     
                 if(ob.WowFog.Enabled):
-                    print("Exporting fog "+ob.name)
+                    Log(1, False, "Exporting fog: <<" + ob.name + ">>")
                     fog = Fog()
                     
                     ob.select = True
@@ -626,7 +626,6 @@ class WMO_root_file:
                     ob.select = False
                     
                     fog.BigRadius = ob.dimensions[2]
-                    print(fog.BigRadius)
                     fog.SmallRadius = fog.BigRadius * (ob.WowFog.InnerRadius / 100)
                     fog.Color1 = (int(ob.WowFog.Color1[2] * 255), int(ob.WowFog.Color1[1] * 255), int(ob.WowFog.Color1[0] * 255), 0xFF)
                     fog.Color2 = (int(ob.WowFog.Color2[2] * 255), int(ob.WowFog.Color2[1] * 255), int(ob.WowFog.Color2[0] * 255), 0xFF)
@@ -652,7 +651,7 @@ class WMO_root_file:
                         modd.Definitions = obj_mesh.WowWMORoot.MODD.Definitions
                         
         if(global_object_count > 512):
-            raise Exception("Your scene contains more objects that it is supported by WMO file format " + str(global_object_count) + ". The hardcoded maximum is 512 for one root WMO file. Dividing your scene to a few separate WMO models is recommended.")
+            LogError(2, "Your scene contains more objects that it is supported by WMO file format " + str(global_object_count) + ". The hardcoded maximum is 512 for one root WMO file. Dividing your scene to a few separate WMO models is recommended.")
         
         if(global_fog_count == 0):
         
