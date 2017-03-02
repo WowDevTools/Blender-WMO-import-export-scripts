@@ -26,7 +26,9 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
                 portal_count += 1
                 
         bpy.context.scene.objects.active = ob
-        bpy.ops.object.mode_set(mode='OBJECT')
+        
+        if not ob.hide:
+            bpy.ops.object.mode_set(mode='OBJECT')
         
         if export_selected:
             if ob.select == True:
