@@ -527,29 +527,11 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, f, fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups, nPortals):
-    
-        mver = MVER_chunk()                
+    def Save(self, fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups, nPortals):
+                 
         # set version header
         self.mver.Version = 17
-        self.mver.Write(f)
-        
-        mohd = MOHD_chunk()
-        motx = MOTX_chunk()
-        momt = MOMT_chunk()
-        mogn = MOGN_chunk()
-        mogi = MOGI_chunk()
-        mosb = MOSB_chunk()
-        movv = MOVV_chunk()
-        movb = MOVB_chunk()
-        mods = MODS_chunk()
-        modn = MODN_chunk()
-        modd = MODD_chunk()
-        mfog = MFOG_chunk()
-        
-        molt = MOLT_chunk()
-        mopv = MOPV_chunk()
-        mopt = MOPT_chunk(nPortals)
+        self.mopt = MOPT_chunk(nPortals)
 
         global_vertices_count = 0
         global_portal_count = 0
@@ -573,7 +555,7 @@ class WMO_root_file:
                     light.Intensity = obj_light.WowLight.Intensity
                     light.AttenuationStart = obj_light.WowLight.AttenuationStart
                     light.AttenuationEnd = obj_light.WowLight.AttenuationEnd                
-                    molt.Lights.append(light)
+                    self.molt.Lights.append(light)
                     
             if(ob.type == "MESH"):
                 obj_mesh = ob.data
@@ -594,7 +576,7 @@ class WMO_root_file:
                     ob.select = False
                     
                     for vert in obj_mesh.vertices:
-                        mopv.PortalVertices.append(vert.co)
+                        self.mopv.PortalVertices.append(vert.co)
                         v.append(vert.co)
                         local_vertices_count+=1
                     
@@ -613,7 +595,7 @@ class WMO_root_file:
                     #portal_info.Normal = (norm_x, norm_y, morm_z)
                     
                     global_vertices_count+=local_vertices_count
-                    mopt.Infos[ob.WowPortalPlane.PortalID] = portal_info
+                    self.mopt.Infos[ob.WowPortalPlane.PortalID] = portal_info
                     
                     
                 if(ob.WowFog.Enabled):
@@ -642,13 +624,13 @@ class WMO_root_file:
                         
                     global_fog_count += 1
                         
-                    mfog.Fogs.append(fog)
+                    self.mfog.Fogs.append(fog)
                     
                 elif(obj_mesh.WowWMORoot.IsRoot):
                     if(source_doodads):
-                        mods.Sets = obj_mesh.WowWMORoot.MODS.Sets
-                        modn.StringTable = obj_mesh.WowWMORoot.MODN.StringTable
-                        modd.Definitions = obj_mesh.WowWMORoot.MODD.Definitions
+                        self.mods.Sets = obj_mesh.WowWMORoot.MODS.Sets
+                        self.modn.StringTable = obj_mesh.WowWMORoot.MODN.StringTable
+                        self.modd.Definitions = obj_mesh.WowWMORoot.MODD.Definitions
                         
         if(global_object_count > 512):
             LogError(2, "Your scene contains more objects that it is supported by WMO file format " + str(global_object_count) + ". The hardcoded maximum is 512 for one root WMO file. Dividing your scene to a few separate WMO models is recommended.")
@@ -662,35 +644,34 @@ class WMO_root_file:
             empty_fog.EndDist2 = 222.2222
             empty_fog.StartFactor = 0.25
             empty_fog.StartFactor2 = -0.5
-            mfog.Fogs.append(empty_fog)
+            self.mfog.Fogs.append(empty_fog)
                     
-        mopr = MOPR_chunk()
-        mopr.Relationships = []
+        self.mopr.Relationships = []
         # set portal relationship
         for i in range(len(self.PortalR)):
             relation = PortalRelationship()
             relation.PortalIndex = self.PortalR[i][0]
             relation.GroupIndex = wmo_groups.get(self.PortalR[i][1]).index
             relation.Side = self.PortalR[i][2]
-            mopr.Relationships.append(relation)
+            self.mopr.Relationships.append(relation)
 
         # set header
         bb = self.GetGlobalBoundingBox()
 
         self.mohd.nMaterials = len(self.momt.Materials)
         self.mohd.nGroups = len(self.mogi.Infos)
-        self.mohd.nPortals = len(mopt.Infos)
-        self.mohd.nLights = len(molt.Lights)
-        self.mohd.nModels = modn.StringTable.decode("ascii").count('.MDX')
-        self.mohd.nDoodads = len(modd.Definitions)
-        self.mohd.nSets = len(mods.Sets)
+        self.mohd.nPortals = len(self.mopt.Infos)
+        self.mohd.nLights = len(self.molt.Lights)
+        self.mohd.nModels = self.modn.StringTable.decode("ascii").count('.MDX')
+        self.mohd.nDoodads = len(self.modd.Definitions)
+        self.mohd.nSets = len(self.mods.Sets)
         self.mohd.AmbientColor = [int(bpy.context.scene.WoWRoot.AmbientColor[2]*255), int(bpy.context.scene.WoWRoot.AmbientColor[1]*255), int(bpy.context.scene.WoWRoot.AmbientColor[0]*255), bpy.context.scene.WoWRoot.AmbientAlpha] 
         self.mohd.ID =  bpy.context.scene.WoWRoot.WMOid
         self.mohd.BoundingBoxCorner1 = bb[0]
         self.mohd.BoundingBoxCorner2 = bb[1]
         self.mohd.Flags = 0
         
-        mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
+        self.mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
 
         if mohd_0x1:
             self.mohd.Flags |= 0x01
@@ -702,23 +683,26 @@ class WMO_root_file:
 #        if global_outdoor_object_count: -- makes mesh overbrightaa
 #            self.mohd.Flags |= 0x08
 
+        return
 
-        # write all chunks
+    def Write(self, f):
+        
+        self.mver.Write(f)
         self.mohd.Write(f)
         self.motx.Write(f)
         self.momt.Write(f)
         self.mogn.Write(f)
         self.mogi.Write(f)
-        mosb.Write(f)
-        mopv.Write(f)
-        mopt.Write(f)
-        mopr.Write(f)
+        self.mosb.Write(f)
+        self.mopv.Write(f)
+        self.mopt.Write(f)
+        self.mopr.Write(f)
         self.movv.Write(f)
         self.movb.Write(f)
-        molt.Write(f)
-        mods.Write(f)
-        modn.Write(f)
-        modd.Write(f)
-        mfog.Write(f)
+        self.molt.Write(f)
+        self.mods.Write(f)
+        self.modn.Write(f)
+        self.modd.Write(f)
+        self.mfog.Write(f)
 
         return

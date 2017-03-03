@@ -103,7 +103,12 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
     for name, group in wmo_groups.items():
         group.Write()
         
+    # save root file
+    Log(2, True, "Saving root file")
+    wmo_root.Save(fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups, portal_count)
+    
     # write root file
     Log(2, True, "Writing root file")
-    wmo_root.Save(f, fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups, portal_count)
+    wmo_root.Write(f)
+    
     return
