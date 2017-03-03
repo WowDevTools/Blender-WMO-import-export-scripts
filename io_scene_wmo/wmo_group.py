@@ -951,6 +951,8 @@ class WMO_group_file:
                     
                     # save portal relations and MOGP indexing data
                     if(ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == obj.name or ob.WowPortalPlane.Second == obj.name)):
+                        Log(1, False, "Building portal relation between: <<" + ob.name + ">> (portal) and <<" + obj.name + ">> (group)")
+                        
                         portalRef = [0, "", 1]
                         if(self.mogp.PortalStart == -1):
                             self.mogp.PortalStart = root.PortalRCount
@@ -963,6 +965,8 @@ class WMO_group_file:
                             portalRef[2] = -1
                         root.PortalR.append(portalRef)
                         self.mogp.PortalCount += 1
+                        
+                        Log(0, False, "Done building portal relation between: <<" + ob.name + ">> (portal) and <<" + obj.name + ">> (group)")
                         
                     # save fog references
                     if(ob.WowFog.Enabled):
@@ -1075,6 +1079,8 @@ class WMO_group_file:
                                     tile_flag |= 0x80
 
                                 self.mliq.TileFlags.append(tile_flag)
+                                
+                        Log(0, False, "Done exporting liquid: <<" + ob.name + ">>")
 
              
             
@@ -1131,7 +1137,7 @@ class WMO_group_file:
             
             bpy.context.scene.objects.active = obj
             
-            LogError(2, "Something went wrong while exporting <<" + str(obj.name) + ">> WMO group. See the error above for details.")
+            LogError(2, "Something went wrong while exporting group: <<" + str(obj.name) + ">>. See the error above for details.")
             
         else:
             
@@ -1139,7 +1145,7 @@ class WMO_group_file:
 
             bpy.context.scene.objects.active = obj
             
-            Log(1, False, "Successfully saved <<" + str(obj.name) + ">> WMO group")
+            Log(0, False, "Done saving group: <<" + str(obj.name) + ">>")
 
             return mohd_0x1
         
@@ -1189,6 +1195,6 @@ class WMO_group_file:
             
         except:
             
-            LogError(2, "Something went wrong while writing file: <<" + os.path.basename(filename) + ">>")
+            LogError(2, "Something went wrong while writing file: <<" + os.path.basename(filename) + ">>. See the error above for details.")
             
-        Log(1, False, "Done writing file: <<" + os.path.basename(self.filename) + ">>")
+        Log(0, False, "Done writing file: <<" + os.path.basename(self.filename) + ">>")

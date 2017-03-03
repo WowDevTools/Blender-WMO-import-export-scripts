@@ -597,6 +597,8 @@ class WMO_root_file:
                     global_vertices_count+=local_vertices_count
                     self.mopt.Infos[ob.WowPortalPlane.PortalID] = portal_info
                     
+                    Log(0, False, "Done exporting portal: <<" + ob.name + ">>")
+                    
                     
                 if(ob.WowFog.Enabled):
                     Log(1, False, "Exporting fog: <<" + ob.name + ">>")
@@ -625,6 +627,8 @@ class WMO_root_file:
                     global_fog_count += 1
                         
                     self.mfog.Fogs.append(fog)
+                    
+                    Log(0, False, "Done exporting fog: <<" + ob.name + ">>")
                     
                 elif(obj_mesh.WowWMORoot.IsRoot):
                     if(source_doodads):
@@ -704,5 +708,8 @@ class WMO_root_file:
         self.modn.Write(f)
         self.modd.Write(f)
         self.mfog.Write(f)
+        
+        Log(1, False, "Done writing root file: <<" + os.path.basename(f.name) +">>")
+        Log(1, False, "Exporting process finished successfully")
 
         return
