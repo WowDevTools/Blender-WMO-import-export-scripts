@@ -25,6 +25,7 @@ def OpenAllWMOGroups(rootName):
     return group_list
 
 def read(filename, file_format):
+    
     f = open(filename, "rb")
     
     # Check if file is WMO root or WMO group, or unknown

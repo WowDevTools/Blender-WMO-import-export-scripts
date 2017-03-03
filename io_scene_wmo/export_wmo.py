@@ -11,6 +11,7 @@ from .debug_utils import *
 import os
 
 def write(filepath, fill_water, source_doodads, autofill_textures, export_selected):
+    
     f = open(filepath, "wb")
     root_filename = filepath
     
@@ -30,10 +31,12 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         if not ob.hide:
             bpy.ops.object.mode_set(mode='OBJECT')
         
-        if export_selected:
-            if ob.select == True:
+        if ob.select == True:
+            if(ob.type == 'MESH' and ob.WowWMOGroup.Enabled):
                 selectedMap[ob] = False
-                ob.select = False
+            ob.select = False
+                
+        bpy.context.scene.objects.active = None
             
     
     
