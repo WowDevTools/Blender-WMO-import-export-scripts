@@ -614,6 +614,7 @@ class WMO_group_file:
             # triangualate mesh
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.mesh.delete_loose()
             bpy.ops.mesh.quads_convert_to_tris()
             bpy.ops.mesh.select_all(action='DESELECT')
             
