@@ -659,8 +659,10 @@ class WMO_group_file:
             
             # perform custom normal data transfer to a temporary object
             obj.select = True
+            new_obj.select = True
             bpy.context.scene.objects.active = new_obj
             bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='CUSTOM_NORMAL')
+            new_obj.select = False
             obj.select = False
             
             # clear auto-generated custom normal data on original scene object to avoid changes of original scene on export. If normals are user defined, we do not touch them.
