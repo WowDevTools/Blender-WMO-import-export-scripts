@@ -474,6 +474,7 @@ class WowLiquidPanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         self.layout.prop(context.object.WowLiquid, "LiquidType")
+        self.layout.prop(context.object.WowLiquid, "Color")
         self.layout.prop_search(context.object.WowLiquid, "WMOGroup", bpy.context.scene, "objects", text="WMO Group")
         layout.enabled = context.object.WowLiquid.Enabled
 
@@ -490,6 +491,7 @@ class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
         ('41', "Coilfang Raid - Water", ""), ('81', "Lake Wintergrasp - Water", ""), \
         ('61', "Hyjal Past - Water", ""), ('100', "Basic Procedural Water", ""), ('0', "Unsupported", "")]
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
+    Color = bpy.props.FloatVectorProperty(name="Color", subtype='COLOR', default=(0.08,0.08,0.08), min=0.0, max=1.0)
     LiquidType = bpy.props.EnumProperty(items=liquidTypeEnum, name="Liquid Type", description="Type of the liquid present in this WMO group")
     WMOGroup = bpy.props.StringProperty()
 

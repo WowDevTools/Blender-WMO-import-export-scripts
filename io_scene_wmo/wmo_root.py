@@ -31,7 +31,7 @@ class WMO_root_file:
 
         self.materialLookup = {}
         self.textureLookup = {}
-        self.PortalRCount = 0 #Portal references count
+        self.PortalRCount = 0
         self.PortalR = []
         self.WMOId = 0
         self.liquidReferences = {}
@@ -70,15 +70,53 @@ class WMO_root_file:
             for ob in bpy.context.scene.objects:
                 if (ob.type == "MESH") and (ob.WowLiquid.Enabled):
                     ob.WowLiquid.WMOGroup = self.liquidReferences.get(ob.name)
+                    
+    def CompareMaterials(self, material):      
+        
+        for material2, index in self.materialLookup.items():
+            
+            if material.WowMaterial.Shader != material2.WowMaterial.Shader:
+                return None
+            elif material.WowMaterial.TerrainType != material2.WowMaterial.TerrainType:
+                return None
+            elif material.WowMaterial.BlendingMode != material2.WowMaterial.BlendingMode:
+                return None
+            elif material.WowMaterial.TwoSided != material2.WowMaterial.TwoSided:
+                return None
+            elif material.WowMaterial.Darkened != material2.WowMaterial.Darkened:
+                return None
+            elif material.WowMaterial.NightGlow != material2.WowMaterial.NightGlow:
+                return None
+            elif material.WowMaterial.Texture1 != material2.WowMaterial.Texture1:
+                return None
+            elif material.WowMaterial.Color1 != material2.WowMaterial.Color1:
+                return None
+            elif material.WowMaterial.Flags1 != material2.WowMaterial.Flags1:
+                return None
+            elif material.WowMaterial.Texture2 != material2.WowMaterial.Texture2:
+                return None
+            elif material.WowMaterial.Color2 != material2.WowMaterial.Color2:
+                return None
+            elif material.WowMaterial.Texture3 != material2.WowMaterial.Texture3:
+                return None
+            elif material.WowMaterial.Color3 != material2.WowMaterial.Color3:
+                return None
+            elif material.WowMaterial.Flags3 != material2.WowMaterial.Flags3:
+                return None
+            
+            else:
+                return index       
 
 
     # mat is a bpy.types.Material
     def AddMaterial(self, mat):
         """ Add material if not already added, then return index in root file """
 
-        if mat in self.materialLookup:
-            # if material already added, return index
-            return self.materialLookup[mat]
+        mat_index = self.CompareMaterials(mat)
+        
+        if mat_index != None:
+            return mat_index 
+        
         else:
             # else add it then return index
             if(not mat.WowMaterial.Enabled):

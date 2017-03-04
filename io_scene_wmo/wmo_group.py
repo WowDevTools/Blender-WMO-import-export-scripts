@@ -1000,10 +1000,12 @@ class WMO_group_file:
                         self.mogp.Flags |= 0x1000
                         self.mogp.LiquidType = self.FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
                         root.mohd.Flags |= 0x4 # needs checking
-
+                        
+                        # Creating liquid material
+                        
                         material = bpy.data.materials.new(ob.name)
                         material.WowMaterial.Enabled = True
-                        material.WowMaterial.Flags3 = '1'
+                        material.WowMaterial.Color2 = ob.WowLiquid.Color
 
                         material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\STORMWIND\GRAY12.BLP"
 
