@@ -845,7 +845,7 @@ class WMO_group_file:
                                 self.mocv.vertColors[new_index] = vertex_color
                                 
                             else:
-                                self.mocv.vertColors[new_index] = (0x7F, 0x7F, 0x7F)
+                                self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0x00]
 
                         if vg_blendmap != None:
                             self.mocv2.vertColors[new_index] = (0, 0, 0, round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255))
