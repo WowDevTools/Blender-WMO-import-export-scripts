@@ -779,12 +779,15 @@ class MOGP_FLAG:
     HasCollision = 0x1
     HasVertexColor = 0x4
     Outdoor = 0x8
+    DoNotUseLocalLighting = 0x40
     HasLight = 0x200
     HasDoodads = 0x800
     HasWater = 0x1000
     Indoor = 0x2000
+    AlwaysDraw = 0x10000
     HasSkybox = 0x40000
     IsNotOcean = 0x80000
+    IsMountAllowed = 0x200000
     HasTwoMOCV = 0x1000000
     HasTwoMOTV = 0x2000000
 

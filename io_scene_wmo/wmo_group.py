@@ -923,6 +923,12 @@ class WMO_group_file:
                 self.mogp.Flags |= MOGP_FLAG.HasVertexColor
             if new_obj.WowWMOGroup.SkyBox:
                 self.mogp.Flags |= MOGP_FLAG.HasSkybox
+            if new_obj.WowWMOGroup.NoLocalLighting:
+                self.mogp.Flags |= MOGP_FLAG.NoLocalLighting
+            if new_obj.WowWMOGroup.AlwaysDraw:
+                self.mogp.Flags |= MOGP_FLAG.AlwaysDraw
+            if new_obj.WowWMOGroup.IsMountAllowed:
+                self.mogp.Flags |= MOGP_FLAG.IsMountAllowed
                 
             self.mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
             

@@ -41,12 +41,11 @@ class WoWRootPanel(bpy.types.Panel):
 
 
 class WowRootPropertyGroup(bpy.types.PropertyGroup):
-    Enabled = bpy.props.BoolProperty(name="", description="Enable WoW root properties", default = True)
 
     UseAmbient = bpy.props.BoolProperty(
         name="Use Ambient",
         description="Use ambient lighting inside indoor groups",
-        default= True,
+        default= False,
     )
 
     AmbientColor = bpy.props.FloatVectorProperty(
@@ -675,7 +674,9 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
         col.operator("scene.wow_mliq_clear_flag", text = 'Clear flag', icon = 'LATTICE_DATA')
         col.operator("scene.wow_mliq_clear_all_flags", text = 'Clear all', icon = 'MOD_LATTICE')
 
-    
+###############################
+## Water operators
+###############################  
     
 class OBJECT_OP_FLAG_0x01(bpy.types.Operator):
     bl_idname = 'scene.wow_mliq_flag_0x01'
@@ -879,7 +880,9 @@ class OBJECT_OP_ADD_ALL_FLAGS(bpy.types.Operator):
         return {'FINISHED'}
 
 
-
+###############################
+## Object operators
+###############################  
     
     
 class OBJECT_OP_Add_Water(bpy.types.Operator):
@@ -1167,6 +1170,10 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
         
         self.ToWoWMaterial(self.Shader, self.BlendingMode, self.TerrainType, self.TwoSided, self.Darkened, self.NightGlow)
         return {'FINISHED'}
+    
+###############################
+## Visibility operators
+###############################  
     
 class OBJECT_OP_Hide_Show_All(bpy.types.Operator):
     bl_idname = 'scene.wow_hide_show_all_objects'
