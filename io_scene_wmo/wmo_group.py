@@ -832,16 +832,20 @@ class WMO_group_file:
                             self.motv2.TexCoords[new_index] = (mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[0], 1.0 - mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[1])
 
 
-                        if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192') and len(mesh.vertex_colors) > 0:
-                            vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
-                            vertex_color2 = [0x7F, 0x7F, 0x7F, 0x00]
+                        if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192'):
+                            if len(mesh.vertex_colors) > 0:
+                                vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
+                                vertex_color2 = [0x7F, 0x7F, 0x7F, 0x00]
 
-                            for i in range(0, 3):
-                                vertex_color[i] = round(mesh.vertex_colors.active.data[loop_index].color[3 - i - 1] * 255)
-                            if vg_lightmap != None:
-                                vertex_color[3] = round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_lightmap.index].weight * 255)
+                                for i in range(0, 3):
+                                    vertex_color[i] = round(mesh.vertex_colors.active.data[loop_index].color[3 - i - 1] * 255)
+                                if vg_lightmap != None:
+                                    vertex_color[3] = round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_lightmap.index].weight * 255)
+                                    
+                                self.mocv.vertColors[new_index] = vertex_color
                                 
-                            self.mocv.vertColors[new_index] = vertex_color
+                            else:
+                                self.mocv.vertColors[new_index] = (0x7F, 0x7F, 0x7F)
 
                         if vg_blendmap != None:
                             self.mocv2.vertColors[new_index] = (0, 0, 0, round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255))
@@ -1106,9 +1110,8 @@ class WMO_group_file:
 
             self.mobn.Nodes = bsp_tree.Nodes
             self.mobr.Faces = bsp_tree.Faces
-
             
-            if not ((new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192') and len(mesh.vertex_colors) > 0):
+            if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192'):
                 self.mocv = None
 
             if not hasWater:
