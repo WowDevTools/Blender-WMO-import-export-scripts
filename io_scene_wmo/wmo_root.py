@@ -649,7 +649,7 @@ class WMO_root_file:
                     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
                     ob.select = False
                     
-                    fog.BigRadius = ob.dimensions[2]
+                    fog.BigRadius = ob.dimensions[2] / 2
                     fog.SmallRadius = fog.BigRadius * (ob.WowFog.InnerRadius / 100)
                     fog.Color1 = (int(ob.WowFog.Color1[2] * 255), int(ob.WowFog.Color1[1] * 255), int(ob.WowFog.Color1[0] * 255), 0xFF)
                     fog.Color2 = (int(ob.WowFog.Color2[2] * 255), int(ob.WowFog.Color2[1] * 255), int(ob.WowFog.Color2[0] * 255), 0xFF)
