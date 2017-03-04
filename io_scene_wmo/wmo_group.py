@@ -924,7 +924,7 @@ class WMO_group_file:
             if new_obj.WowWMOGroup.SkyBox:
                 self.mogp.Flags |= MOGP_FLAG.HasSkybox
             if new_obj.WowWMOGroup.NoLocalLighting:
-                self.mogp.Flags |= MOGP_FLAG.NoLocalLighting
+                self.mogp.Flags |= MOGP_FLAG.DoNotUseLocalLighting
             if new_obj.WowWMOGroup.AlwaysDraw:
                 self.mogp.Flags |= MOGP_FLAG.AlwaysDraw
             if new_obj.WowWMOGroup.IsMountAllowed:
