@@ -965,8 +965,12 @@ class OBJECT_OP_Invert_Portals(bpy.types.Operator):
     def InvertPortal(self):
         for ob in bpy.context.selected_objects:
             if(ob.WowPortalPlane.Enabled == True):
-                if(ob.WowPortalPlane.Invert == True):
-                    ob.WowPortalPlane.Invert = not ob.WowPortalPlane.Invert
+                
+                first = ob.WowPortalPlane.First
+                second = ob.WowPortalPlane.Second
+                
+                ob.WowPortalPlane.First = second
+                ob.WowPortalPlane.Second = first
                     
     def execute(self, context):
         
