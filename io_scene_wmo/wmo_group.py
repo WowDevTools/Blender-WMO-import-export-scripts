@@ -1100,7 +1100,7 @@ class WMO_group_file:
                 if(len(new_obj.WowWMOGroup.MODR) > 0):
                     for doodad in new_obj.WowWMOGroup.MODR:
                         self.modr.DoodadRefs.append(doodad.value)
-                    self.mogp.Flags = self.mogp.Flags | MOGP_FLAG.HasDoodads
+                    self.mogp.Flags |= MOGP_FLAG.HasDoodads
             else:
                 self.modr = None
                 
@@ -1111,8 +1111,11 @@ class WMO_group_file:
             self.mobn.Nodes = bsp_tree.Nodes
             self.mobr.Faces = bsp_tree.Faces
             
-            if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192'):
+            if not (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192'):
                 self.mocv = None
+                
+            else:
+                self.mogp.Flags |= MOGP_FLAG.HasVertexColor
 
             if not hasWater:
                 self.mliq = None
