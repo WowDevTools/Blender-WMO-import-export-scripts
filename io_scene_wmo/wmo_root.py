@@ -575,10 +575,12 @@ class WMO_root_file:
                     bpy.ops.object.transform_apply(location = True, rotation = True, scale = True)
                     ob.select = False
                     
-                    for vert in obj_mesh.vertices:
-                        self.mopv.PortalVertices.append(vert.co)
-                        v.append(vert.co)
-                        local_vertices_count+=1
+                    for poly in obj_mesh.polygons:
+                        for loop_index in poly.loop_indices:
+                            vertex = obj_mesh.vertices[obj_mesh.loops[loop_index].vertex_index]
+                            self.mopv.PortalVertices.append(vertex.co)
+                            v.append(vertex.co)
+                            local_vertices_count+=1
                     
                     v_A = v[0][1]*v[1][2]-v[1][1]*v[0][2]-v[0][1]*v[2][2]+v[2][1]*v[0][2]+v[1][1]*v[2][2]-v[2][1]*v[1][2]
                     v_B = -v[0][0]*v[1][2]+v[2][0]*v[1][2]+v[1][0]*v[0][2]-v[2][0]*v[0][2]-v[1][0]*v[2][2]+v[0][0]*v[2][2]
