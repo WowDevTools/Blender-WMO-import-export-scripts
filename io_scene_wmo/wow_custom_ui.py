@@ -23,7 +23,6 @@ class WoWRootPanel(bpy.types.Panel):
 
     def draw_header(self, context):
         layout = self.layout
-        self.layout.prop(context.scene.WoWRoot, "Enabled")
 
     def draw(self, context):
         layout = self.layout
@@ -35,7 +34,6 @@ class WoWRootPanel(bpy.types.Panel):
         self.layout.prop(context.scene.WoWRoot, "WMOid")
         self.layout.prop(context.scene.WoWRoot, "UseTextureRelPath")
         self.layout.prop(context.scene.WoWRoot, "TextureRelPath")
-        layout.enabled = context.scene.WoWRoot.Enabled
 
     @classmethod
     def poll(cls, context):
@@ -105,7 +103,7 @@ class WowMaterialPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "material"
-    bl_label = "WoW material"
+    bl_label = "WoW Material"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
@@ -181,7 +179,7 @@ class WowLightPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "data"
-    bl_label = "Wow light"
+    bl_label = "WoW light"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
@@ -234,7 +232,7 @@ class WowVertexInfoPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "data"
-    bl_label = "Wow Vertex Info"
+    bl_label = "WoW Vertex Info"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
@@ -278,7 +276,7 @@ class WowWMOGroupPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "object"
-    bl_label = "Wow WMO group"
+    bl_label = "WoW WMO Group"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
@@ -393,7 +391,7 @@ class WowPortalPlanePanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "object"
-    bl_label = "Wow Portal Plane"
+    bl_label = "WoW Portal Plane"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
@@ -467,7 +465,7 @@ class WowLiquidPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "object"
-    bl_label = "Wow Liquid"
+    bl_label = "WoW Liquid"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
@@ -509,7 +507,7 @@ class WowFogPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "object"
-    bl_label = "Wow Fog"
+    bl_label = "WoW Fog"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
