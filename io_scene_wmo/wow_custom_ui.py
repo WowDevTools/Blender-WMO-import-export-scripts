@@ -216,7 +216,7 @@ class WowLightPropertyGroup(bpy.types.PropertyGroup):
     Color = bpy.props.FloatVectorProperty(name="Color", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)
     Intensity = bpy.props.FloatProperty(name="Intensity", description="Intensity of the lamp")
     ColorAlpha = bpy.props.FloatProperty(name="ColorAlpha", description="Color alpha", default=1, min=0.0, max=1.0)
-    AttenuationStart = bpy.props.FloatProperty(name="Attenuation start", description="Distance at which light intensity start to decrease")
+    AttenuationStart = bpy.props.FloatProperty(name="Attenuation start", description="Distance at which light intensity starts to decrease")
     AttenuationEnd = bpy.props.FloatProperty(name="Attenuation end", description="Distance at which light intensity reach 0")
 
 def RegisterWowLightProperties():
@@ -256,7 +256,6 @@ class WowVertexInfoPanel(bpy.types.Panel):
         return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh) and context.object.WowWMOGroup.Enabled)
 
 class WowVertexInfoPropertyGroup(bpy.types.PropertyGroup):
-    Enabled = bpy.props.BoolProperty(name="", description="Enable wow collision properties")
     VertexGroup = bpy.props.StringProperty()
     NodeSize = bpy.props.IntProperty(name="Node max size", description="Max count of faces for a node in bsp tree", default=150, min=1, soft_max=500)
     BatchTypeA = bpy.props.StringProperty()
