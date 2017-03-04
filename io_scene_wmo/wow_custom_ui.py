@@ -1078,8 +1078,11 @@ class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
     
     def ToPortal(self):
         for ob in bpy.context.selected_objects:
-            ob.WowPortalPlane.Enabled = True
-            ob.WowWMOGroup.Enabled = False
+            if ob.type == 'MESH':
+                ob.WowWMOGroup.Enabled = False
+                ob.WowLiquid.Enabled = False
+                ob.WowFog.Enabled = False
+                ob.WowPortalPlane.Enabled = True
 
     def execute(self, context):
         
@@ -1101,13 +1104,18 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
     
     def ToGroup(self, PlaceType, GroupName, GroupDesc, GroupID, VertShad, SkyBox):
         for ob in bpy.context.selected_objects:
-            ob.WowWMOGroup.Enabled = True
-            ob.WowWMOGroup.PlaceType = PlaceType
-            ob.WowWMOGroup.GroupName = GroupName
-            ob.WowWMOGroup.GroupDesc = GroupDesc
-            ob.WowWMOGroup.GroupID = GroupID
-            ob.WowWMOGroup.VertShad = VertShad
-            ob.WowWMOGroup.SkyBox = SkyBox
+            
+            if ob.type == 'MESH':
+                ob.WowLiquid.Enabled = False
+                ob.WowFog.Enabled = False
+                ob.WowPortalPlane.Enabled = True  
+                ob.WowWMOGroup.Enabled = True
+                ob.WowWMOGroup.PlaceType = PlaceType
+                ob.WowWMOGroup.GroupName = GroupName
+                ob.WowWMOGroup.GroupDesc = GroupDesc
+                ob.WowWMOGroup.GroupID = GroupID
+                ob.WowWMOGroup.VertShad = VertShad
+                ob.WowWMOGroup.SkyBox = SkyBox
 
     def execute(self, context):
         
