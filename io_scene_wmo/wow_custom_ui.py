@@ -239,7 +239,6 @@ class WowVertexInfoPanel(bpy.types.Panel):
 
     def draw_header(self, context):
         layout = self.layout
-        self.layout.prop(context.object.WowVertexInfo, "Enabled")
 
     def draw(self, context):
         layout = self.layout
@@ -251,11 +250,10 @@ class WowVertexInfoPanel(bpy.types.Panel):
         self.layout.prop_search(context.object.WowVertexInfo, "Lightmap", context.object, "vertex_groups", text="Lightmap")
         self.layout.prop_search(context.object.WowVertexInfo, "Blendmap", context.object, "vertex_groups", text="Blendmap")
         self.layout.prop_search(context.object.WowVertexInfo, "SecondUV", context.object.data, "uv_textures", text="Second UV")
-        layout.enabled = context.object.WowVertexInfo.Enabled
 
     @classmethod
     def poll(cls, context):
-        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
+        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh) and context.object.WowWMOGroup.Enabled)
 
 class WowVertexInfoPropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow collision properties")

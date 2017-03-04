@@ -423,7 +423,6 @@ class WMO_group_file:
 
             if not root.mohd.Flags & 0x01: 
                 lightmap = nobj.vertex_groups.new("Lightmap")
-                nobj.WowVertexInfo.Enabled = True
                 nobj.WowVertexInfo.Lightmap = lightmap.name
                 lightmap.add(self.movi.Indices, 1.0, 'ADD')
 
@@ -439,7 +438,6 @@ class WMO_group_file:
 
         if self.mogp.Flags & MOGP_FLAG.HasTwoMOCV:
             blendmap = nobj.vertex_groups.new("Blendmap")    
-            nobj.WowVertexInfo.Enabled = True
             nobj.WowVertexInfo.Blendmap = blendmap.name
             blendmap.add(self.movi.Indices, 1.0, 'ADD')
 
@@ -457,7 +455,6 @@ class WMO_group_file:
 
         if self.mogp.Flags & MOGP_FLAG.HasTwoMOTV:
             uv2 = mesh.uv_textures.new("UVMap_2")
-            nobj.WowVertexInfo.Enabled = True
             nobj.WowVertexInfo.SecondUV = uv2.name
             uv_layer2 = mesh.uv_layers[1]
         
@@ -476,11 +473,9 @@ class WMO_group_file:
 
         if(self.mogp.nBatchesA != 0):
             batchMapA = nobj.vertex_groups.new("BatchMapA")    
-            nobj.WowVertexInfo.Enabled = True
             nobj.WowVertexInfo.BatchTypeA = batchMapA.name
         if(self.mogp.nBatchesB != 0):
             batchMapB = nobj.vertex_groups.new("BatchMapB")
-            nobj.WowVertexInfo.Enabled = True
             nobj.WowVertexInfo.BatchTypeB = batchMapB.name
 
         # add materials
@@ -546,7 +541,6 @@ class WMO_group_file:
         if(collision_indices):
             collision_vg = nobj.vertex_groups.new("Collision")    
             collision_vg.add(collision_indices, 1.0, 'ADD')
-            nobj.WowVertexInfo.Enabled = True
             nobj.WowVertexInfo.VertexGroup = collision_vg.name
 
         # add WMO group properties
@@ -629,13 +623,13 @@ class WMO_group_file:
 
             # perform vertex group split to keep batches accurate.
             bpy.ops.object.mode_set(mode='EDIT')
-            if new_obj.WowVertexInfo.BatchTypeA != "" and new_obj.WowVertexInfo.Enabled:
+            if new_obj.WowVertexInfo.BatchTypeA != "":
                 bpy.ops.object.vertex_group_set_active(group=new_obj.WowVertexInfo.BatchTypeA)
                 bpy.ops.object.vertex_group_select()
                 bpy.ops.mesh.split()
                 bpy.ops.mesh.select_all(action='DESELECT')
 
-            if new_obj.WowVertexInfo.BatchTypeB != "" and new_obj.WowVertexInfo.Enabled:
+            if new_obj.WowVertexInfo.BatchTypeB != "":
                 bpy.ops.object.vertex_group_set_active(group=new_obj.WowVertexInfo.BatchTypeB)
                 bpy.ops.object.vertex_group_select()
                 bpy.ops.mesh.split()
@@ -720,36 +714,31 @@ class WMO_group_file:
             vg_blendmap = None
             uv_second_uv = None
 
-            if new_obj.WowVertexInfo.Enabled:
 
-                if new_obj.WowVertexInfo.BatchTypeA != "":
-                    vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)
-                else:
-                    vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
-
-                if new_obj.WowVertexInfo.BatchTypeB != "":
-                    vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)
-                else:
-                    vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
-
-                if new_obj.WowVertexInfo.VertexGroup != "":
-                    vg_collision = new_obj.vertex_groups.get(new_obj.WowVertexInfo.VertexGroup)
-                
-                if new_obj.WowVertexInfo.Lightmap != "":
-                    vg_lightmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Lightmap)
-                    mohd_0x1 = False
-
-                if new_obj.WowVertexInfo.Blendmap != "":
-                    vg_blendmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Blendmap)
-                    self.mogp.Flags |= self.mogp_FLAG.HasTwoMOCV
-
-                if new_obj.WowVertexInfo.SecondUV != "":
-                    uv_second_uv = new_obj.data.uv_textures.get(new_obj.WowVertexInfo.SecondUV)
-                    self.mogp.Flags |= MOGP_FLAG.HasTwoMOTV
-            
+            if new_obj.WowVertexInfo.BatchTypeA != "":
+                vg_batch_a = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeA)
             else:
                 vg_batch_a = new_obj.vertex_groups.new("BatchMapA")
+
+            if new_obj.WowVertexInfo.BatchTypeB != "":
+                vg_batch_b = new_obj.vertex_groups.get(new_obj.WowVertexInfo.BatchTypeB)
+            else:
                 vg_batch_b = new_obj.vertex_groups.new("BatchMapB")
+
+            if new_obj.WowVertexInfo.VertexGroup != "":
+                vg_collision = new_obj.vertex_groups.get(new_obj.WowVertexInfo.VertexGroup)
+            
+            if new_obj.WowVertexInfo.Lightmap != "":
+                vg_lightmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Lightmap)
+                mohd_0x1 = False
+
+            if new_obj.WowVertexInfo.Blendmap != "":
+                vg_blendmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Blendmap)
+                self.mogp.Flags |= self.mogp_FLAG.HasTwoMOCV
+
+            if new_obj.WowVertexInfo.SecondUV != "":
+                uv_second_uv = new_obj.data.uv_textures.get(new_obj.WowVertexInfo.SecondUV)
+                self.mogp.Flags |= MOGP_FLAG.HasTwoMOTV
 
 
             for poly in mesh.polygons:
