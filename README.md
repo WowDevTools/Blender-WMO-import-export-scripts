@@ -33,6 +33,7 @@ Developers:
 - Skarn (current developer)
 - Supora (initial vertex color import/export support)
 - p620 (multiple help with complicated coding tasks)
+
 Testers:
 - Balkron
 - Amaroth
