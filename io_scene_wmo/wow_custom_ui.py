@@ -1111,7 +1111,7 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
             if ob.type == 'MESH':
                 ob.WowLiquid.Enabled = False
                 ob.WowFog.Enabled = False
-                ob.WowPortalPlane.Enabled = True  
+                ob.WowPortalPlane.Enabled = False  
                 ob.WowWMOGroup.Enabled = True
                 ob.WowWMOGroup.PlaceType = PlaceType
                 ob.WowWMOGroup.GroupName = GroupName
