@@ -539,11 +539,11 @@ class WowFogPropertyGroup(bpy.types.PropertyGroup):
     IgnoreRadius = bpy.props.BoolProperty(name="Ignore Radius", description="Ignore radius in CWorldView::QueryCameraFog", default = False)
     Unknown = bpy.props.BoolProperty(name="Unknown Flag", description="Check that in if you know what it is", default = False)
     InnerRadius = bpy.props.FloatProperty(name="Inner Radius (%)", description="A radius of fog starting to fade", default=100.0, min=0.0, max=100.0)
-    EndDist = bpy.props.FloatProperty(name="Farclip", description="Fog farclip", default=700.0, min=0.0, max=1500.0)
-    StartFactor = bpy.props.FloatProperty(name="Nearclip", description="Fog nearclip", default=0.5, min=0.0, max=1.0)
+    EndDist = bpy.props.FloatProperty(name="Farclip", description="Fog farclip", default=70.0, min=0.0, max=250.0)
+    StartFactor = bpy.props.FloatProperty(name="Nearclip", description="Fog nearclip", default=0.1, min=0.0, max=1.0)
     Color1 = bpy.props.FloatVectorProperty(name="Color", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0, update=UpdateFogColor)
-    EndDist2 = bpy.props.FloatProperty(name="Underwater farclip", description="Underwater fog farclip", default=700.0, min=0.0, max=1500.0)
-    StartFactor2 = bpy.props.FloatProperty(name="Underwater nearclip", description="Underwater fog nearclip", default=0.5, min=0.0, max=1.0)
+    EndDist2 = bpy.props.FloatProperty(name="Underwater farclip", description="Underwater fog farclip", default=70.0, min=0.0, max=250.0)
+    StartFactor2 = bpy.props.FloatProperty(name="Underwater nearclip", description="Underwater fog nearclip", default=0.1, min=0.0, max=1.0)
     Color2 = bpy.props.FloatVectorProperty(name="Underwater Color", subtype='COLOR', default=(1,1,1), min=0.0, max=1.0)        
 
 def RegisterWowFogProperties():
