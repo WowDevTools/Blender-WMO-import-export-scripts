@@ -314,7 +314,8 @@ class WowWMOGroupPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
+        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh) and \
+        not context.object.WowPortalPlane.Enabled and not context.object.WowLiquid.Enabled and not context.object.WowFog.Enabled )
 
 class WowWMOMODRStore(bpy.types.PropertyGroup):
     value = bpy.props.IntProperty(name="Doodads Ref")
@@ -411,7 +412,8 @@ class WowPortalPlanePanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
+        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh) and \
+        not context.object.WowWMOGroup.Enabled and not context.object.WowLiquid.Enabled and not context.object.WowFog.Enabled)
 
 class WowPortalPlanePropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow WMO group properties")
@@ -483,7 +485,7 @@ class WowLiquidPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
+        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh) and context.object.WowLiquid.Enabled)
 
 class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
     liquidTypeEnum = [('13', "WMO Water", ""), ('17', "WMO Water Interior", ""), \
@@ -532,7 +534,7 @@ class WowFogPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh))
+        return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh) and context.object.WowFog.Enabled)
 
 def UpdateFogColor(self, context):
     bpy.context.scene.objects.active.color = (self.Color1[0], self.Color1[1], self.Color1[2], 0.5)
