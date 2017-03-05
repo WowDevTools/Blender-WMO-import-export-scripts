@@ -982,6 +982,14 @@ class WMO_group_file:
 
                         Log(1, False, "Exporting liquid: <<" + ob.name + ">>")
                         mesh = ob.data
+                        
+                        # apply mesh transformations
+                        bpy.context.scene.objects.active = ob
+                        ob.select = True
+                        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+                        ob.select = False
+                        bpy.context.scene.objects.active = new_obj
+                        
                         StartVertex = 0
                         sum = 0
                         for vertex in obj_mesh.vertices:
@@ -1001,7 +1009,7 @@ class WMO_group_file:
                         self.mogp.LiquidType = self.FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
                         root.mohd.Flags |= 0x4 # needs checking
                         
-                        # Creating liquid material
+                        # creating liquid material
                         
                         material = bpy.data.materials.new(ob.name)
                         material.WowMaterial.Enabled = True
