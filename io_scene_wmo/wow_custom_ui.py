@@ -290,7 +290,6 @@ class WowWMOGroupPanel(bpy.types.Panel):
         row = layout.row()
         self.layout.prop(context.object.WowWMOGroup, "GroupName")
         self.layout.prop(context.object.WowWMOGroup, "GroupDesc")
-        #self.layout.prop(context.object.WowWMOGroup, "PortalGroupID")
         self.layout.prop(context.object.WowWMOGroup, "PlaceType")
         self.layout.prop(context.object.WowWMOGroup, "GroupID")
         self.layout.prop(context.object.WowWMOGroup, "VertShad")
@@ -298,15 +297,14 @@ class WowWMOGroupPanel(bpy.types.Panel):
         self.layout.prop(context.object.WowWMOGroup, "AlwaysDraw")
         self.layout.prop(context.object.WowWMOGroup, "IsMountAllowed")
         self.layout.prop(context.object.WowWMOGroup, "SkyBox")
-#        self.layout.prop(context.object.WowWMOGroup, "Fog1")
-#        self.layout.prop(context.object.WowWMOGroup, "Fog2")
-#        self.layout.prop(context.object.WowWMOGroup, "Fog3")
-#        self.layout.prop(context.object.WowWMOGroup, "Fog4")
-        self.layout.prop_search(context.object.WowWMOGroup, "Fog1", bpy.context.scene, "objects", text="Fog1")
-        self.layout.prop_search(context.object.WowWMOGroup, "Fog2", bpy.context.scene, "objects", text="Fog2")
-        self.layout.prop_search(context.object.WowWMOGroup, "Fog3", bpy.context.scene, "objects", text="Fog3")
-        self.layout.prop_search(context.object.WowWMOGroup, "Fog4", bpy.context.scene, "objects", text="Fog4")
         
+        column = layout.column()
+        idproperty.layout_id_prop(column, context.object.WowWMOGroup, "Fog1")
+        idproperty.layout_id_prop(column, context.object.WowWMOGroup, "Fog2")
+        idproperty.layout_id_prop(column, context.object.WowWMOGroup, "Fog3")
+        idproperty.layout_id_prop(column, context.object.WowWMOGroup, "Fog4")
+        
+        idproperty.enabled = context.object.WowLiquid.Enabled
         layout.enabled = context.object.WowWMOGroup.Enabled
 
     @classmethod
@@ -317,18 +315,9 @@ class WowWMOGroupPanel(bpy.types.Panel):
 class WowWMOMODRStore(bpy.types.PropertyGroup):
     value = bpy.props.IntProperty(name="Doodads Ref")
     
-def GetFogObjects(self, context):
-    fogs = []
-    
-    fogs.append(('0', "None", "")) # setting a default entry as a first element of our enum
-    
-    for object in bpy.context.scene.objects:
-        if object.WowFog.Enabled:
-                fogs.append((object.name, object.name, ""))
-        
-    return fogs
-    
-    
+
+def fog_validator(ob):
+    return ob.WowFog.Enabled
     
 class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow WMO group properties")
@@ -343,14 +332,10 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     AlwaysDraw = bpy.props.BoolProperty(name="Always draw", description="Always draw the group", default = False)
     IsMountAllowed = bpy.props.BoolProperty(name="Mounts allowed", description="Allows or prohibits mounts in the group. Works only with generated navmesh delivered to server.", default = False)
     SkyBox = bpy.props.BoolProperty(name="Use Skybox", description="Use skybox in group", default = False)
-#    Fog1 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 1", description="Fog of an object")
-#    Fog2 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 2", description="Fog of an object")
-#    Fog3 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 3", description="Fog of an object")
-#    Fog4 = bpy.props.EnumProperty(items=GetFogObjects, name="Fog 4", description="Fog of an object")
-    Fog1 = bpy.props.StringProperty()
-    Fog2 = bpy.props.StringProperty()
-    Fog3 = bpy.props.StringProperty()
-    Fog4 = bpy.props.StringProperty()
+    Fog1 = idproperty.ObjectIDProperty(name="Fog 1", validator=fog_validator)
+    Fog2 = idproperty.ObjectIDProperty(name="Fog 2", validator=fog_validator)
+    Fog3 = idproperty.ObjectIDProperty(name="Fog 3", validator=fog_validator)
+    Fog4 = idproperty.ObjectIDProperty(name="Fog 4", validator=fog_validator)
     MODR = bpy.props.CollectionProperty(type=WowWMOMODRStore)
 
 def RegisterWowWMOGroupProperties():
@@ -363,31 +348,6 @@ def UnregisterWowWMOGroupProperties():
 ###############################
 ## Portal plane
 ###############################
-''' 
-
-def GetGroupObjectsReferences(self, context):
-    
-    groups = []
-    groups.append(('0', "None", "")) # setting a default entry as a first element of our enum
-
-    for obj in bpy.context.scene.objects:
-        if obj.WowWMOGroup.Enabled:
-            groups.append((obj.name, obj.name, ""))
-           
-    return groups
-
-
-def UpdateFirstGroupObjectReference(self, context):
-
-    if context.object.WowPortalPlane.First == context.object.WowPortalPlane.Second and context.object.WowPortalPlane.First != '0':
-        context.object.WowPortalPlane.Second = '0'          
-            
-def UpdateSecondGroupObjectReference(self, context):
-        
-    if context.object.WowPortalPlane.Second == context.object.WowPortalPlane.First and context.object.WowPortalPlane.Second != '0':
-        context.object.WowPortalPlane.First = '0'
-'''
-   
 
 class WowPortalPlanePanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
@@ -403,22 +363,28 @@ class WowPortalPlanePanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         row = layout.row()
+         
+        column = layout.column()
+        idproperty.layout_id_prop(column, context.object.WowPortalPlane, "First")
+        idproperty.layout_id_prop(column, context.object.WowPortalPlane, "Second")
+        
+        idproperty.enabled = context.object.WowLiquid.Enabled
         layout.enabled = context.object.WowPortalPlane.Enabled
-        self.layout.prop_search(context.object.WowPortalPlane, "First", bpy.context.scene, "objects", text="First group")
-        self.layout.prop_search(context.object.WowPortalPlane, "Second", bpy.context.scene, "objects", text="Second group")
 
     @classmethod
     def poll(cls, context):
         return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh) and \
         not context.object.WowWMOGroup.Enabled and not context.object.WowLiquid.Enabled and not context.object.WowFog.Enabled)
-
+    
+def portal_validator(ob):
+    return ob.type == 'MESH' and ob.WowWMOGroup.Enabled
+    
 class WowPortalPlanePropertyGroup(bpy.types.PropertyGroup):
-    Enabled = bpy.props.BoolProperty(name="", description="Enable wow WMO group properties")
-#    First = bpy.props.EnumProperty(items=GetGroupObjectsReferences, name="First group", description="First group")
-#    Second = bpy.props.EnumProperty(items=GetGroupObjectsReferences, name="Second group", description="Second group")
 
-    First = bpy.props.StringProperty()
-    Second = bpy.props.StringProperty()
+    Enabled = bpy.props.BoolProperty(name="", description="Enable wow WMO group properties")
+
+    First = idproperty.ObjectIDProperty(name="First group", validator=portal_validator)
+    Second = idproperty.ObjectIDProperty(name="Second group", validator=portal_validator)
     PortalID = bpy.props.IntProperty(name="Portal's ID", description="Portal ID")
 
 def RegisterWowPortalPlaneProperties():
@@ -451,20 +417,6 @@ def UnregisterWowPortalPlaneProperties():
 #XTextures\slime\slime.1.blp
 #XTextures\ocean\ocean_h.1.blp
 #XTextures\LavaGreen\lavagreen.1.blp
-
-
-def GetGroupObjects(self, context):
-    liquid_groups = []
-    liquid_groups.clear()
-    
-    liquid_groups.append(('0', "None", "")) # setting a default entry as a first element of our enum
-    
-    for object in bpy.context.scene.objects:
-        if object.type == 'MESH' and object.WowWMOGroup.Enabled:
-            liquid_groups.append((object.name, object.name, ""))
-                
-    return liquid_groups
-
     
 class WowLiquidPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
@@ -481,10 +433,11 @@ class WowLiquidPanel(bpy.types.Panel):
         row = layout.row()
         self.layout.prop(context.object.WowLiquid, "LiquidType")
         self.layout.prop(context.object.WowLiquid, "Color")
-        # self.layout.prop_search(context.object.WowLiquid, "WMOGroup", bpy.context.scene, "objects", text="WMO Group")
-        #self.layout.prop(context.object.WowLiquid, "WMOGroup")
-        #self.layout.prop_menu_enum(context.object.WowLiquid, "WMOGroup")
-        idproperty.layout_id_prop(row, context.object.WowLiquid, "WMOGroup")
+        
+        column = layout.column()
+        idproperty.layout_id_prop(column, context.object.WowLiquid, "WMOGroup")
+        
+        idproperty.enabled = context.object.WowLiquid.Enabled
         layout.enabled = context.object.WowLiquid.Enabled
 
     @classmethod
@@ -492,7 +445,11 @@ class WowLiquidPanel(bpy.types.Panel):
         return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh) and context.object.WowLiquid.Enabled)
     
 def liquid_validator(ob):
-    return ob.type == "CAMERA"
+    for object in bpy.context.scene.objects:
+        if object.type == 'MESH' and object.WowLiquid.WMOGroup == ob.name:
+            bpy.ops.render.report_message(message="Test", type=False )
+            return False
+    return True
 
 class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
     liquidTypeEnum = [('13', "WMO Water", ""), ('17', "WMO Water Interior", ""), \
@@ -505,9 +462,7 @@ class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
     Color = bpy.props.FloatVectorProperty(name="Color", subtype='COLOR', default=(0.08,0.08,0.08), min=0.0, max=1.0)
     LiquidType = bpy.props.EnumProperty(items=liquidTypeEnum, name="Liquid Type", description="Type of the liquid present in this WMO group")
-    #WMOGroup = bpy.props.StringProperty()
-    #WMOGroup = bpy.props.EnumProperty(items=GetGroupObjects, name="WMO Group", description="A WMO Group this liquid plane is bound to")
-    WMOGroup = idproperty.ObjectIDProperty(name="WMO Group")
+    WMOGroup = idproperty.ObjectIDProperty(name="WMO Group", validator=liquid_validator)
 
 def RegisterWowLiquidProperties():
     bpy.types.Object.WowLiquid = bpy.props.PointerProperty(type=WowLiquidPropertyGroup)
@@ -894,7 +849,29 @@ class OBJECT_OP_ADD_ALL_FLAGS(bpy.types.Operator):
     def execute(self, context):
         self.AddAllFlags()
         return {'FINISHED'}
+    
+###############################
+## Tech operators
+###############################  
+class TECH_OP_REPORT(bpy.types.Operator):
+    bl_idname = 'render.report_message'
+    bl_label = 'Report'
+    bl_description = 'Reports passed message as error or warning'
+    bl_options = {'REGISTER'}
+    
+    message = bpy.props.StringProperty()
+    type = bpy.props.BoolProperty(name="Report type", description="Type of message displayed", default = True)
+    
+    def execute(self, context):
+        if self.type:
+            self.report({'INFO'}, self.message)
+        else:
+            self.report({'INFO'}, self.message)
+            
+        return {'FINISHED'}
 
+    def invoke(self, context, event):
+        return self.execute(context)
 
 ###############################
 ## Object operators
