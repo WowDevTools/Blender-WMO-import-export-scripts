@@ -57,6 +57,7 @@ from bpy_extras.io_utils import ExportHelper
 
 from . import wow_custom_ui
 from . import debug_utils
+from .idproperty import idproperty
 #from . import Utility
 
 class WMOImporter(bpy.types.Operator):
@@ -153,6 +154,7 @@ def menu_export(self, context):
 
 
 def register():
+    idproperty.register()
     bpy.utils.register_module(__name__)
     wow_custom_ui.register()
 
@@ -166,6 +168,8 @@ def unregister():
 
     bpy.types.INFO_MT_file_import.remove(menu_import)
     bpy.types.INFO_MT_file_export.remove(menu_export)
+    
+    idproperty.unregister()
 
 if __name__ == "__main__":
     register()

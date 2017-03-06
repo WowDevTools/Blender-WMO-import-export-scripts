@@ -7,6 +7,9 @@ from . import wmo_format
 from .wmo_format import *
 from . import debug_utils
 from .debug_utils import *
+from bpy.utils import register_module, unregister_module
+from .idproperty import idproperty
+from .idproperty.idproperty import *
 
 from bpy.app.handlers import persistent
 
@@ -449,16 +452,19 @@ def UnregisterWowPortalPlaneProperties():
 #XTextures\ocean\ocean_h.1.blp
 #XTextures\LavaGreen\lavagreen.1.blp
 
+
 def GetGroupObjects(self, context):
-    groups = []
+    liquid_groups = []
+    liquid_groups.clear()
     
-    groups.append(('0', "None", "")) # setting a default entry as a first element of our enum
+    liquid_groups.append(('0', "None", "")) # setting a default entry as a first element of our enum
     
     for object in bpy.context.scene.objects:
-        if object.type != 'LAMP' and object.WowWMOGroup.Enabled:
-                groups.append((object.name, object.name, ""))
-        
-    return groups
+        if object.type == 'MESH' and object.WowWMOGroup.Enabled:
+            liquid_groups.append((object.name, object.name, ""))
+                
+    return liquid_groups
+
     
 class WowLiquidPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
@@ -475,12 +481,18 @@ class WowLiquidPanel(bpy.types.Panel):
         row = layout.row()
         self.layout.prop(context.object.WowLiquid, "LiquidType")
         self.layout.prop(context.object.WowLiquid, "Color")
-        self.layout.prop_search(context.object.WowLiquid, "WMOGroup", bpy.context.scene, "objects", text="WMO Group")
+        # self.layout.prop_search(context.object.WowLiquid, "WMOGroup", bpy.context.scene, "objects", text="WMO Group")
+        #self.layout.prop(context.object.WowLiquid, "WMOGroup")
+        #self.layout.prop_menu_enum(context.object.WowLiquid, "WMOGroup")
+        idproperty.layout_id_prop(row, context.object.WowLiquid, "WMOGroup")
         layout.enabled = context.object.WowLiquid.Enabled
 
     @classmethod
     def poll(cls, context):
         return (context.object is not None and context.object.data is not None and isinstance(context.object.data,bpy.types.Mesh) and context.object.WowLiquid.Enabled)
+    
+def liquid_validator(ob):
+    return ob.type == "CAMERA"
 
 class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
     liquidTypeEnum = [('13', "WMO Water", ""), ('17', "WMO Water Interior", ""), \
@@ -493,7 +505,9 @@ class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
     Color = bpy.props.FloatVectorProperty(name="Color", subtype='COLOR', default=(0.08,0.08,0.08), min=0.0, max=1.0)
     LiquidType = bpy.props.EnumProperty(items=liquidTypeEnum, name="Liquid Type", description="Type of the liquid present in this WMO group")
-    WMOGroup = bpy.props.StringProperty()
+    #WMOGroup = bpy.props.StringProperty()
+    #WMOGroup = bpy.props.EnumProperty(items=GetGroupObjects, name="WMO Group", description="A WMO Group this liquid plane is bound to")
+    WMOGroup = idproperty.ObjectIDProperty(name="WMO Group")
 
 def RegisterWowLiquidProperties():
     bpy.types.Object.WowLiquid = bpy.props.PointerProperty(type=WowLiquidPropertyGroup)
