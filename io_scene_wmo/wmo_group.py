@@ -590,6 +590,13 @@ class WMO_group_file:
             LogError(2, "Trying to export object: <<" + obj.name + ">> but WoW WMO Group properties not enabled")
 
         bpy.context.scene.objects.active = obj
+        
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.reveal()
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
         new_obj = obj.copy()
         new_obj.data = obj.data.copy()
         bpy.context.scene.objects.link(new_obj)
@@ -608,7 +615,6 @@ class WMO_group_file:
             # triangualate mesh
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.mesh.reveal()
             bpy.ops.mesh.quads_convert_to_tris()
             bpy.ops.mesh.delete_loose()
             bpy.ops.mesh.select_all(action='DESELECT')
