@@ -118,12 +118,12 @@ class ViewOperatorRayCast(bpy.types.Operator):
 
     def invoke(self, context, event):
 
-        if context.space_data.type == 'VIEW_3D':
+        if context.space_data.type == 'VIEW_3D' and context.active_object.mode != 'EDIT':
             context.window_manager.modal_handler_add(self)
             return {'RUNNING_MODAL'}
         else:
             rayCasting.result = False
-            self.report({'WARNING'}, "Active space must be a View3d")
+            self.report({'WARNING'}, "Active space is not a View3D or active mode is EDIT")
             return {'CANCELLED'}
 
 
