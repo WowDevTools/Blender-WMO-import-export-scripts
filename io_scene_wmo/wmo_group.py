@@ -606,7 +606,6 @@ class WMO_group_file:
         original_mesh = obj.data
         
         try:
-            
             # apply all modifiers. Needs to optional.
             if len(new_obj.modifiers) != 0:
                 for modifier in new_obj.modifiers:

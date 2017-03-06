@@ -449,7 +449,7 @@ def liquid_validator(ob):
         if object.type == 'MESH' and object.WowLiquid.WMOGroup == ob.name:
             bpy.ops.render.report_message(message="Test", type=False )
             return False
-    return True
+    return ob.WowWMOGroup.Enabled
 
 class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
     liquidTypeEnum = [('13', "WMO Water", ""), ('17', "WMO Water Interior", ""), \
