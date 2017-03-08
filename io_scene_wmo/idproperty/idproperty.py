@@ -106,7 +106,8 @@ class ViewOperatorRayCast(bpy.types.Operator):
             bpy.context.window.cursor_set("DEFAULT")
             ray_casting.main(context, event)
             
-            setattr(eval(rayCasting.to_populate_data), rayCasting.to_populate_field, rayCasting.result.name)
+            if hasattr(rayCasting, 'to_populate_data') and hasattr(rayCasting, 'to_populate_field') and hasattr(rayCasting, 'result'):
+                setattr(eval(rayCasting.to_populate_data), rayCasting.to_populate_field, rayCasting.result.name)
             
             return {'FINISHED'}
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
