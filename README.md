@@ -43,6 +43,7 @@ Testers:
 - Vellear
 - intra
 & others.
+
 Special thanks to Deamon and fallenoak for information on batches and portals and all other http://wowdev.wiki contributors.
 
 # Planned features
