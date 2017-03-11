@@ -36,6 +36,7 @@ class WMO_root_file:
         self.WMOId = 0
         self.liquidReferences = {}
         self.groupMap = {}
+        self.portalDirectionMap = {}
 
     def Read(self, f):
         self.mver.Read(f)

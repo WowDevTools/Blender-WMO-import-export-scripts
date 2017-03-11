@@ -16,6 +16,7 @@ from .debug_utils import *
 
 import os
 import sys
+import mathutils
 
 #from . import Utility
 #from .Utility import *
@@ -576,7 +577,89 @@ class WMO_group_file:
         if scn.objects.active is None or scn.objects.active.mode == 'OBJECT':
             scn.objects.active = nobj
             
-        root.groupMap[objId] = nobj.name
+        root.groupMap[objId] = nobj.name    
+        
+    def GetPortalDirection(self, portal_obj, group, result_map):
+    
+        try:
+            # check if this portal was already processed
+            if portal_obj not in result_map:
+                
+                # store the previous active object
+                active_obj = bpy.context.scene.objects.active
+                
+                # create a portal proxy object to apply transformations
+                proxy_obj = portal_obj.copy()
+                proxy_obj.data = portal_obj.data.copy()
+                bpy.context.scene.objects.link(proxy_obj)
+                bpy.context.scene.objects.active = proxy_obj
+                
+                # reveal hidden geometry
+                bpy.ops.object.mode_set(mode='EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.mesh.reveal()
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bpy.ops.object.mode_set(mode='OBJECT')
+                
+                proxy_obj.select = True
+                bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+                proxy_obj.select = False
+                
+                # triangulate the proxy portal
+                bpy.ops.object.mode_set(mode='EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.mesh.quads_convert_to_tris()
+                bpy.ops.mesh.select_all(action='DESELECT')
+                
+                bpy.ops.object.mode_set(mode='OBJECT')
+                
+                mesh = group.data
+                portal_mesh = proxy_obj.data
+                normal  = portal_obj.data.polygons[0].normal
+                
+                for poly in mesh.polygons:
+                    
+                    dist = normal[0] * poly.center[0] + normal[1] * poly.center[1] + \
+                    normal[2] * poly.center[2] - portal_mesh.polygons[0].normal[0] * \
+                    portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0] - \
+                    portal_mesh.polygons[0].normal[1] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1] - \
+                    portal_mesh.polygons[0].normal[2] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
+                    
+                    if dist == 0:
+                        continue
+                    
+                    for portal_poly in portal_mesh.polygons:
+                        
+                        direction = portal_poly.center - poly.center
+                        angle = mathutils.Vector(direction).angle(poly.normal, None)
+
+                        
+                        if angle == None or angle >= pi * 0.5:
+                            continue
+                        
+                        
+                        ray_cast_result = group.ray_cast(poly.center, direction)
+                        
+                        if not ray_cast_result[0] or mathutils.Vector((ray_cast_result[1][0] - poly.center[0], ray_cast_result[1][1] - poly.center[1], ray_cast_result[1][2] - poly.center[2])).length > \
+                        mathutils.Vector(direction).length:
+                            result = 1 if dist > 0 else -1
+                            result_map[portal_obj] = result
+                            bpy.data.objects.remove(proxy_obj, do_unlink = True)
+                            bpy.context.scene.objects.active = active_obj
+                            if portal_obj.name == "PrisonOublietteLarge_Portal_004":
+                                print(dist)
+                            return result
+                        
+                        
+            else:
+                
+                return -result_map.get(portal_obj)
+        except:
+            if proxy_obj != None:
+                bpy.data.objects.remove(proxy_obj, do_unlink = True)
+            LogError(2, "Something went wrong while determining portal relation. See error above for details.")
+
+
 
     def Save(self, obj, root, objNumber, source_doodads, autofill_textures, group_filename):
         Log(1, False, "Saving group: <<" + obj.name + ">>")
@@ -968,7 +1051,8 @@ class WMO_group_file:
                             portalRef[1] = ob.WowPortalPlane.Second
                         else:
                             portalRef[1] = ob.WowPortalPlane.First
-                            portalRef[2] = -1
+                        
+                        portalRef[2] = self.GetPortalDirection(ob, obj, root.portalDirectionMap)
                         root.PortalR.append(portalRef)
                         self.mogp.PortalCount += 1
                         
