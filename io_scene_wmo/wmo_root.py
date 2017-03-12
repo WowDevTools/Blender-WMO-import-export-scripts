@@ -78,31 +78,31 @@ class WMO_root_file:
             
             if material.WowMaterial.Shader != material2.WowMaterial.Shader:
                 return None
-            elif material.WowMaterial.TerrainType != material2.WowMaterial.TerrainType:
+            if material.WowMaterial.TerrainType != material2.WowMaterial.TerrainType:
                 return None
-            elif material.WowMaterial.BlendingMode != material2.WowMaterial.BlendingMode:
+            if material.WowMaterial.BlendingMode != material2.WowMaterial.BlendingMode:
                 return None
-            elif material.WowMaterial.TwoSided != material2.WowMaterial.TwoSided:
+            if material.WowMaterial.TwoSided != material2.WowMaterial.TwoSided:
                 return None
-            elif material.WowMaterial.Darkened != material2.WowMaterial.Darkened:
+            if material.WowMaterial.Darkened != material2.WowMaterial.Darkened:
                 return None
-            elif material.WowMaterial.NightGlow != material2.WowMaterial.NightGlow:
+            if material.WowMaterial.NightGlow != material2.WowMaterial.NightGlow:
                 return None
-            elif material.WowMaterial.Texture1 != material2.WowMaterial.Texture1:
+            if material.WowMaterial.Texture1 != material2.WowMaterial.Texture1:
                 return None
-            elif material.WowMaterial.Color1 != material2.WowMaterial.Color1:
+            if material.WowMaterial.Color1 != material2.WowMaterial.Color1:
                 return None
-            elif material.WowMaterial.Flags1 != material2.WowMaterial.Flags1:
+            if material.WowMaterial.Flags1 != material2.WowMaterial.Flags1:
                 return None
-            elif material.WowMaterial.Texture2 != material2.WowMaterial.Texture2:
+            if material.WowMaterial.Texture2 != material2.WowMaterial.Texture2:
                 return None
-            elif material.WowMaterial.Color2 != material2.WowMaterial.Color2:
+            if material.WowMaterial.Color2 != material2.WowMaterial.Color2:
                 return None
-            elif material.WowMaterial.Texture3 != material2.WowMaterial.Texture3:
+            if material.WowMaterial.Texture3 != material2.WowMaterial.Texture3:
                 return None
-            elif material.WowMaterial.Color3 != material2.WowMaterial.Color3:
+            if material.WowMaterial.Color3 != material2.WowMaterial.Color3:
                 return None
-            elif material.WowMaterial.Flags3 != material2.WowMaterial.Flags3:
+            if material.WowMaterial.Flags3 != material2.WowMaterial.Flags3:
                 return None
             
             else:

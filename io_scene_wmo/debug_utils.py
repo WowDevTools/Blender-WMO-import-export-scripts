@@ -41,12 +41,13 @@ def LogDebug(spacing, header, *message):
     else:
         print(string)
     
-def LogError(spacing, message):
+def LogError(spacing, *message):
     
     string = ""
     
     for item in message:
-        string += str(item) + " "
+        for char in str(item):
+            string += char + " "
     
     if spacing:
         for i in range(0, spacing):

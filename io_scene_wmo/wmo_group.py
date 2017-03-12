@@ -619,8 +619,12 @@ class WMO_group_file:
                 
                 for poly in mesh.polygons:
                     
-                    dist = normal[0] * poly.center[0] + normal[1] * poly.center[1] + \
-                    normal[2] * poly.center[2] - portal_mesh.polygons[0].normal[0] * \
+                    poly_normal = mathutils.Vector(poly.normal)
+                    g_center = poly.center + poly_normal * sys.float_info.epsilon
+                    
+                    
+                    dist = normal[0] * g_center[0] + normal[1] * g_center[1] + \
+                    normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0] * \
                     portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0] - \
                     portal_mesh.polygons[0].normal[1] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1] - \
                     portal_mesh.polygons[0].normal[2] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
@@ -628,9 +632,12 @@ class WMO_group_file:
                     if dist == 0:
                         continue
                     
+
                     for portal_poly in portal_mesh.polygons:
                         
-                        direction = portal_poly.center - poly.center
+                        direction = portal_poly.center - g_center
+                        direction.normalize()
+                        
                         angle = mathutils.Vector(direction).angle(poly.normal, None)
 
                         
@@ -638,18 +645,19 @@ class WMO_group_file:
                             continue
                         
                         
-                        ray_cast_result = group.ray_cast(poly.center, direction)
+                        ray_cast_result = group.ray_cast(g_center, direction)
+                        print(ray_cast_result)
                         
-                        if not ray_cast_result[0] or mathutils.Vector((ray_cast_result[1][0] - poly.center[0], ray_cast_result[1][1] - poly.center[1], ray_cast_result[1][2] - poly.center[2])).length > \
+                        if not ray_cast_result[0] or mathutils.Vector((ray_cast_result[1][0] - g_center[0], ray_cast_result[1][1] - g_center[1], ray_cast_result[1][2] - g_center[2])).length > \
                         mathutils.Vector(direction).length:
                             result = 1 if dist > 0 else -1
                             result_map[portal_obj] = result
                             bpy.data.objects.remove(proxy_obj, do_unlink = True)
                             bpy.context.scene.objects.active = active_obj
-                            if portal_obj.name == "PrisonOublietteLarge_Portal_004":
-                                print(dist)
                             return result
-                        
+                
+                bpy.data.objects.remove(proxy_obj, do_unlink = True)
+                bpy.context.scene.objects.active = active_obj
                         
             else:
                 
@@ -770,8 +778,8 @@ class WMO_group_file:
             if(len(mesh.vertices) > 65535):
                 LogError(2, "Object " + str(obj.name) + " contains more vertices (" + str(len(mesh.vertices)) + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535.")
             
-            if len(mesh.materials) > 254 or len(root.momt.Materials) > 255:
-                LogError(2, "Scene has excceeded the maximum allowed number of WoW materials (255). Your scene now has " + len(root.momt.Materials) + " materials. So, " + (len(root.momt.Materials) - 255) + " extra ones." )
+            if len(mesh.materials) > 255 or len(root.momt.Materials) > 256:
+                LogError(2, "Scene has excceeded the maximum allowed number of WoW materials (255). Your scene now has <<", len(root.momt.Materials), ">> materials. So, <<", (len(root.momt.Materials) - 256),  ">> extra ones." )
             
             
             self.mver = MVER_chunk()
@@ -1052,7 +1060,7 @@ class WMO_group_file:
                         else:
                             portalRef[1] = ob.WowPortalPlane.First
                         
-                        portalRef[2] = self.GetPortalDirection(ob, obj, root.portalDirectionMap)
+                        portalRef[2] = self.GetPortalDirection(ob, new_obj, root.portalDirectionMap)
                         root.PortalR.append(portalRef)
                         self.mogp.PortalCount += 1
                         
