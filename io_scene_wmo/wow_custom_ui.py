@@ -130,7 +130,6 @@ class WowMaterialPanel(bpy.types.Panel):
         self.layout.prop(context.material.WowMaterial, "Color3")
         self.layout.prop(context.material.WowMaterial, "Flags3")
         layout.enabled = context.material.WowMaterial.Enabled
-
     @classmethod
     def poll(cls, context):
         return (context.material is not None)

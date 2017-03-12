@@ -72,41 +72,28 @@ class WMO_root_file:
                 if (ob.type == "MESH") and (ob.WowLiquid.Enabled):
                     ob.WowLiquid.WMOGroup = self.liquidReferences.get(ob.name)
                     
+                    
     def CompareMaterials(self, material):      
         
         for material2, index in self.materialLookup.items():
             
-            if material.WowMaterial.Shader != material2.WowMaterial.Shader:
-                return None
-            if material.WowMaterial.TerrainType != material2.WowMaterial.TerrainType:
-                return None
-            if material.WowMaterial.BlendingMode != material2.WowMaterial.BlendingMode:
-                return None
-            if material.WowMaterial.TwoSided != material2.WowMaterial.TwoSided:
-                return None
-            if material.WowMaterial.Darkened != material2.WowMaterial.Darkened:
-                return None
-            if material.WowMaterial.NightGlow != material2.WowMaterial.NightGlow:
-                return None
-            if material.WowMaterial.Texture1 != material2.WowMaterial.Texture1:
-                return None
-            if material.WowMaterial.Color1 != material2.WowMaterial.Color1:
-                return None
-            if material.WowMaterial.Flags1 != material2.WowMaterial.Flags1:
-                return None
-            if material.WowMaterial.Texture2 != material2.WowMaterial.Texture2:
-                return None
-            if material.WowMaterial.Color2 != material2.WowMaterial.Color2:
-                return None
-            if material.WowMaterial.Texture3 != material2.WowMaterial.Texture3:
-                return None
-            if material.WowMaterial.Color3 != material2.WowMaterial.Color3:
-                return None
-            if material.WowMaterial.Flags3 != material2.WowMaterial.Flags3:
-                return None
+            if material.WowMaterial.Shader == material2.WowMaterial.Shader \
+            and material.WowMaterial.TerrainType == material2.WowMaterial.TerrainType \
+            and material.WowMaterial.BlendingMode == material2.WowMaterial.BlendingMode \
+            and material.WowMaterial.TwoSided == material2.WowMaterial.TwoSided \
+            and material.WowMaterial.Darkened == material2.WowMaterial.Darkened \
+            and material.WowMaterial.NightGlow == material2.WowMaterial.NightGlow \
+            and material.WowMaterial.Texture1 == material2.WowMaterial.Texture1 \
+            and material.WowMaterial.Color1 == material.WowMaterial.Color1 \
+            and material.WowMaterial.Flags1 == material2.WowMaterial.Flags1 \
+            and material.WowMaterial.Texture2 == material2.WowMaterial.Texture2 \
+            and material.WowMaterial.Color2 == material.WowMaterial.Color2 \
+            and material.WowMaterial.Texture3 == material2.WowMaterial.Texture3 \
+            and material.WowMaterial.Color3 == material.WowMaterial.Color3 \
+            and material.WowMaterial.Flags3 == material2.WowMaterial.Flags3:
+                return index
             
-            else:
-                return index       
+        return None     
 
 
     # mat is a bpy.types.Material
