@@ -256,7 +256,7 @@ class WowVertexInfoPanel(bpy.types.Panel):
 
 class WowVertexInfoPropertyGroup(bpy.types.PropertyGroup):
     VertexGroup = bpy.props.StringProperty()
-    NodeSize = bpy.props.IntProperty(name="Node max size", description="Max count of faces for a node in bsp tree", default=150, min=1, soft_max=500)
+    NodeSize = bpy.props.IntProperty(name="Node max size", description="Max count of faces for a node in bsp tree", default=2500, min=1, soft_max=5000)
     BatchTypeA = bpy.props.StringProperty()
     BatchTypeB = bpy.props.StringProperty()
     Lightmap = bpy.props.StringProperty()
