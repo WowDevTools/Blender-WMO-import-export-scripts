@@ -681,11 +681,13 @@ class WMO_root_file:
         self.mopr.Relationships = []
         # set portal relationship
         for i in range(len(self.PortalR)):
-            relation = PortalRelationship()
-            relation.PortalIndex = self.PortalR[i][0]
-            relation.GroupIndex = wmo_groups.get(self.PortalR[i][1]).index
-            relation.Side = self.PortalR[i][2]
-            self.mopr.Relationships.append(relation)
+            group_id = wmo_groups.get(self.PortalR[i][1])
+            if group_id != None:
+                relation = PortalRelationship()
+                relation.PortalIndex = self.PortalR[i][0]
+                relation.GroupIndex = group_id.index
+                relation.Side = self.PortalR[i][2]
+                self.mopr.Relationships.append(relation)
 
         # set header
         bb = self.GetGlobalBoundingBox()

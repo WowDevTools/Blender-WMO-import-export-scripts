@@ -646,7 +646,6 @@ class WMO_group_file:
                         
                         
                         ray_cast_result = group.ray_cast(g_center, direction)
-                        print(ray_cast_result)
                         
                         if not ray_cast_result[0] or mathutils.Vector((ray_cast_result[1][0] - g_center[0], ray_cast_result[1][1] - g_center[1], ray_cast_result[1][2] - g_center[2])).length > \
                         mathutils.Vector(direction).length:
@@ -658,7 +657,8 @@ class WMO_group_file:
                 
                 bpy.data.objects.remove(proxy_obj, do_unlink = True)
                 bpy.context.scene.objects.active = active_obj
-                        
+                LogDebug(0, False, "WARNING: Failed to calculate portal direction.")
+                    
             else:
                 
                 return -result_map.get(portal_obj)
