@@ -547,7 +547,6 @@ class WMO_group_file:
         # add WMO group properties
         nobj.WowWMOGroup.Enabled = True
         nobj.WowWMOGroup.GroupName = root.mogn.GetString(self.mogp.GroupNameOfs)
-        #nobj.WowWMOGroup.PortalGroupID = objId
         nobj.WowWMOGroup.GroupDesc = root.mogn.GetString(self.mogp.DescGroupNameOfs)
         nobj.WowWMOGroup.GroupID = int(self.mogp.GroupID)
         
@@ -557,19 +556,28 @@ class WMO_group_file:
         nobj.WowWMOGroup.Fog4 = base_name + "_Fog_" + str(self.mogp.FogIndices[3]).zfill(2)    
 
         
-        if(self.mogp.Flags & MOGP_FLAG.HasWater):
+        if self.mogp.Flags & MOGP_FLAG.HasWater:
             self.LoadLiquids(objName, nobj.location, root) 
         
-        if(self.mogp.Flags & MOGP_FLAG.HasDoodads):
-            if(len(self.modr.DoodadRefs) > 0):
+        if self.mogp.Flags & MOGP_FLAG.HasDoodads:
+            if len(self.modr.DoodadRefs) > 0:
                 for i in range(len(self.modr.DoodadRefs)):
                     doodad = nobj.WowWMOGroup.MODR.add()
                     doodad.value = self.modr.DoodadRefs[i]
             
-        if(self.mogp.Flags & 0x2000):
+        if self.mogp.Flags & MOGP_FLAG.Indoor:
             nobj.WowWMOGroup.PlaceType = str(0x2000)
         else:
             nobj.WowWMOGroup.PlaceType = str(0x8)
+            
+        if self.mogp.Flags & MOGP_FLAG.DoNotUseLocalLighting:
+            nobj.WowWMOGroup.NoLocalLighting = True
+            
+        if self.mogp.Flags & MOGP_FLAG.AlwaysDraw:
+            nobj.WowWMOGroup.AlwaysDraw = True
+            
+        if self.mogp.Flags & MOGP_FLAG.IsMountAllowed:
+            nobj.WowWMOGroup.IsMountAllowed = True
 
         nobj.select = True
         #nobj.show_transparent = True
