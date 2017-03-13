@@ -495,7 +495,7 @@ class WMO_group_file:
             if(i < self.mogp.nBatchesA):
                 batchMapA.add(self.movi.Indices[self.moba.Batches[i].StartTriangle : self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle], 1.0, 'ADD')
 
-            elif(i < self.mogp.nBatchesA +  self.mogp.nBatchesB):
+            elif(i < self.mogp.nBatchesA + self.mogp.nBatchesB):
                 batchMapB.add(self.movi.Indices[self.moba.Batches[i].StartTriangle : self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle], 1.0, 'ADD')
 
 
@@ -606,12 +606,12 @@ class WMO_group_file:
                 proxy_obj.select = False
                 
                 # triangulate the proxy portal
-                bpy.ops.object.mode_set(mode='EDIT')
-                bpy.ops.mesh.select_all(action='SELECT')
-                bpy.ops.mesh.quads_convert_to_tris()
-                bpy.ops.mesh.select_all(action='DESELECT')
-                
-                bpy.ops.object.mode_set(mode='OBJECT')
+#                bpy.ops.object.mode_set(mode='EDIT')
+#                bpy.ops.mesh.select_all(action='SELECT')
+#                bpy.ops.mesh.quads_convert_to_tris()
+#                bpy.ops.mesh.select_all(action='DESELECT')
+#                
+#                bpy.ops.object.mode_set(mode='OBJECT')
                 
                 mesh = group.data
                 portal_mesh = proxy_obj.data
@@ -1056,11 +1056,15 @@ class WMO_group_file:
                         portalRef[0] = ob.WowPortalPlane.PortalID
 
                         if ob.WowPortalPlane.First == obj.name:
-                            portalRef[1] = ob.WowPortalPlane.Second
+                            portalRef[1] = ob.WowPortalPlane.Second if ob.WowPortalPlane.Second != "" else ob.WowPortalPlane.First
                         else:
                             portalRef[1] = ob.WowPortalPlane.First
-                        
-                        portalRef[2] = self.GetPortalDirection(ob, new_obj, root.portalDirectionMap)
+                            
+                        # sometimes there are portals with only one relation. see Stormwind, Cathedral Quarter.
+                        if ob.WowPortalPlane.First != "" or ob.WowPortalPlane.Second != "":
+                            portalRef[2] = self.GetPortalDirection(ob, new_obj, root.portalDirectionMap)
+                        else:
+                            portalRef[2] = -1
                         root.PortalR.append(portalRef)
                         self.mogp.PortalCount += 1
                         
