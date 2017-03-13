@@ -1237,11 +1237,11 @@ class WMO_group_file:
             self.mobn.Nodes = bsp_tree.Nodes
             self.mobr.Faces = bsp_tree.Faces
             
-            if not (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192'):
-                self.mocv = None
-                
-            else:
-                self.mogp.Flags |= MOGP_FLAG.HasVertexColor
+            if not new_obj.WowWMOGroup.VertShad:
+                if new_obj.WowWMOGroup.PlaceType == '8192' and not new_obj.WowWMOGroup.NoLocalLighting:
+                    self.mogp.Flags |= MOGP_FLAG.HasVertexColor
+                else:
+                    self.mocv = None
 
             if not hasWater:
                 self.mliq = None
