@@ -472,10 +472,10 @@ class WMO_group_file:
         batchMapA = None
         batchMapB = None
 
-        if(self.mogp.nBatchesA != 0):
+        if self.mogp.nBatchesA != 0:
             batchMapA = nobj.vertex_groups.new("BatchMapA")    
             nobj.WowVertexInfo.BatchTypeA = batchMapA.name
-        if(self.mogp.nBatchesB != 0):
+        if self.mogp.nBatchesB != 0:
             batchMapB = nobj.vertex_groups.new("BatchMapB")
             nobj.WowVertexInfo.BatchTypeB = batchMapB.name
 
@@ -492,13 +492,12 @@ class WMO_group_file:
             material_indices[self.moba.Batches[i].MaterialID] = i
 
 
-            if(i < self.mogp.nBatchesA):
+            if i < self.mogp.nBatchesA:
                 batchMapA.add(self.movi.Indices[self.moba.Batches[i].StartTriangle : self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle], 1.0, 'ADD')
 
-            elif(i < self.mogp.nBatchesA + self.mogp.nBatchesB):
+            elif i < self.mogp.nBatchesA + self.mogp.nBatchesB:
                 batchMapB.add(self.movi.Indices[self.moba.Batches[i].StartTriangle : self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle], 1.0, 'ADD')
-
-
+                
             
         # add ghost material
         for i in self.mopy.TriangleMaterials:
@@ -1037,7 +1036,8 @@ class WMO_group_file:
                 
             self.mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
             
-            self.mogp.LiquidType = 15 
+            if not root.mohd.Flags & 0x04
+                self.mogp.LiquidType = 15 
 
 
             self.mogp.PortalStart = -1
