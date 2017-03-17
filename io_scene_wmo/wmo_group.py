@@ -478,18 +478,22 @@ class WMO_group_file:
         if self.mogp.nBatchesB != 0:
             batchMapB = nobj.vertex_groups.new("BatchMapB")
             nobj.WowVertexInfo.BatchTypeB = batchMapB.name
+            
+        batch_material_map = {}
 
         # add materials
         for i in range(len(self.moba.Batches)):
-            mesh.materials.append(root.materials[self.moba.Batches[i].MaterialID])
             
-            material = mesh.materials[i]
+            material = mesh.materials.get(root.materials[self.moba.Batches[i].MaterialID].name)
             
-            material.WowMaterial.Enabled = True
-                
+            if material == None:
+                mat_id = len(mesh.materials)
+                material_indices[self.moba.Batches[i].MaterialID] = mat_id
+                material = root.materials[self.moba.Batches[i].MaterialID]
+                material_viewport_textures[mat_id] = self.GetMaterialViewportImage(material)
+                mesh.materials.append(root.materials[self.moba.Batches[i].MaterialID])
             
-            material_viewport_textures[i] = self.GetMaterialViewportImage(mesh.materials[i])
-            material_indices[self.moba.Batches[i].MaterialID] = i
+                material.WowMaterial.Enabled = True
 
 
             if i < self.mogp.nBatchesA:
@@ -498,6 +502,8 @@ class WMO_group_file:
             elif i < self.mogp.nBatchesA + self.mogp.nBatchesB:
                 batchMapB.add(self.movi.Indices[self.moba.Batches[i].StartTriangle : self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle], 1.0, 'ADD')
                 
+            batch_material_map[(self.moba.Batches[i].StartTriangle // 3, (self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle) // 3)] = self.moba.Batches[i].MaterialID
+            
             
         # add ghost material
         for i in self.mopy.TriangleMaterials:
@@ -507,14 +513,20 @@ class WMO_group_file:
                 material_viewport_textures[mat_ghost_ID] = None
                 material_indices[0xFF] = mat_ghost_ID
                 break
+        
+        # set faces material 
+        hidden_geometry = []
 
-        # set faces material
         for i in range(len(mesh.polygons)):
-            matID = self.mopy.TriangleMaterials[i].MaterialID
-            mesh.polygons[i].material_index = material_indices[matID]
+            matID = None
+            for bounds, material in batch_material_map.items():
+                if i >= bounds[0] and i <= bounds[1]:
+                    matID = material
+                
+            mesh.polygons[i].material_index = material_indices[matID if matID != None else 0xFF]
             mesh.polygons[i].use_smooth = True
             # set texture displayed in viewport
-            img = material_viewport_textures[material_indices[matID]]
+            img = material_viewport_textures[material_indices[matID if matID != None else 0xFF]]
             if(img != None):
                 uv1.data[i].image = img
 
@@ -1036,7 +1048,7 @@ class WMO_group_file:
                 
             self.mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
             
-            if not root.mohd.Flags & 0x04
+            if not root.mohd.Flags & 0x04:
                 self.mogp.LiquidType = 15 
 
 
