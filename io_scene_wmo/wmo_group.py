@@ -513,18 +513,13 @@ class WMO_group_file:
                 break
         
         # set faces material 
-        hidden_geometry = []
-
         for i in range(len(mesh.polygons)):
-            matID = None
-            for bounds, material in batch_material_map.items():
-                if i >= bounds[0] and i <= bounds[1]:
-                    matID = material
-                
-            mesh.polygons[i].material_index = material_indices[matID if matID != None else 0xFF]
+            matID = self.mopy.TriangleMaterials[i].MaterialID
+                      
+            mesh.polygons[i].material_index = material_indices[matID]
             mesh.polygons[i].use_smooth = True
             # set texture displayed in viewport
-            img = material_viewport_textures[material_indices[matID if matID != None else 0xFF]]
+            img = material_viewport_textures[material_indices[matID]]
             if(img != None):
                 uv1.data[i].image = img
                 
