@@ -407,9 +407,6 @@ class WMO_group_file:
         for o in scn.objects:
             o.select = False
 
-        mesh.update()
-        mesh.validate()
-
         nobj = bpy.data.objects.new(objName, mesh)
         scn.objects.link(nobj)
 
@@ -503,6 +500,7 @@ class WMO_group_file:
                 batchMapB.add(self.movi.Indices[self.moba.Batches[i].StartTriangle : self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle], 1.0, 'ADD')
                 
             batch_material_map[(self.moba.Batches[i].StartTriangle // 3, (self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle) // 3)] = self.moba.Batches[i].MaterialID
+
             
             
         # add ghost material
@@ -529,6 +527,7 @@ class WMO_group_file:
             img = material_viewport_textures[material_indices[matID if matID != None else 0xFF]]
             if(img != None):
                 uv1.data[i].image = img
+                
 
         # set textured solid in all 3D views and switch to textured mode
         for area in bpy.context.screen.areas:
@@ -589,6 +588,9 @@ class WMO_group_file:
             
         if self.mogp.Flags & MOGP_FLAG.IsMountAllowed:
             nobj.WowWMOGroup.IsMountAllowed = True
+                      
+        mesh.update()
+        mesh.validate()
 
         nobj.select = True
         #nobj.show_transparent = True
@@ -596,7 +598,7 @@ class WMO_group_file:
         if scn.objects.active is None or scn.objects.active.mode == 'OBJECT':
             scn.objects.active = nobj
             
-        root.groupMap[objId] = nobj.name    
+        root.groupMap[objId] = nobj.name  
         
     def GetPortalDirection(self, portal_obj, group, result_map):
     
