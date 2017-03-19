@@ -847,7 +847,7 @@ class WMO_group_file:
 
             if new_obj.WowVertexInfo.Blendmap != "":
                 vg_blendmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Blendmap)
-                self.mogp.Flags |= self.mogp_FLAG.HasTwoMOCV
+                self.mogp.Flags |= MOGP_FLAG.HasTwoMOCV
 
             if new_obj.WowVertexInfo.SecondUV != "":
                 uv_second_uv = new_obj.data.uv_textures.get(new_obj.WowVertexInfo.SecondUV)
@@ -1045,8 +1045,7 @@ class WMO_group_file:
                 
             self.mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
             
-            if not root.mohd.Flags & 0x04:
-                self.mogp.LiquidType = 15 
+            self.mogp.LiquidType = 15 
 
 
             self.mogp.PortalStart = -1
