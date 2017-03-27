@@ -64,3 +64,7 @@ io_scene_wmo.sublime_project.sublime-project
 io_scene_wmo.sublime_project.sublime-workspace
 io_scene_wmo/io_scene_wmo.sublime-workspace
 io_scene_wmo/io_scene_wmo.sublime-project
+io_scene_wmo/bin/.vs/io_scene_wmo/v14/.suo
+io_scene_wmo/bin/io_scene_wmo.pyproj
+io_scene_wmo/bin/io_scene_wmo.sln
+io_scene_wmo/.vscode/launch.json

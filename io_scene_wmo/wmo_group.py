@@ -250,7 +250,7 @@ class WMO_group_file:
         faces = []
         
         for i in range(0, len(indices), 4):
-            faces.append((indices[i], indices[i + 1], indices[i + 3], indices[i + 2]))  
+            faces.append((indices[i], indices[i + 1], indices[i + 3], indices[i + 2])) 
 
         #create mesh and object
         name = objName + "_Liquid"
@@ -384,6 +384,7 @@ class WMO_group_file:
 
         vertices = []
         normals = []
+        custom_normals = []
         faces = []
 
         texCoords = []
@@ -395,7 +396,7 @@ class WMO_group_file:
 
 
         for i in range(0, len(self.movi.Indices), 3):
-            faces.append(self.movi.Indices[i:i+3])
+            faces.append(self.movi.Indices[i:i+3 ])
 
         # create mesh
         mesh = bpy.data.meshes.new(objName)
@@ -409,10 +410,20 @@ class WMO_group_file:
 
         nobj = bpy.data.objects.new(objName, mesh)
         scn.objects.link(nobj)
+        
+        for poly in mesh.polygons:
+            poly.use_smooth = True
 
         # set normals
-        for i in range(len(normals)):
-            mesh.vertices[i].normal = normals[i]
+#       for i in range(len(normals)):
+#           mesh.vertices[i].normal = normals[i]
+
+        mesh.use_auto_smooth = True
+        for loop in mesh.loops:
+            mesh.vertices[loop.vertex_index].normal = normals[loop.vertex_index]
+            custom_normals.append(normals[loop.vertex_index])
+            
+        mesh.normals_split_custom_set(custom_normals)
             
         # set vertex color
         if self.mogp.Flags & MOGP_FLAG.HasVertexColor:
@@ -512,6 +523,8 @@ class WMO_group_file:
                 material_indices[0xFF] = mat_ghost_ID
                 break
         
+        weird_flag = nobj.vertex_groups.new("Weird flag")
+        flagged_faces = []  
         # set faces material 
         for i in range(len(mesh.polygons)):
             matID = self.mopy.TriangleMaterials[i].MaterialID
@@ -522,6 +535,11 @@ class WMO_group_file:
             img = material_viewport_textures[material_indices[matID]]
             if(img != None):
                 uv1.data[i].image = img
+            
+            if self.mopy.TriangleMaterials[i].Flags & 0x1:
+                flagged_faces.append(i)
+        
+        weird_flag.add(flagged_faces, 1.0, 'ADD')
                 
 
         # set textured solid in all 3D views and switch to textured mode
@@ -583,9 +601,9 @@ class WMO_group_file:
             
         if self.mogp.Flags & MOGP_FLAG.IsMountAllowed:
             nobj.WowWMOGroup.IsMountAllowed = True
-                      
+        
+        mesh.validate(clean_customdata=False) 
         mesh.update()
-        mesh.validate()
 
         nobj.select = True
         #nobj.show_transparent = True
@@ -595,12 +613,12 @@ class WMO_group_file:
             
         root.groupMap[objId] = nobj.name  
         
-    def GetPortalDirection(self, portal_obj, group, result_map):
+    def GetPortalDirection(self, portal_obj, group, result_map, portal_relations):
     
         try:
             # check if this portal was already processed
-            if portal_obj not in result_map:
-                
+            if portal_obj not in result_map or not result_map.get(portal_obj):
+                        
                 # store the previous active object
                 active_obj = bpy.context.scene.objects.active
                 
@@ -666,14 +684,23 @@ class WMO_group_file:
                         if not ray_cast_result[0] or mathutils.Vector((ray_cast_result[1][0] - g_center[0], ray_cast_result[1][1] - g_center[1], ray_cast_result[1][2] - g_center[2])).length > \
                         mathutils.Vector(direction).length:
                             result = 1 if dist > 0 else -1
+                            
+                            if not result_map.get(portal_obj):
+                                for portalRef in portal_relations:
+                                    if portalRef[0] == portal_obj.WowPortalPlane.PortalID:
+                                        portalRef[2] = -result
+                                        break
+                                    
                             result_map[portal_obj] = result
+                            
                             bpy.data.objects.remove(proxy_obj, do_unlink = True)
                             bpy.context.scene.objects.active = active_obj
                             return result
                 
                 bpy.data.objects.remove(proxy_obj, do_unlink = True)
                 bpy.context.scene.objects.active = active_obj
-                LogDebug(0, False, "WARNING: Failed to calculate portal direction.")
+                result_map[portal_obj] = 0
+                LogDebug(0, False, "WARNING: Failed to calculate portal direction. Calculation from another side may be attempted.")
                     
             else:
                 
@@ -733,6 +760,11 @@ class WMO_group_file:
             bpy.ops.object.modifier_add(type='EDGE_SPLIT')
             bpy.context.object.modifiers["EdgeSplit"].use_edge_angle = False
             bpy.ops.object.modifier_apply(apply_as='DATA', modifier="EdgeSplit")
+            
+            # apply object transformation to geometry. Needs to be optional.
+            new_obj.select = True
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+            new_obj.select = False
 
             # perform vertex group split to keep batches accurate.
             bpy.ops.object.mode_set(mode='EDIT')
@@ -750,45 +782,40 @@ class WMO_group_file:
 
             bpy.ops.object.mode_set(mode='OBJECT')
             
-            # perform custom normal data calculation if not yet calculated by the user
-            bpy.context.scene.objects.active = obj
-            bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.select_all(action='SELECT')
+            if not original_mesh.has_custom_normals:
+                
+                # perform custom normal data calculation if not yet calculated by the user
+                bpy.context.scene.objects.active = obj
+                bpy.ops.object.mode_set(mode='EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
             
-            auto_normal_smooth = False
-            if (original_mesh.has_custom_normals == False):
                 original_mesh.use_auto_smooth = True
                 bpy.ops.mesh.customdata_custom_splitnormals_add()
                 original_mesh.calc_normals_split()
-                auto_normal_smooth = True
                 
-            bpy.ops.mesh.select_all(action='DESELECT')
-            bpy.ops.object.mode_set(mode='OBJECT')
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bpy.ops.object.mode_set(mode='OBJECT')
             
-            # perform custom normal data transfer to a temporary object
-            obj.select = True
-            new_obj.select = True
-            bpy.context.scene.objects.active = new_obj
-            bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='CUSTOM_NORMAL')
-            new_obj.select = False
-            obj.select = False
-            
-            # clear auto-generated custom normal data on original scene object to avoid changes of original scene on export. If normals are user defined, we do not touch them.
-            bpy.context.scene.objects.active = obj 
-            bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.select_all(action='SELECT')
-            if (original_mesh.has_custom_normals == True) and (auto_normal_smooth == True):
-                bpy.ops.mesh.customdata_custom_splitnormals_clear()
-            bpy.ops.mesh.select_all(action='DESELECT')
-            bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.context.scene.objects.active = new_obj
-            
-            # apply object transformation to geometry. Needs to be optional.
-            new_obj.select = True
-            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-            new_obj.select = False
+                # perform custom normal data transfer to a temporary object
+                obj.select = True
+                new_obj.select = True
+                bpy.context.scene.objects.active = new_obj
+                bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='CUSTOM_NORMAL')
+                new_obj.select = False
+                obj.select = False
 
-            #mesh.calc_normals_split() -- We seem to not need that after transfer
+                # clear auto-generated custom normal data on original scene object to avoid changes of original scene on export. If normals are user defined, we do not touch them.
+                bpy.context.scene.objects.active = obj 
+                bpy.ops.object.mode_set(mode='EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.mesh.customdata_custom_splitnormals_clear()
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bpy.ops.object.mode_set(mode='OBJECT')
+                bpy.context.scene.objects.active = new_obj
+            
+            else:
+                mesh.calc_normals_split()
+
             
             # doing some safety checks to notify the user if the object is badly formed
             if(len(mesh.vertices) > 65535):
@@ -1076,11 +1103,8 @@ class WMO_group_file:
                         else:
                             portalRef[1] = ob.WowPortalPlane.First
                             
-                        # sometimes there are portals with only one relation. see Stormwind, Cathedral Quarter.
-                        if ob.WowPortalPlane.First != "" or ob.WowPortalPlane.Second != "":
-                            portalRef[2] = self.GetPortalDirection(ob, new_obj, root.portalDirectionMap)
-                        else:
-                            portalRef[2] = -1
+                        portalRef[2] = self.GetPortalDirection(ob, new_obj, root.portalDirectionMap, root.PortalR)
+         
                         root.PortalR.append(portalRef)
                         self.mogp.PortalCount += 1
                         
