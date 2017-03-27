@@ -144,48 +144,6 @@ class WMO_group_file:
         if(self.mogp.Flags & MOGP_FLAG.HasTwoMOCV):
             self.mocv2 = MOCV_chunk()
             self.mocv2.Read(f)
-        
-            
-    def CreateMeshFromBatch(self, meshName, batch, materials):
-        # create mesh vertices / faces
-        vertices = self.movt.Vertices[batch.StartVertex : batch.LastVertex + 1]
-        indices = []
-        
-        # triangles are indices actually trueNTriangle = nTriangle // 3
-        for i in range(batch.StartTriangle, batch.StartTriangle + batch.nTriangle):
-            indices.append(self.movi.Indices[i] - batch.StartVertex)
-          
-        faces = []
-        for i in range(0, len(indices), 3):
-            faces.append(indices[i : i + 3])
-
-        mesh = bpy.data.meshes.new(meshName)
-        mesh.from_pydata(vertices, [], faces)
-        
-        # set vertex normals
-        for i in range(len(mesh.vertices)):
-            mesh.vertices[i].normal = self.monr.Normals[i + batch.StartVertex]
-            
-        # set vertex color
-        if(self.mogp.Flags & MOGP_FLAG.HasVertexColor):
-            vertColor_layer1 = mesh.vertex_colors.new("vertCol_layer1")
-            for i in range(len(mesh.loops)):
-                vertColor_layer1.data[i].color = self.mocv.vertColors[mesh.loops[i].vertex_index + batch.StartVertex][:4]
-                
-        # set uv
-        uv1 = mesh.uv_textures.new("UVMap")
-        uv_layer1 = mesh.uv_layers[0]
-        for i in range(len(uv_layer1.data)):
-            uv = self.motv.TexCoords[mesh.loops[i].vertex_index + batch.StartVertex]
-            uv_layer1.data[i].uv = (uv[0], 1 - uv[1])
-            
-        # set material
-        mesh.materials.append(materials[batch.MaterialID])
-
-        # set displayed texture
-        uv1.active = True
-
-        return mesh
 
     def GetMaterialViewportImage(self, material):
         for i in range(3):
