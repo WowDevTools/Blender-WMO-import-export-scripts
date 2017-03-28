@@ -1022,9 +1022,6 @@ class WMO_group_file:
                 self.mogp.Flags |= MOGP_FLAG.IsMountAllowed
                 
             self.mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
-            
-            self.mogp.LiquidType = 15 
-
 
             self.mogp.PortalStart = -1
             self.mogp.PortalCount = 0
@@ -1071,7 +1068,10 @@ class WMO_group_file:
                     # export liquids
                     if(ob.WowLiquid.Enabled and (obj.name == ob.WowLiquid.WMOGroup)):
 
-                        hasWater = True
+                        if not hasWater:
+                            hasWater = True
+                        else:
+                            LogError(2, "Only one liquid instance per WMO group is allowed.")
 
                         Log(1, False, "Exporting liquid: <<" + ob.name + ">>")
                         mesh = ob.data
@@ -1111,7 +1111,7 @@ class WMO_group_file:
                         material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\STORMWIND\GRAY12.BLP"
 
                         if self.mogp.LiquidType == 3 or self.mogp.LiquidType == 7 or self.mogp.LiquidType == 11:
-                            material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\TRIM\BM_BRSPIRE_LAVAWALLTRANS.BLP"
+                            material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\LAVA\MM_MOLTEN_01.BLP"
                         elif self.mogp.LiquidType == 4 or self.mogp.LiquidType == 8 or self.mogp.LiquidType == 12:
                             material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
 
@@ -1227,6 +1227,7 @@ class WMO_group_file:
                     self.mocv = None
 
             if not hasWater:
+                self.mogp.Flags |= MOGP_FLAG.IsNotOcean
                 self.mliq = None
                 
             # write second MOTV and MOCV
