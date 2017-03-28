@@ -154,33 +154,24 @@ class WMO_group_file:
                 pass
         return None
     
-    def ToWMOLiquid(self, basic_liquid_type):
+    def FromWMOLiquidType(self, basic_liquid_type):
         real_liquid_type = 0
-        if basic_liquid_type == 0:
-            real_liquid_type = 14 if self.mogp.Flags & 0x80000 else 13
-        elif basic_liquid_type == 1:
-            real_liquid_type = 14
-        elif basic_liquid_type == 2:
-            real_liquid_type = 19
-        elif basic_liquid_type == 3:
-            real_liquid_type = 20
-            
+
+        if(basic_liquid_type < 20):
+            if basic_liquid_type == 0:
+                real_liquid_type = 14 if self.mogp.Flags & 0x80000 else 13
+            elif basic_liquid_type == 1:
+                real_liquid_type = 14
+            elif basic_liquid_type == 2:
+                real_liquid_type = 19
+            elif(basic_liquid_type == 15):
+                real_liquid_type = 17
+            elif basic_liquid_type == 3:
+                real_liquid_type = 20
+        else:
+            real_liquid_type = basic_liquid_type + 1
+
         return real_liquid_type
-
-    def FromWMOLiquid(self, real_liquid_type):
-        basic_liquid_type = real_liquid_type
-        if real_liquid_type == 13:
-            basic_liquid_type = 1
-        if real_liquid_type == 14:
-            basic_liquid_type = 2
-        if real_liquid_type == 17:
-            basic_liquid_type = 15
-        if real_liquid_type == 19:
-            basic_liquid_type = 3
-        if real_liquid_type == 20:
-            basic_liquid_type = 4
-
-        return basic_liquid_type
                 
     # return array of vertice and array of faces in a tuple
     def LoadLiquids(self, objName, pos, root):
@@ -284,25 +275,12 @@ class WMO_group_file:
         obj.WowLiquid.Enabled = True
         
         # getting Liquid Type ID
-        
-        basic_liquid_type = self.mogp.LiquidType
         real_liquid_type = 0
         
-        if(root.mohd.Flags & 0x4): # defining real liquid type ID from DBC. to understand what is being done here see wiki (MLIQ)
-                
-            if basic_liquid_type < 21: 
-                real_liquid_type = self.ToWMOLiquid(basic_liquid_type - 1)
-            else:
-                real_liquid_type = basic_liquid_type
+        if(root.mohd.Flags & 0x4):
+            real_liquid_type = self.mogp.LiquidType
         else:
-
-            if(basic_liquid_type == 15):
-                real_liquid_type = 17
-            else:
-                if(basic_liquid_type < 20):
-                    real_liquid_type = self.ToWMOLiquid(basic_liquid_type)
-                else:
-                    real_liquid_type = basic_liquid_type + 1
+            real_liquid_type = self.FromWMOLiquidType(self.mogp.LiquidType)
 
         
         obj.WowLiquid.LiquidType = str(real_liquid_type)
@@ -481,7 +459,7 @@ class WMO_group_file:
                 material_indices[0xFF] = mat_ghost_ID
                 break
         
-        weird_flag = nobj.vertex_groups.new("Weird flag")
+        weird_flag = nobj.vertex_groups.new("Attenuation map")
         flagged_faces = []  
         # set faces material 
         for i in range(len(mesh.polygons)):
@@ -498,6 +476,8 @@ class WMO_group_file:
                 flagged_faces.append(i)
         
         weird_flag.add(flagged_faces, 1.0, 'ADD')
+
+        nobj.WowVertexInfo.AttenuationMap = weird_flag.name
                 
 
         # set textured solid in all 3D views and switch to textured mode
@@ -811,6 +791,7 @@ class WMO_group_file:
             vg_lightmap = None
             vg_blendmap = None
             uv_second_uv = None
+            vg_attenuation = None
 
 
             if new_obj.WowVertexInfo.BatchTypeA != "":
@@ -837,6 +818,9 @@ class WMO_group_file:
             if new_obj.WowVertexInfo.SecondUV != "":
                 uv_second_uv = new_obj.data.uv_textures.get(new_obj.WowVertexInfo.SecondUV)
                 self.mogp.Flags |= MOGP_FLAG.HasTwoMOTV
+
+            if new_obj.WowVertexInfo.AttenuationMap != "":
+                vg_attenuation = new_obj.vertex_groups.get(new_obj.WowVertexInfo.AttenuationMap)
 
 
             for poly in mesh.polygons:
@@ -891,6 +875,7 @@ class WMO_group_file:
 
                 for poly in polyBatch:
                     collision_counter = 0
+                    attenuation_counter = 0
 
                     for vertex_index in mesh.polygons[poly].vertices:
                         
@@ -912,11 +897,19 @@ class WMO_group_file:
                             for group_info in mesh.vertices[vertex_index].groups:
                                 if group_info.group == vg_collision.index:
                                     collision_counter += 1
+                        if vg_attenuation != None:
+                            for group_info in mesh.vertices[vertex_index].groups:
+                                if group_info.group == vg_attenuation.index:
+                                    attenuation_counter += 1
 
                     tri_mat = TriangleMaterial()
                     tri_mat.MaterialID = batchKey[0]
                     tri_mat.Flags = 0x0 if tri_mat.MaterialID == 0xFF else 0x20
                     tri_mat.Flags |= 0x48 if collision_counter == len(mesh.polygons[poly].vertices) else 0x4
+
+                    if attenuation_counter == len(mesh.polygons[poly].vertices):
+                        tri_mat.Flags |= 0x1
+
                     self.mopy.TriangleMaterials.append(tri_mat)
 
                     for loop_index in mesh.polygons[poly].loop_indices:
@@ -1106,8 +1099,8 @@ class WMO_group_file:
                         self.mliq.Position = mesh.vertices[StartVertex].co
 
                         self.mogp.Flags |= 0x1000
-                        self.mogp.LiquidType = self.FromWMOLiquid( int(ob.WowLiquid.LiquidType) )
-                        root.mohd.Flags |= 0x4 # needs checking
+                        self.mogp.LiquidType = int(ob.WowLiquid.LiquidType)
+                        root.mohd.Flags |= 0x4
                         
                         # creating liquid material
                         
@@ -1140,8 +1133,8 @@ class WMO_group_file:
                                 for i in range(self.mliq.xVerts * self.mliq.yVerts):
                                     vertex = MagmaVertex()
 
-                                    vertex.u = int( uvMap.get(mesh.vertices[i].index)[0] ) 
-                                    vertex.v = int( uvMap.get(mesh.vertices[i].index)[1] )
+                                    vertex.u = int( uvMap.get(mesh.vertices[i].index)[0]) 
+                                    vertex.v = int( uvMap.get(mesh.vertices[i].index)[1])
 
                                     vertex.height = mesh.vertices[i].co[2]
                                     self.mliq.VertexMap.append(vertex)

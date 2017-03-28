@@ -248,6 +248,7 @@ class WowVertexInfoPanel(bpy.types.Panel):
         self.layout.prop_search(context.object.WowVertexInfo, "BatchTypeB", context.object, "vertex_groups", text="Batch type B vertex group")
         self.layout.prop_search(context.object.WowVertexInfo, "Lightmap", context.object, "vertex_groups", text="Lightmap")
         self.layout.prop_search(context.object.WowVertexInfo, "Blendmap", context.object, "vertex_groups", text="Blendmap")
+        self.layout.prop_search(context.object.WowVertexInfo, "AttenuationMap", context.object, "vertex_groups", text="Attenuation Map")
         self.layout.prop_search(context.object.WowVertexInfo, "SecondUV", context.object.data, "uv_textures", text="Second UV")
 
     @classmethod
@@ -261,6 +262,7 @@ class WowVertexInfoPropertyGroup(bpy.types.PropertyGroup):
     BatchTypeB = bpy.props.StringProperty()
     Lightmap = bpy.props.StringProperty()
     Blendmap = bpy.props.StringProperty()
+    AttenuationMap = bpy.props.StringProperty()
     SecondUV = bpy.props.StringProperty()
 
 def RegisterWowVertexInfoProperties():
@@ -451,13 +453,15 @@ def liquid_validator(ob):
     return ob.WowWMOGroup.Enabled
 
 class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
-    liquidTypeEnum = [('13', "WMO Water", ""), ('17', "WMO Water Interior", ""), \
-        ('14', "WMO Ocean", ""), ('19', "WMO Lava", ""), ('20', "WMO Slime", ""), \
-        ('5', "Slow Water", ""), ('6', "Slow Ocean", ""), ('7', "Slow Magma", ""), \
-        ('8', "Slow Slime", ""), ('9', "Fast Water", ""), ('10', "Fast Ocean", ""), \
-        ('11', "Fast Magma", ""), ('12', "Fast Slime", ""),('21', "Naxxramas - Slime", ""), \
-        ('41', "Coilfang Raid - Water", ""), ('81', "Lake Wintergrasp - Water", ""), \
-        ('61', "Hyjal Past - Water", ""), ('100', "Basic Procedural Water", ""), ('0', "Unsupported", "")]
+    liquidTypeEnum = [('0', "Unsupported", ""), ('1', "Water", ""), ('2', "Ocean", ""), \
+                      ('3', "Magma", ""), ('4', "Slime", ""), ('5', "Slow Water", ""), \
+                      ('6', "Slow Ocean", ""), ('7', "Slow Magma", ""), ('8', "Slow Slime", ""), \
+                      ('9', "Fast Water", ""), ('10', "Fast Ocean", ""), ('11', "Fast Magma", ""), \
+                      ('12', "Fast Slime", ""), ('13', "WMO Water", ""), ('14', "WMO Ocean", ""), \
+                      ('15', "Green Lava", ""), ('17', "WMO Water - Interior", ""), ('19', "WMO Magma", ""), \
+                      ('20', "WMO Slime", ""), ('21', "Naxxramas - Slime", ""), ('41', "Coilfang Raid - Water", ""),\
+                      ('61', "Hyjal Past - Water", ""), ('81', "Lake Wintergrasp - Water", ""), ('100', "Basic Procedural Water", ""), \
+                      ('121', "CoA Black - Magma", ""), ('141', "Chamber Magma", ""), ('181', "Orange Slime", "") ]
     Enabled = bpy.props.BoolProperty(name="", description="Enable wow liquid properties", default=False)
     Color = bpy.props.FloatVectorProperty(name="Color", subtype='COLOR', default=(0.08,0.08,0.08), min=0.0, max=1.0)
     LiquidType = bpy.props.EnumProperty(items=liquidTypeEnum, name="Liquid Type", description="Type of the liquid present in this WMO group")
