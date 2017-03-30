@@ -1028,7 +1028,7 @@ class OBJECT_OP_Quick_Collision(bpy.types.Operator):
     bl_description = 'Generates WoW collision equal to geometry of the selected objects'
     bl_options = {'REGISTER', 'UNDO'}
         
-    NodeSize = bpy.props.IntProperty(name="Node max size", description="Max count of faces for a node in bsp tree", default=150, min=1, soft_max=500)
+    NodeSize = bpy.props.IntProperty(name="Node max size", description="Max count of faces for a node in bsp tree", default=2500, min=1, soft_max=5000)
     CleanUp = bpy.props.BoolProperty(name="Clean up", description="Remove unreferenced vertex groups", default = False)
     
     def QuickCollision(self, NodeSize, CleanUp):
