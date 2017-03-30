@@ -1204,12 +1204,11 @@ class WMO_group_file:
             self.mogp.DescGroupNameOfs = groupInfo[1]
 
             
-            if(source_doodads):
+            if source_doodads and len(new_obj.WowWMOGroup.MODR):
                 self.modr = MODR_chunk()
-                if(len(new_obj.WowWMOGroup.MODR) > 0):
-                    for doodad in new_obj.WowWMOGroup.MODR:
-                        self.modr.DoodadRefs.append(doodad.value)
-                    self.mogp.Flags |= MOGP_FLAG.HasDoodads
+                for doodad in new_obj.WowWMOGroup.MODR:
+                    self.modr.DoodadRefs.append(doodad.value)
+                self.mogp.Flags |= MOGP_FLAG.HasDoodads
             else:
                 self.modr = None
                 
