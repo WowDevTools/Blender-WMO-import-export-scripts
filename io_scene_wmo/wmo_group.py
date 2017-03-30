@@ -1022,6 +1022,7 @@ class WMO_group_file:
                 self.mogp.Flags |= MOGP_FLAG.IsMountAllowed
                 
             self.mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
+            root.mohd.Flags |= 0x4
 
             self.mogp.PortalStart = -1
             self.mogp.PortalCount = 0
@@ -1100,7 +1101,6 @@ class WMO_group_file:
 
                         self.mogp.Flags |= 0x1000
                         self.mogp.LiquidType = int(ob.WowLiquid.LiquidType)
-                        root.mohd.Flags |= 0x4
                         
                         # creating liquid material
                         
