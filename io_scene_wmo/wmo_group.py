@@ -1029,12 +1029,25 @@ class WMO_group_file:
             
             fog_id = 0
             fogMap = {}
-        
-            self.mliq = MLIQ_chunk()
 
-            hasWater = False        
+            hasWater = False
+            hasLights = False
+            light_counter = 0
+            
+            self.molr = MOLR_chunk()
+            self.mliq = MLIQ_chunk()       
             
             for ob in bpy.context.scene.objects:
+                if(ob.type == "LAMP"):
+                    if ob.location[0] > self.mogp.BoundingBoxCorner1[0]  \
+                    and ob.location[1] > self.mogp.BoundingBoxCorner1[1] \
+                    and ob.location[2] > self.mogp.BoundingBoxCorner1[2] \
+                    and ob.location[0] < self.mogp.BoundingBoxCorner2[0] \
+                    and ob.location[1] < self.mogp.BoundingBoxCorner2[1] \
+                    and ob.location[2] < self.mogp.BoundingBoxCorner2[2]:
+                        self.molr.LightRefs.append(light_counter)
+                        hasLights = True
+                    light_counter += 1
                 if(ob.type == "MESH"):
                     obj_mesh = ob.data
                     
@@ -1075,6 +1088,7 @@ class WMO_group_file:
                             LogError(2, "Only one liquid instance per WMO group is allowed.")
 
                         Log(1, False, "Exporting liquid: <<" + ob.name + ">>")
+
                         mesh = ob.data
                         
                         # apply mesh transformations
@@ -1226,9 +1240,14 @@ class WMO_group_file:
                     self.mocv = None
 
             if not hasWater:
-                self.mogp.Flags |= MOGP_FLAG.IsNotOcean
                 self.mliq = None
-                
+                self.mogp.Flags |= MOGP_FLAG.IsNotOcean
+
+            if not hasLights:
+                self.molr = None
+            else:
+                self.mogp.Flags |= MOGP_FLAG.HasLight
+              
             # write second MOTV and MOCV
             if uv_second_uv == None:
                 self.motv2 = None
@@ -1271,6 +1290,9 @@ class WMO_group_file:
             self.monr.Write(f)
             self.motv.Write(f)
             self.moba.Write(f)
+
+            if self.molr != None:
+                self.molr.Write(f)
                         
             if self.modr != None:
                 self.modr.Write(f)
@@ -1282,7 +1304,7 @@ class WMO_group_file:
                 self.mocv.Write(f)
             
             if self.mliq != None:
-                self.mliq .Write(f)
+                self.mliq.Write(f)
                 
             if self.motv2 != None:
                 self.motv2.Write(f)
