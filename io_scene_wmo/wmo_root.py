@@ -560,9 +560,9 @@ class WMO_root_file:
         global_outdoor_object_count = 0
         
         for ob in bpy.context.scene.objects:
-            if(ob.type == "LAMP"):
+            if ob.type == "LAMP":
                 obj_light = ob.data
-                if(obj_light.WowLight.Enabled):
+                if obj_light.WowLight.Enabled:
                     light = Light()
                     light.LightType = int(obj_light.WowLight.LightType)
                     if(light.LightType == 0 or light.LightType == 1):
@@ -577,15 +577,15 @@ class WMO_root_file:
                     light.AttenuationEnd = obj_light.WowLight.AttenuationEnd                
                     self.molt.Lights.append(light)
                     
-            if(ob.type == "MESH"):
+            if ob.type == "MESH":
                 obj_mesh = ob.data
                 
-                if(ob.WowWMOGroup.Enabled):
+                if ob.WowWMOGroup.Enabled:
                     global_object_count += 1
                     if ob.WowWMOGroup.PlaceType == '8':
                         global_outdoor_object_count += 1
                     
-                if(ob.WowPortalPlane.Enabled):
+                if ob.WowPortalPlane.Enabled:
                     Log(1, False, "Exporting portal: <<" + ob.name + ">>")
                     portal_info = PortalInfo()
                     portal_info.StartVertex = global_vertices_count
@@ -622,7 +622,7 @@ class WMO_root_file:
                     Log(0, False, "Done exporting portal: <<" + ob.name + ">>")
                     
                     
-                if(ob.WowFog.Enabled):
+                if ob.WowFog.Enabled:
                     Log(1, False, "Exporting fog: <<" + ob.name + ">>")
                     fog = Fog()
                     
@@ -652,16 +652,16 @@ class WMO_root_file:
                     
                     Log(0, False, "Done exporting fog: <<" + ob.name + ">>")
                     
-        if(source_doodads):
+        if source_doodads and len(bpy.context.scene.WoWRoot.MODS.Sets):
             scene = bpy.context.scene
             self.mods.Sets = scene.WoWRoot.MODS.Sets
             self.modn.StringTable = scene.WoWRoot.MODN.StringTable
             self.modd.Definitions = scene.WoWRoot.MODD.Definitions
                        
-        if(global_object_count > 512):
+        if global_object_count > 512:
             LogError(2, "Your scene contains more objects that it is supported by WMO file format " + str(global_object_count) + ". The hardcoded maximum is 512 for one root WMO file. Dividing your scene to a few separate WMO models is recommended.")
         
-        if(global_fog_count == 0):
+        if global_fog_count == 0:
         
             empty_fog = Fog() # setting up default fog with default blizzlike values.
             empty_fog.Color1 = (0xFF, 0xFF, 0xFF, 0xFF)
