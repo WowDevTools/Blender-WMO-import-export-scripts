@@ -1038,7 +1038,7 @@ class WMO_group_file:
             self.mliq = MLIQ_chunk()       
             
             for ob in bpy.context.scene.objects:
-                if(ob.type == "LAMP"):
+                if ob.type == "LAMP" and obj.WowWMOGroup.PlaceType == '8192':
                     if ob.location[0] > self.mogp.BoundingBoxCorner1[0]  \
                     and ob.location[1] > self.mogp.BoundingBoxCorner1[1] \
                     and ob.location[2] > self.mogp.BoundingBoxCorner1[2] \
@@ -1048,7 +1048,7 @@ class WMO_group_file:
                         self.molr.LightRefs.append(light_counter)
                         hasLights = True
                     light_counter += 1
-                if(ob.type == "MESH"):
+                if ob.type == "MESH":
                     obj_mesh = ob.data
                     
                     # save portal relations and MOGP indexing data
@@ -1056,7 +1056,7 @@ class WMO_group_file:
                         Log(1, False, "Building portal relation between: <<" + ob.name + ">> (portal) and <<" + obj.name + ">> (group)")
                         
                         portalRef = [0, "", 1]
-                        if(self.mogp.PortalStart == -1):
+                        if self.mogp.PortalStart == -1:
                             self.mogp.PortalStart = root.PortalRCount
                         portalRef[0] = ob.WowPortalPlane.PortalID
 
@@ -1073,14 +1073,14 @@ class WMO_group_file:
                         Log(0, False, "Done building portal relation between: <<" + ob.name + ">> (portal) and <<" + obj.name + ">> (group)")
                         
                     # save fog references
-                    if(ob.WowFog.Enabled):
+                    if ob.WowFog.Enabled:
                         
                         fogMap[ob.name] = fog_id
                             
                         fog_id += 1
                     
                     # export liquids
-                    if(ob.WowLiquid.Enabled and (obj.name == ob.WowLiquid.WMOGroup)):
+                    if ob.WowLiquid.Enabled and obj.name == ob.WowLiquid.WMOGroup:
 
                         if not hasWater:
                             hasWater = True
@@ -1201,7 +1201,7 @@ class WMO_group_file:
 
              
             
-            if(self.mogp.PortalStart == -1):
+            if self.mogp.PortalStart == -1:
                 self.mogp.PortalStart = root.PortalRCount
             root.PortalRCount += self.mogp.PortalCount
             self.mogp.nBatchesA = nBatchesA
