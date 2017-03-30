@@ -422,9 +422,7 @@ class WMO_root_file:
             fog.WowFog.Color1 = (f.Color1[2] / 255, f.Color1[1] / 255, f.Color1[0] / 255)
             fog.WowFog.EndDist2 = f.EndDist2
             fog.WowFog.StartFactor2 = f.StartFactor2
-            fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)
-        
-            
+            fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)       
 
     def SaveSource(self):
         name = "(TECH)Root_source"
@@ -433,7 +431,6 @@ class WMO_root_file:
         mesh.WowWMORoot.MODS.Sets = self.mods.Sets
         mesh.WowWMORoot.MODN.StringTable = self.modn.StringTable
         mesh.WowWMORoot.MODD.Definitions = self.modd.Definitions
-        mesh.WowWMORoot.MFOG.Fogs = self.mfog.Fogs
         obj = bpy.data.objects.new(name, mesh)
     
     def LoadPortals(self, name, root):
