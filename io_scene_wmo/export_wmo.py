@@ -66,10 +66,6 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         if(bpy.context.scene.objects[i].WowPortalPlane.Enabled):
             continue
         
-        # check if object is root source
-        if(bpy.context.scene.objects[i].data.WowWMORoot.IsRoot):
-            continue
-        
         # check if object is a fog
         if(bpy.context.scene.objects[i].WowFog.Enabled):
             continue

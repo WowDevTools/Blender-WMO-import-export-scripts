@@ -653,7 +653,7 @@ class DoodadDefinition:
         self.Color = struct.unpack("BBBB", f.read(4))
 
     def Write(self, f):
-        weirdThing = ((self.Flags & 0xFF) << 24) & (self.NameOfs & 0xFFFFFF)
+        weirdThing = ((self.Flags & 0xFF) << 24) | (self.NameOfs & 0xFFFFFF)
         f.write(struct.pack('I', weirdThing))
         f.write(struct.pack('fff', *self.Position))
         f.write(struct.pack('ffff', *self.Rotation))

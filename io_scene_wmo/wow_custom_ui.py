@@ -44,6 +44,10 @@ class WoWRootPanel(bpy.types.Panel):
 
 
 class WowRootPropertyGroup(bpy.types.PropertyGroup):
+       
+    MODS = MODS_chunk()
+    MODN = MODN_chunk()
+    MODD = MODD_chunk()
 
     UseAmbient = bpy.props.BoolProperty(
         name="Use Ambient",
@@ -1299,21 +1303,6 @@ class OBJECT_OP_Hide_Show_Light(bpy.types.Operator):
         bpy.context.scene.WoWVisibility.Light = state    
         return {"FINISHED"}
         
-###############################
-## Root source
-###############################
-class WowWMORootPropertyGroup(bpy.types.PropertyGroup):
-    IsRoot = bpy.props.BoolProperty(name="", description="Enable wow WMO root source")
-    MODS = MODS_chunk()
-    MODN = MODN_chunk()
-    MODD = MODD_chunk()
-    MFOG = MFOG_chunk()
-
-def RegisterWowWMORootProperties():
-    bpy.types.Mesh.WowWMORoot = bpy.props.PointerProperty(type=WowWMORootPropertyGroup)
-
-def UnregisterWowWMORootProperties():
-    bpy.types.Mesh.WowWMORoot = None    
 
 def register():
     RegisterWowRootProperties()
@@ -1323,7 +1312,6 @@ def register():
     RegisterWowVertexInfoProperties()
     RegisterWowWMOGroupProperties()
     RegisterWowPortalPlaneProperties()
-    RegisterWowWMORootProperties()
     RegisterWoWVisibilityProperties()
     RegisterWowFogProperties()
     # RegisterWMOToolsPanelObjectMode()
@@ -1338,7 +1326,6 @@ def unregister():
     UnregisterWowVertexInfoProperties()
     UnregisterWowWMOGroupProperties()
     UnregisterWowPortalPlaneProperties()
-    UnregisterWowWMORootProperties()
     UnregisterWoWVisibilityProperties()
     UnregisterWowFogProperties()
     # UnregisterWMOToolsPanelObjectMode()

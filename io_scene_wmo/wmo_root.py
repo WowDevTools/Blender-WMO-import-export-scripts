@@ -425,13 +425,10 @@ class WMO_root_file:
             fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)       
 
     def SaveSource(self):
-        name = "(TECH)Root_source"
-        mesh = bpy.data.meshes.new(name)
-        mesh.WowWMORoot.IsRoot = True
-        mesh.WowWMORoot.MODS.Sets = self.mods.Sets
-        mesh.WowWMORoot.MODN.StringTable = self.modn.StringTable
-        mesh.WowWMORoot.MODD.Definitions = self.modd.Definitions
-        obj = bpy.data.objects.new(name, mesh)
+        scene = bpy.context.scene
+        scene.WoWRoot.MODS.Sets = self.mods.Sets
+        scene.WoWRoot.MODN.StringTable = self.modn.StringTable
+        scene.WoWRoot.MODD.Definitions = self.modd.Definitions
     
     def LoadPortals(self, name, root):
         self.portals = []
@@ -655,12 +652,12 @@ class WMO_root_file:
                     
                     Log(0, False, "Done exporting fog: <<" + ob.name + ">>")
                     
-                elif(obj_mesh.WowWMORoot.IsRoot):
-                    if(source_doodads):
-                        self.mods.Sets = obj_mesh.WowWMORoot.MODS.Sets
-                        self.modn.StringTable = obj_mesh.WowWMORoot.MODN.StringTable
-                        self.modd.Definitions = obj_mesh.WowWMORoot.MODD.Definitions
-                        
+        if(source_doodads):
+            scene = bpy.context.scene
+            self.mods.Sets = scene.WoWRoot.MODS.Sets
+            self.modn.StringTable = scene.WoWRoot.MODN.StringTable
+            self.modd.Definitions = scene.WoWRoot.MODD.Definitions
+                       
         if(global_object_count > 512):
             LogError(2, "Your scene contains more objects that it is supported by WMO file format " + str(global_object_count) + ". The hardcoded maximum is 512 for one root WMO file. Dividing your scene to a few separate WMO models is recommended.")
         
