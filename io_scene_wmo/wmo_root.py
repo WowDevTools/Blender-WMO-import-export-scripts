@@ -451,14 +451,18 @@ class WMO_root_file:
             property_definition.NameOfs = doodad_definition.NameOfs
             property_definition.Flags = doodad_definition.Flags
             property_definition.Position = doodad_definition.Position
+
             property_definition.Rotation = (doodad_definition.Rotation[0],
                                             doodad_definition.Rotation[1],
                                             doodad_definition.Rotation[2])
+
             property_definition.Tilt = doodad_definition.Rotation[3]
             property_definition.Scale = doodad_definition.Scale
+
             property_definition.Color = (doodad_definition.Color[0],
                                          doodad_definition.Color[1],
                                          doodad_definition.Color[2])
+
             property_definition.ColorAlpha = doodad_definition.Color[3]
 
             if property_definition.NameOfs not in string_filter:
@@ -731,16 +735,20 @@ class WMO_root_file:
                 doodad_definition.NameOfs = ofsMap.get(property_definition.NameOfs)
                 doodad_definition.Flags = property_definition.Flags
                 doodad_definition.Position = property_definition.Position
+
                 doodad_definition.Rotation = [property_definition.Rotation[0],
                                               property_definition.Rotation[1],
                                               property_definition.Rotation[2],
                                               0.0]
+
                 doodad_definition.Rotation[3] = property_definition.Tilt
                 doodad_definition.Scale = property_definition.Scale
+
                 doodad_definition.Color = [int(property_definition.Color[0]),
                                            int(property_definition.Color[1]),
                                            int(property_definition.Color[2]),
                                            0]
+
                 doodad_definition.Color[3] = int(property_definition.ColorAlpha)
 
                 self.modd.Definitions.append(doodad_definition) 
