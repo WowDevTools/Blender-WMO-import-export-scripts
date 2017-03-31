@@ -356,8 +356,8 @@ class WMO_group_file:
             poly.use_smooth = True
 
         # set normals
-#       for i in range(len(normals)):
-#           mesh.vertices[i].normal = normals[i]
+        for i in range(len(normals)):
+            mesh.vertices[i].normal = normals[i]
 
         mesh.use_auto_smooth = True
         for loop in mesh.loops:
