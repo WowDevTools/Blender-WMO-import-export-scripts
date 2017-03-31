@@ -967,12 +967,13 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_selected_objects_to_wow_material", text = 'To WMO material', icon = 'SMOOTH')
         col.operator("scene.wow_selected_objects_to_portals", text = 'To WMO portal', icon = 'MOD_MIRROR')
         col.operator("scene.wow_texface_to_material", text = 'Texface to mat.', icon = 'TEXTURE_DATA')
-        col.operator("scene.wow_quick_collision", text = 'Quick Collision', icon = 'STYLUS_PRESSURE')
+        col.operator("scene.wow_quick_collision", text = 'Quick collision', icon = 'STYLUS_PRESSURE')
         col.operator("scene.wow_fill_textures", text = 'Fill textures', icon = 'FILE_IMAGE')
         col.operator("scene.wow_fill_group_name", text = 'Fill group name', icon = 'FONTPREVIEW')
         col.operator("scene.wow_invert_portals", text = 'Invert portals', icon = 'FILE_REFRESH')
         col.operator("scene.wow_add_fog", text = 'Add fog', icon = 'GROUP_VERTEX')
         col.operator("scene.wow_add_water", text = 'Add water', icon = 'MOD_WAVE')
+        col.operator("scene.wow_add_scale_reference", text = 'Add scale', icon = 'OUTLINER_OB_ARMATURE')
         col.label(text="Display")
         col.operator("scene.wow_hide_show_outdoor", text = 'Outdoor', icon = 'BBOX')
         col.operator("scene.wow_hide_show_indoor", text = 'Indoor', icon = 'ROTATE')
@@ -1246,7 +1247,60 @@ class TECH_OP_REPORT(bpy.types.Operator):
 
 ###############################
 ## Object operators
-###############################  
+############################### 
+
+class OBJECT_OP_Add_Scale(bpy.types.Operator):
+    bl_idname = 'scene.wow_add_scale_reference'
+    bl_label = 'Add scale'
+    bl_description = 'Adds a WoW scale prop'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    ScaleType = bpy.props.EnumProperty(
+        name = "Scale Type",
+        description = "Select scale reference type",
+        items = [('HUMAN', "Human Scale (average)", ""), 
+                 ('TAUREN', "Tauren Scale (thickest)", ""),
+                 ('TROLL', "Troll Scale (tallest)", ""),
+                 ('GNOME', "Gnome Scale (smallest)", "")
+                 ],
+        default = 'HUMAN'
+        )
+
+    def AddScale(self, ScaleType):
+        
+        if ScaleType == 'HUMAN':
+            bpy.ops.object.add(type='LATTICE')
+            scale_obj = bpy.context.object
+            scale_obj.name = "Human Scale"
+            scale_obj.dimensions = (0.471, 0.572, 1.143)
+
+        elif ScaleType == 'TAUREN':
+            bpy.ops.object.add(type='LATTICE')
+            scale_obj = bpy.context.object
+            scale_obj.name = "Tauren Scale"
+            scale_obj.dimensions[0] = 1.38
+            scale_obj.dimensions[1] = 1.846
+            scale_obj.dimensions[2] = 2.823
+
+        elif ScaleType == 'TROLL':
+            bpy.ops.object.add(type='LATTICE')
+            scale_obj = bpy.context.object
+            scale_obj.name = "Troll Scale"
+            scale_obj.dimensions[0] = 1.347
+            scale_obj.dimensions[1] = 1.539
+            scale_obj.dimensions[2] = 2.855
+
+        elif ScaleType == 'GNOME':
+            bpy.ops.object.add(type='LATTICE')
+            scale_obj = bpy.context.object
+            scale_obj.name = "Gnome Scale"
+            scale_obj.dimensions[0] = 0.473
+            scale_obj.dimensions[1] = 0.902
+            scale_obj.dimensions[2] = 1.123
+        
+    def execute(self, context):
+        self.AddScale(self.ScaleType)
+        return {'FINISHED'} 
     
     
 class OBJECT_OP_Add_Water(bpy.types.Operator):
