@@ -486,7 +486,7 @@ class WMO_group_file:
                 area.spaces[0].show_textured_solid = True
                 area.spaces[0].viewport_shade = 'TEXTURED'                
         
-        #####DEBUG BSP
+        #DEBUG BSP
         """for iNode in range(len(self.mobn.Nodes)):
             bsp_node_indices = self.GetBSPNodeIndices(iNode, self.mobn.Nodes, self.mobr.Faces, self.movi.Indices)
             bsp_node_vg = nobj.vertex_groups.new("debug_bsp")
@@ -495,7 +495,7 @@ class WMO_group_file:
             #    bsp_n1_GroupIndices.append(i)
             
             bsp_node_vg.add(bsp_node_indices, 1.0, 'ADD')"""
-        #####DEBUG BSP
+        #DEBUG BSP
 
         # add collision vertex group
         collision_indices = self.GetCollisionIndices()
@@ -578,12 +578,11 @@ class WMO_group_file:
                 proxy_obj.select = False
                 
                 # triangulate the proxy portal
-#                bpy.ops.object.mode_set(mode='EDIT')
-#                bpy.ops.mesh.select_all(action='SELECT')
-#                bpy.ops.mesh.quads_convert_to_tris()
-#                bpy.ops.mesh.select_all(action='DESELECT')
-#                
-#                bpy.ops.object.mode_set(mode='OBJECT')
+                # bpy.ops.object.mode_set(mode='EDIT')
+                # bpy.ops.mesh.select_all(action='SELECT')
+                # bpy.ops.mesh.quads_convert_to_tris()
+                # bpy.ops.mesh.select_all(action='DESELECT')             
+                # bpy.ops.object.mode_set(mode='OBJECT')
                 
                 mesh = group.data
                 portal_mesh = proxy_obj.data

@@ -99,25 +99,25 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
     export_selected = BoolProperty(
         name="Export selected objects",
         description="Makes the exporter export only selected objects on the scene",
-        default= False,
+        default=False,
         )
         
     fill_water = BoolProperty(
         name="Fill water",
         description="Fill water",
-        default= False,
+        default=False,
         )
     
     source_doodads = BoolProperty(
         name="Save source doodads",
         description="Save source doodads",
-        default= False,
+        default=True,
         )
     
     autofill_textures = BoolProperty(
         name="Fill texture paths",
         description="Automatically fills WoW Material texture paths based on texture filenames",
-        default= True,
+        default=True,
         )           
         
 
