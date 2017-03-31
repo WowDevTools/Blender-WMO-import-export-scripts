@@ -634,14 +634,34 @@ class MODN_chunk:
         self.Header.Write(f)
         f.write(self.StringTable)
 
+    def AddString(self, s):
+        padding = len(self.StringTable) % 4
+        if(padding > 0):
+            for iPad in range(4 - padding):
+                self.StringTable.append(0)
+
+        ofs = len(self.StringTable)
+        self.StringTable.extend(s.encode('ascii'))
+        self.StringTable.append(0)
+        return ofs
+
+    def GetString(self, ofs):
+        if(ofs >= len(self.StringTable)):
+            return ''
+        start = ofs
+        i = ofs
+        while self.StringTable[i] != 0:
+            i += 1
+        return self.StringTable[start:i].decode('ascii')
+
 class DoodadDefinition:
     def __init__(self):
         self.NameOfs = 0
         self.Flags = 0
         self.Position = (0, 0, 0)
-        self.Rotation = (0, 0, 0, 0)
+        self.Rotation = [0, 0, 0, 0]
         self.Scale = 0
-        self.Color = (0, 0, 0, 0)
+        self.Color = [0, 0, 0, 0]
 
     def Read(self, f):
         weirdThing = struct.unpack("I", f.read(4))[0]

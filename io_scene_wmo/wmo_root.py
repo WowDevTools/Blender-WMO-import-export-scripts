@@ -426,10 +426,40 @@ class WMO_root_file:
 
     def SaveSource(self):
         scene = bpy.context.scene
-        scene.WoWRoot.MODS.Sets = self.mods.Sets
-        scene.WoWRoot.MODN.StringTable = self.modn.StringTable
-        scene.WoWRoot.MODD.Definitions = self.modd.Definitions
-    
+        string_filter = []
+
+        scene.WoWRoot.MODS_Sets.clear()
+        scene.WoWRoot.MODN_StringTable.clear()
+        scene.WoWRoot.MODD_Definitions.clear()
+        
+        for doodad_set in self.mods.Sets:
+            property_set = scene.WoWRoot.MODS_Sets.add()
+            property_set.Name = doodad_set.Name
+            property_set.StartDoodad = doodad_set.StartDoodad
+            property_set.nDoodads = doodad_set.nDoodads
+            property_set.Padding = doodad_set.Padding
+
+        for doodad_definition in self.modd.Definitions:
+            property_definition = scene.WoWRoot.MODD_Definitions.add()
+            property_definition.NameOfs = doodad_definition.NameOfs
+            property_definition.Flags = doodad_definition.Flags
+            property_definition.Position = doodad_definition.Position
+            property_definition.Rotation = (doodad_definition.Rotation[0],
+                                            doodad_definition.Rotation[1],
+                                            doodad_definition.Rotation[2])
+            property_definition.Tilt = doodad_definition.Rotation[3]
+            property_definition.Scale = doodad_definition.Scale
+            property_definition.Color = (doodad_definition.Color[0],
+                                         doodad_definition.Color[1],
+                                         doodad_definition.Color[2])
+            property_definition.ColorAlpha = doodad_definition.Color[3]
+
+            if property_definition.NameOfs not in string_filter:
+                path = scene.WoWRoot.MODN_StringTable.add()
+                path.Ofs = property_definition.NameOfs
+                path.String = self.modn.GetString(property_definition.NameOfs)
+                string_filter.append(property_definition.NameOfs)
+
     def LoadPortals(self, name, root):
         self.portals = []
         self.vert_count = 0
@@ -652,11 +682,41 @@ class WMO_root_file:
                     
                     Log(0, False, "Done exporting fog: <<" + ob.name + ">>")
                     
-        if source_doodads and len(bpy.context.scene.WoWRoot.MODS.Sets):
+        if source_doodads and len(bpy.context.scene.WoWRoot.MODS_Sets):
             scene = bpy.context.scene
-            self.mods.Sets = scene.WoWRoot.MODS.Sets
-            self.modn.StringTable = scene.WoWRoot.MODN.StringTable
-            self.modd.Definitions = scene.WoWRoot.MODD.Definitions
+            ofsMap = {}
+
+            for property_set in scene.WoWRoot.MODS_Sets:
+                doodad_set = DoodadSet()
+                doodad_set.Name = property_set.Name
+                doodad_set.StartDoodad = property_set.StartDoodad
+                doodad_set.nDoodads = property_set.nDoodads
+                doodad_set.Padding = property_set.Padding
+
+                self.mods.Sets.append(doodad_set)
+
+            for modn_string in scene.WoWRoot.MODN_StringTable:
+                ofsMap[modn_string.Ofs] = self.modn.AddString(modn_string.String)
+
+            for property_definition in scene.WoWRoot.MODD_Definitions:
+                doodad_definition = DoodadDefinition()
+                doodad_definition.NameOfs = ofsMap.get(property_definition.NameOfs)
+                doodad_definition.Flags = property_definition.Flags
+                doodad_definition.Position = property_definition.Position
+                doodad_definition.Rotation = [property_definition.Rotation[0],
+                                              property_definition.Rotation[1],
+                                              property_definition.Rotation[2],
+                                              0.0]
+                doodad_definition.Rotation[3] = property_definition.Tilt
+                doodad_definition.Scale = property_definition.Scale
+                doodad_definition.Color = [int(property_definition.Color[0]),
+                                           int(property_definition.Color[1]),
+                                           int(property_definition.Color[2]),
+                                           0]
+                doodad_definition.Color[3] = int(property_definition.ColorAlpha)
+
+                self.modd.Definitions.append(doodad_definition) 
+
                        
         if global_object_count > 512:
             LogError(2, "Your scene contains more objects that it is supported by WMO file format " + str(global_object_count) + ". The hardcoded maximum is 512 for one root WMO file. Dividing your scene to a few separate WMO models is recommended.")

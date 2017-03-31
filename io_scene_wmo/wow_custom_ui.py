@@ -42,12 +42,31 @@ class WoWRootPanel(bpy.types.Panel):
     def poll(cls, context):
         return (context.scene is not None)
 
+class MODS_Set(bpy.types.PropertyGroup):
+    Name = bpy.props.StringProperty()
+    StartDoodad = bpy.props.IntProperty()
+    nDoodads = bpy.props.IntProperty()
+    Padding = bpy.props.IntProperty()
+
+class MODN_String(bpy.types.PropertyGroup):
+    Ofs = bpy.props.IntProperty()
+    String = bpy.props.StringProperty()
+
+class MODD_Definition(bpy.types.PropertyGroup):
+    NameOfs = bpy.props.IntProperty()
+    Flags = bpy.props.IntProperty()
+    Position = bpy.props.FloatVectorProperty()
+    Rotation = bpy.props.FloatVectorProperty()
+    Tilt = bpy.props.FloatProperty()
+    Scale = bpy.props.FloatProperty()
+    Color = bpy.props.FloatVectorProperty()
+    ColorAlpha = bpy.props.FloatProperty()
 
 class WowRootPropertyGroup(bpy.types.PropertyGroup):
      
-    MODS = MODS_chunk()
-    MODN = MODN_chunk()
-    MODD = MODD_chunk()
+    MODS_Sets = bpy.props.CollectionProperty(type=MODS_Set)
+    MODN_StringTable = bpy.props.CollectionProperty(type=MODN_String)
+    MODD_Definitions = bpy.props.CollectionProperty(type=MODD_Definition)
 
     UseAmbient = bpy.props.BoolProperty(
         name="Use Ambient",
