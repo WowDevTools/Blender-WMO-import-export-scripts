@@ -1272,7 +1272,7 @@ class OBJECT_OP_Add_Scale(bpy.types.Operator):
             bpy.ops.object.add(type='LATTICE')
             scale_obj = bpy.context.object
             scale_obj.name = "Human Scale"
-            scale_obj.dimensions = (0.471, 0.572, 1.143)
+            scale_obj.dimensions = (0.471, 1.143, 2.015)
 
         elif ScaleType == 'TAUREN':
             bpy.ops.object.add(type='LATTICE')
