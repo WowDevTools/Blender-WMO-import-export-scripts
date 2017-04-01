@@ -1278,25 +1278,19 @@ class OBJECT_OP_Add_Scale(bpy.types.Operator):
             bpy.ops.object.add(type='LATTICE')
             scale_obj = bpy.context.object
             scale_obj.name = "Tauren Scale"
-            scale_obj.dimensions[0] = 1.38
-            scale_obj.dimensions[1] = 1.846
-            scale_obj.dimensions[2] = 2.823
+            scale_obj.dimensions = (1.38, 1.846, 2.823)
 
         elif ScaleType == 'TROLL':
             bpy.ops.object.add(type='LATTICE')
             scale_obj = bpy.context.object
             scale_obj.name = "Troll Scale"
-            scale_obj.dimensions[0] = 1.347
-            scale_obj.dimensions[1] = 1.539
-            scale_obj.dimensions[2] = 2.855
+            scale_obj.dimensions = (1.347, 1.539, 2.855)
 
         elif ScaleType == 'GNOME':
             bpy.ops.object.add(type='LATTICE')
             scale_obj = bpy.context.object
             scale_obj.name = "Gnome Scale"
-            scale_obj.dimensions[0] = 0.473
-            scale_obj.dimensions[1] = 0.902
-            scale_obj.dimensions[2] = 1.123
+            scale_obj.dimensions = (0.473, 0.902, 1.123)
         
     def execute(self, context):
         self.AddScale(self.ScaleType)
