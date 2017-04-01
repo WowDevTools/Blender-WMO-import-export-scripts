@@ -1076,7 +1076,7 @@ class WMO_group_file:
             self.mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
             root.mohd.Flags |= 0x4
 
-            self.mogp.PortalStart = -1
+            self.mogp.PortalStart = root.PortalRCount
             self.mogp.PortalCount = 0
             
             fog_id = 0
@@ -1104,7 +1104,9 @@ class WMO_group_file:
                     obj_mesh = ob.data
                     
                     # save portal relations and MOGP indexing data
-                    if ob.WowPortalPlane.Enabled and (ob.WowPortalPlane.First == obj.name or ob.WowPortalPlane.Second == obj.name):
+                    if ob.WowPortalPlane.Enabled \
+                    and (ob.WowPortalPlane.First == obj.name \
+                    or ob.WowPortalPlane.Second == obj.name):
                         Log(1, 
                             False, 
                             "Building portal relation between: <<" 
@@ -1115,15 +1117,14 @@ class WMO_group_file:
                             )
                         
                         portalRef = [0, "", 1]
-                        if self.mogp.PortalStart == -1:
-                            self.mogp.PortalStart = root.PortalRCount
-                        portalRef[0] = ob.WowPortalPlane.PortalID
 
+                        portalRef[0] = ob.WowPortalPlane.PortalID
+ 
                         if ob.WowPortalPlane.First == obj.name:
                             portalRef[1] = ob.WowPortalPlane.Second if ob.WowPortalPlane.Second != "" else ob.WowPortalPlane.First
                         else:
                             portalRef[1] = ob.WowPortalPlane.First
-                            
+
                         portalRef[2] = self.GetPortalDirection(ob, new_obj, root.portalDirectionMap, root.PortalR)
          
                         root.PortalR.append(portalRef)
@@ -1275,9 +1276,6 @@ class WMO_group_file:
                         Log(0, False, "Done exporting liquid: <<" + ob.name + ">>")
 
              
-            
-            if self.mogp.PortalStart == -1:
-                self.mogp.PortalStart = root.PortalRCount
             root.PortalRCount += self.mogp.PortalCount
             self.mogp.nBatchesA = nBatchesA
             self.mogp.nBatchesB = nBatchesB
