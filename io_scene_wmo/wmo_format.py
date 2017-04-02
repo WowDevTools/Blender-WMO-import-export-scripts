@@ -165,13 +165,31 @@ class WMO_Material:
         f.write(struct.pack('I', self.Shader))
         f.write(struct.pack('I', self.BlendMode))
         f.write(struct.pack('I', self.Texture1Ofs))
-        f.write(struct.pack('BBBB', round(self.Color1[2] * 255), round(self.Color1[1] * 255), round(self.Color1[0] * 255), round(self.Color1[3] * 255)))
+        f.write(struct.pack('BBBB', 
+                            round(self.Color1[2] * 255), 
+                            round(self.Color1[1] * 255), 
+                            round(self.Color1[0] * 255), 
+                            round(self.Color1[3] * 255)
+                            )
+                )
         f.write(struct.pack('I', self.TextureFlags1))
         f.write(struct.pack('I', self.Texture2Ofs))
-        f.write(struct.pack('BBBB', round(self.Color2[2] * 255), round(self.Color2[1] * 255), round(self.Color2[0] * 255), round(self.Color2[3] * 255)))
+        f.write(struct.pack('BBBB', 
+                            round(self.Color2[2] * 255), 
+                            round(self.Color2[1] * 255), 
+                            round(self.Color2[0] * 255), 
+                            round(self.Color2[3] * 255)
+                            )
+                )
         f.write(struct.pack('I', self.TerrainType))
         f.write(struct.pack('I', self.Texture3Ofs))
-        f.write(struct.pack('BBBB', round(self.Color3[2] * 255), round(self.Color3[1] * 255), round(self.Color3[0] * 255), round(self.Color3[3] * 255)))
+        f.write(struct.pack('BBBB', 
+                            round(self.Color3[2] * 255), 
+                            round(self.Color3[1] * 255), 
+                            round(self.Color3[0] * 255), 
+                            round(self.Color3[3] * 255)
+                            )
+                )
         f.write(struct.pack('fff', *self.DiffColor))
         f.write(struct.pack('II', *self.RunTimeData))
 
