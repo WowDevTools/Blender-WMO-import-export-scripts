@@ -21,8 +21,8 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
     
     portal_count = 0
     for ob in bpy.context.scene.objects:
-        if(ob.type == "MESH"):
-            if(ob.WowPortalPlane.Enabled):
+        if ob.type == "MESH":
+            if ob.WowPortalPlane.Enabled:
                 ob.WowPortalPlane.PortalID = portal_count
                 portal_count += 1
                 
@@ -47,31 +47,34 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
     mohd_0x1 = True
     
     Log(2, True, "Saving group files")
+
+    nObjects = len(bpy.context.scene.objects)
     
-    for i in range(len(bpy.context.scene.objects)):
-        
+    for i in range(nObjects):
+
+        index = nObjects - i - 1
         # check if object is mesh       
-        if bpy.context.scene.objects[i].type != 'MESH':
+        if bpy.context.scene.objects[index].type != 'MESH':
             continue
         
         # check if object is hidden
-        if bpy.context.scene.objects[i].hide == True:
+        if bpy.context.scene.objects[index].hide == True:
             continue
         
         #check if selected (optional)
-        if export_selected and selectedMap.get(bpy.context.scene.objects[i], True):
+        if export_selected and selectedMap.get(bpy.context.scene.objects[index], True):
             continue
         
         # check if object is portal
-        if(bpy.context.scene.objects[i].WowPortalPlane.Enabled):
+        if(bpy.context.scene.objects[index].WowPortalPlane.Enabled):
             continue
         
         # check if object is a fog
-        if(bpy.context.scene.objects[i].WowFog.Enabled):
+        if(bpy.context.scene.objects[index].WowFog.Enabled):
             continue
 
         # check if object is a liquid
-        if(bpy.context.scene.objects[i].WowLiquid.Enabled):
+        if(bpy.context.scene.objects[index].WowLiquid.Enabled):
             continue
         
         group_filename = base_name + "_" + str(iObj).zfill(3) + ".wmo"
@@ -79,20 +82,30 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         # prepare group files for writing
         wmo_group = WMO_group_file()
         
-        wmo_root.groupMap[iObj] = bpy.context.scene.objects[i]
+        wmo_root.groupMap[iObj] = bpy.context.scene.objects[index]
         
-        bpy.context.scene.objects[i].select = False
+        bpy.context.scene.objects[index].select = False
         
         if mohd_0x1:
-            mohd_0x1 = wmo_group.Save(bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures, group_filename)
+            mohd_0x1 = wmo_group.Save(bpy.context.scene.objects[index], 
+                                      wmo_root, 
+                                      iObj, 
+                                      source_doodads, 
+                                      autofill_textures, 
+                                      group_filename)
         else:
-            wmo_group.Save(bpy.context.scene.objects[i], wmo_root, iObj, source_doodads, autofill_textures, group_filename)
+            wmo_group.Save(bpy.context.scene.objects[index], 
+                           wmo_root, 
+                           iObj, 
+                           source_doodads, 
+                           autofill_textures, 
+                           group_filename)
         
         # enumerate the groups
         wmo_group.index = iObj
             
         # append groups files for writing
-        wmo_groups[bpy.context.scene.objects[i].name] = wmo_group
+        wmo_groups[bpy.context.scene.objects[index].name] = wmo_group
         
 
         iObj+=1
@@ -104,7 +117,12 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         
     # save root file
     Log(2, True, "Saving root file")
-    wmo_root.Save(fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups, portal_count)
+    wmo_root.Save(fill_water, 
+                  source_doodads, 
+                  autofill_textures,
+                  mohd_0x1, 
+                  wmo_groups, 
+                  portal_count)
     
     # write root file
     Log(2, True, "Writing root file")
