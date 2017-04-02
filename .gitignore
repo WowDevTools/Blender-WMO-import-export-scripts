@@ -68,3 +68,12 @@ io_scene_wmo/bin/.vs/io_scene_wmo/v14/.suo
 io_scene_wmo/bin/io_scene_wmo.pyproj
 io_scene_wmo/bin/io_scene_wmo.sln
 io_scene_wmo/.vscode/launch.json
+.gitattributes
+.vs/io_scene_adt/v14/.suo
+io_scene_adt.sln
+io_scene_adt/.vs/io_scene_adt/v14/.suo
+io_scene_adt/__init__.py
+io_scene_adt/adt_format.py
+io_scene_adt/debug_utils.py
+io_scene_adt/developer_utils.py
+io_scene_adt/import_adt.py
