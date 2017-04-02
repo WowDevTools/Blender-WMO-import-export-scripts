@@ -544,7 +544,7 @@ class WMO_root_file:
 
         bpy.context.scene.WoWRoot.AmbientAlpha = self.mohd.AmbientColor[3]
         bpy.context.scene.WoWRoot.SkyboxPath = self.mosb.Skybox
-        bpy.context.scene.WowRoot.LightenIndoor = bool(self.mohd.Flags & 0x8)
+        bpy.context.scene.WoWRoot.LightenIndoor = bool(self.mohd.Flags & 0x8)
         bpy.context.scene.WoWRoot.UseAmbient = bool(self.mohd.Flags & 0x2)
         bpy.context.scene.WoWRoot.WMOid = self.mohd.ID
         bpy.context.scene.WoWRoot.TextureRelPath = filepath
