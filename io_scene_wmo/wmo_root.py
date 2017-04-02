@@ -36,6 +36,7 @@ class WMO_root_file:
         self.liquidReferences = {}
         self.groupMap = {}
         self.portalDirectionMap = {}
+        self.useLightmap = False
 
     def Read(self, f):
         self.mver.Read(f)
@@ -542,8 +543,9 @@ class WMO_root_file:
                                                   float(self.mohd.AmbientColor[2]) / 255]
 
         bpy.context.scene.WoWRoot.AmbientAlpha = self.mohd.AmbientColor[3]
-        bpy.context.scene.WoWRoot.SkyboxPath =  self.mosb.Skybox
-        bpy.context.scene.WoWRoot.UseAmbient = bool(self.mohd.Flags & 2)
+        bpy.context.scene.WoWRoot.SkyboxPath = self.mosb.Skybox
+        bpy.context.scene.WowRoot.LightenIndoor = bool(self.mohd.Flags & 0x8)
+        bpy.context.scene.WoWRoot.UseAmbient = bool(self.mohd.Flags & 0x2)
         bpy.context.scene.WoWRoot.WMOid = self.mohd.ID
         bpy.context.scene.WoWRoot.TextureRelPath = filepath
 
@@ -591,7 +593,7 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, fill_water, source_doodads, autofill_textures, mohd_0x1, wmo_groups, nPortals):
+    def Save(self, source_doodads, autofill_textures, wmo_groups, nPortals):
                  
         # set version header
         self.mver.Version = 17
@@ -803,15 +805,12 @@ class WMO_root_file:
         
         self.mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
 
-        if mohd_0x1:
+        if self.useLightmap:
             self.mohd.Flags |= 0x01
         if bpy.context.scene.WoWRoot.UseAmbient:
-            self.mohd.Flags |= 0x02
-        if fill_water:
-            self.mohd.Flags |= 0x04
-        
-#        if global_outdoor_object_count: -- makes mesh overbrightaa
-#            self.mohd.Flags |= 0x08
+            self.mohd.Flags |= 0x02 
+        if bpy.context.scene.WoWRoot.LightenIndoor:
+            self.mohd.Flags |= 0x08
 
         return
 

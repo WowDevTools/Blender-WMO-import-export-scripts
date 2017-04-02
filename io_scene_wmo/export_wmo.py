@@ -10,7 +10,7 @@ from .debug_utils import *
 
 import os
 
-def write(filepath, fill_water, source_doodads, autofill_textures, export_selected):
+def write(filepath, source_doodads, autofill_textures, export_selected):
     
     f = open(filepath, "wb")
     root_filename = filepath
@@ -86,20 +86,12 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         
         bpy.context.scene.objects[index].select = False
         
-        if mohd_0x1:
-            mohd_0x1 = wmo_group.Save(bpy.context.scene.objects[index], 
-                                      wmo_root, 
-                                      iObj, 
-                                      source_doodads, 
-                                      autofill_textures, 
-                                      group_filename)
-        else:
-            wmo_group.Save(bpy.context.scene.objects[index], 
-                           wmo_root, 
-                           iObj, 
-                           source_doodads, 
-                           autofill_textures, 
-                           group_filename)
+        wmo_group.Save(bpy.context.scene.objects[index], 
+                       wmo_root, 
+                       iObj, 
+                       source_doodads, 
+                       autofill_textures, 
+                       group_filename)
         
         # enumerate the groups
         wmo_group.index = iObj
@@ -117,10 +109,8 @@ def write(filepath, fill_water, source_doodads, autofill_textures, export_select
         
     # save root file
     Log(2, True, "Saving root file")
-    wmo_root.Save(fill_water, 
-                  source_doodads, 
+    wmo_root.Save(source_doodads, 
                   autofill_textures,
-                  mohd_0x1, 
                   wmo_groups, 
                   portal_count)
     

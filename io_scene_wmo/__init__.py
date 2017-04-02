@@ -102,12 +102,6 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
         default=False,
         )
         
-    fill_water = BoolProperty(
-        name="Fill water",
-        description="Fill water",
-        default=False,
-        )
-    
     source_doodads = BoolProperty(
         name="Save source doodads",
         description="Save source doodads",
@@ -140,7 +134,7 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
 
     def execute(self, context):
         from . import export_wmo
-        export_wmo.write(self.filepath, self.fill_water, self.source_doodads, self.autofill_textures, self.export_selected)
+        export_wmo.write(self.filepath, self.source_doodads, self.autofill_textures, self.export_selected)
 
         return {'FINISHED'}
 

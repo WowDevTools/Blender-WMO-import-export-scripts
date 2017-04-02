@@ -67,6 +67,12 @@ class WowRootPropertyGroup(bpy.types.PropertyGroup):
     MODS_Sets = bpy.props.CollectionProperty(type=MODS_Set)
     MODN_StringTable = bpy.props.CollectionProperty(type=MODN_String)
     MODD_Definitions = bpy.props.CollectionProperty(type=MODD_Definition)
+    
+    LightenIndoor = bpy.props.BoolProperty(
+        name="Lighten indoor",
+        description="Lighten up all indoor groups automatically",
+        default= False,
+        )
 
     UseAmbient = bpy.props.BoolProperty(
         name="Use Ambient",
@@ -481,6 +487,7 @@ class WowWMOGroupPanel(bpy.types.Panel):
         self.layout.prop(context.object.WowWMOGroup, "GroupDesc")
         self.layout.prop(context.object.WowWMOGroup, "PlaceType")
         self.layout.prop(context.object.WowWMOGroup, "GroupID")
+        self.layout.prop(context.object.WowWMOGroup, "LiquidType")
         self.layout.prop(context.object.WowWMOGroup, "VertShad")
         self.layout.prop(context.object.WowWMOGroup, "NoLocalLighting")
         self.layout.prop(context.object.WowWMOGroup, "AlwaysDraw")
@@ -515,6 +522,18 @@ class WowWMOMODRStore(bpy.types.PropertyGroup):
     
 class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     placeTypeEnum = [('8', "Outdoor", ""), ('8192', "Indoor", "")]
+
+    liquidTypeEnum = [
+    ('0', "No liquid", ""), ('1', "Water", ""), ('2', "Ocean", ""),
+    ('3', "Magma", ""), ('4', "Slime", ""), ('5', "Slow Water", ""),
+    ('6', "Slow Ocean", ""), ('7', "Slow Magma", ""), ('8', "Slow Slime", ""),
+    ('9', "Fast Water", ""), ('10', "Fast Ocean", ""), ('11', "Fast Magma", ""),
+    ('12', "Fast Slime", ""), ('13', "WMO Water", ""), ('14', "WMO Ocean", ""),
+    ('15', "Green Lava", ""), ('17', "WMO Water - Interior", ""), ('19', "WMO Magma", ""),
+    ('20', "WMO Slime", ""), ('21', "Naxxramas - Slime", ""), ('41', "Coilfang Raid - Water", ""),
+    ('61', "Hyjal Past - Water", ""), ('81', "Lake Wintergrasp - Water", ""), ('100', "Basic Procedural Water", ""),
+    ('121', "CoA Black - Magma", ""), ('141', "Chamber Magma", ""), ('181', "Orange Slime", "")
+    ]
 
     Enabled = bpy.props.BoolProperty(
         name="",
@@ -583,6 +602,12 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
     Fog4 = idproperty.ObjectIDProperty(
         name="Fog 4",
         validator=fog_validator
+        )
+
+    LiquidType = bpy.props.EnumProperty(
+        items=liquidTypeEnum,
+        name="Fill with liquid",
+        description="Fill this WMO group with selected liquid."
         )
 
     MODR = bpy.props.CollectionProperty(type=WowWMOMODRStore)

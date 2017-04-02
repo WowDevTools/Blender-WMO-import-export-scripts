@@ -523,7 +523,19 @@ class WMO_group_file:
 
         
         if self.mogp.Flags & MOGP_FLAG.HasWater:
-            self.LoadLiquids(objName, nobj.location, root) 
+            self.LoadLiquids(objName, nobj.location, root)
+
+        else:
+            # getting Liquid Type ID
+            real_liquid_type = 0
+        
+            if(root.mohd.Flags & 0x4):
+                real_liquid_type = self.mogp.LiquidType
+            else:
+                real_liquid_type = self.FromWMOLiquidType(self.mogp.LiquidType)
+                real_liquid_type = 0 if real_liquid_type == 15 else real_liquid_type
+        
+            nobj.WowWMOGroup.LiquidType = str(real_liquid_type)
         
         if self.mogp.Flags & MOGP_FLAG.HasDoodads:
             if len(self.modr.DoodadRefs) > 0:
@@ -658,8 +670,6 @@ class WMO_group_file:
     def Save(self, obj, root, objNumber, source_doodads, autofill_textures, group_filename):
         Log(1, False, "Saving group: <<" + obj.name + ">>")
         self.filename = group_filename
-        
-        mohd_0x1 = True
 
         # check Wow WMO panel enabled
         if(not obj.WowWMOGroup.Enabled):
@@ -853,7 +863,7 @@ class WMO_group_file:
             
             if new_obj.WowVertexInfo.Lightmap != "":
                 vg_lightmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Lightmap)
-                mohd_0x1 = False
+                root.useLightmap = True
 
             if new_obj.WowVertexInfo.Blendmap != "":
                 vg_blendmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Blendmap)
@@ -1320,7 +1330,9 @@ class WMO_group_file:
 
             if not hasWater:
                 self.mliq = None
-                self.mogp.Flags |= MOGP_FLAG.IsNotOcean
+                self.mogp.Flags |= MOGP_FLAG.IsNotOcean # check if this is necessary
+                root.mohd.Flags |= 0x4
+                self.mogp.LiquidType = int(obj.WowWMOGroup.LiquidType)
 
             if not hasLights:
                 self.molr = None
@@ -1354,7 +1366,7 @@ class WMO_group_file:
             
             Log(0, False, "Done saving group: <<" + str(obj.name) + ">>")
 
-            return mohd_0x1
+            return
         
         
     
