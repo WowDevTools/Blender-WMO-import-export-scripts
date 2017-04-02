@@ -771,16 +771,15 @@ class WMO_root_file:
             empty_fog.StartFactor2 = -0.5
             self.mfog.Fogs.append(empty_fog)
                     
-        # set portal relationship
+        # set portal relations
         self.mopr.Relationships = []
         for i in range(len(self.PortalR)):
             group_id = wmo_groups.get(self.PortalR[i][1])
-            if group_id != None:
-                relation = PortalRelationship()
-                relation.PortalIndex = self.PortalR[i][0]
-                relation.GroupIndex = group_id.index
-                relation.Side = self.PortalR[i][2]
-                self.mopr.Relationships.append(relation)
+            relation = PortalRelationship()
+            relation.PortalIndex = self.PortalR[i][0]
+            relation.GroupIndex = group_id.index
+            relation.Side = self.PortalR[i][2]
+            self.mopr.Relationships.append(relation)
 
         # set header
         bb = self.GetGlobalBoundingBox()
