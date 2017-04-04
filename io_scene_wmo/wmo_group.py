@@ -595,11 +595,11 @@ class WMO_group_file:
             proxy_obj.select = False
                 
             # triangulate the proxy portal
-            bpy.ops.object.mode_set(mode='edit')
-            bpy.ops.mesh.select_all(action='select')
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
             bpy.ops.mesh.quads_convert_to_tris()
-            bpy.ops.mesh.select_all(action='deselect')             
-            bpy.ops.object.mode_set(mode='object')
+            bpy.ops.mesh.select_all(action='DESELECT')             
+            bpy.ops.object.mode_set(mode='OBJECT')
                 
             mesh = group.data
             portal_mesh = proxy_obj.data
