@@ -982,8 +982,8 @@ class WMO_group_file:
 
                         if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192'):
                             if len(mesh.vertex_colors) > 0:
-                                vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
-                                vertex_color2 = [0x7F, 0x7F, 0x7F, 0x00]
+                                vertex_color = [0x7F, 0x7F, 0x7F, 0xFF]
+                                vertex_color2 = [0x7F, 0x7F, 0x7F, 0xFF]
 
                                 for i in range(0, 3):
                                     vertex_color[i] = round(mesh.vertex_colors.active.data[loop_index].color[3 - i - 1] * 255)
@@ -996,7 +996,7 @@ class WMO_group_file:
                                 self.mocv.vertColors[new_index] = vertex_color
                                 
                             else:
-                                self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0x00]
+                                self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0xFF]
 
                         if vg_blendmap != None:
                             self.mocv2.vertColors[new_index] = (0,
