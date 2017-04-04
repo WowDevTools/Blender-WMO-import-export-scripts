@@ -30,6 +30,8 @@ class WoWRootPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         row = layout.row()
+        self.layout.prop(context.scene.WoWRoot, "PortalDistanceAttenuation")
+        self.layout.prop(context.scene.WoWRoot, "LightenIndoor")
         self.layout.prop(context.scene.WoWRoot, "UseAmbient")
         self.layout.prop(context.scene.WoWRoot, "AmbientColor")
         self.layout.prop(context.scene.WoWRoot, "AmbientAlpha")
@@ -67,6 +69,13 @@ class WowRootPropertyGroup(bpy.types.PropertyGroup):
     MODS_Sets = bpy.props.CollectionProperty(type=MODS_Set)
     MODN_StringTable = bpy.props.CollectionProperty(type=MODN_String)
     MODD_Definitions = bpy.props.CollectionProperty(type=MODD_Definition)
+
+    
+    PortalDistanceAttenuation = bpy.props.BoolProperty(
+        name="Auto attenuation",
+        description="Attenuate light on vertices based on distance from portal",
+        default=True,
+        )
     
     LightenIndoor = bpy.props.BoolProperty(
         name="Lighten indoor",
@@ -426,10 +435,6 @@ class WowVertexInfoPanel(bpy.types.Panel):
                                 "vertex_groups", text="Blendmap"
                                 )
 
-        self.layout.prop_search(context.object.WowVertexInfo, "AttenuationMap", context.object,
-                                "vertex_groups", text="Attenuation Map"
-                                )
-
         self.layout.prop_search(context.object.WowVertexInfo, "SecondUV", context.object.data,
                                 "uv_textures", text="Second UV"
                                 )
@@ -456,7 +461,6 @@ class WowVertexInfoPropertyGroup(bpy.types.PropertyGroup):
     BatchTypeB = bpy.props.StringProperty()
     Lightmap = bpy.props.StringProperty()
     Blendmap = bpy.props.StringProperty()
-    AttenuationMap = bpy.props.StringProperty()
     SecondUV = bpy.props.StringProperty()
 
 def RegisterWowVertexInfoProperties():

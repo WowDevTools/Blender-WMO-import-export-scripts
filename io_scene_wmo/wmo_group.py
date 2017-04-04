@@ -371,10 +371,9 @@ class WMO_group_file:
             nobj.WowWMOGroup.VertShad = True
             vertColor_layer1 = mesh.vertex_colors.new("Col")
 
-            if not root.mohd.Flags & 0x01: 
-                lightmap = nobj.vertex_groups.new("Lightmap")
-                nobj.WowVertexInfo.Lightmap = lightmap.name
-                lightmap.add(self.movi.Indices, 1.0, 'ADD')
+            lightmap = nobj.vertex_groups.new("Lightmap")
+            nobj.WowVertexInfo.Lightmap = lightmap.name
+            lightmap.add(self.movi.Indices, 1.0, 'ADD')
 
             # loops and vertex_color are in the same order, so we use it to find vertex index
             for i in range(len(mesh.loops)):
@@ -383,9 +382,8 @@ class WMO_group_file:
                                                   self.mocv.vertColors[mesh.loops[i].vertex_index][1] / 255, 
                                                   self.mocv.vertColors[mesh.loops[i].vertex_index][0] / 255)
 
-                if not root.mohd.Flags & 0x01: 
-                    mesh.vertices[mesh.loops[i].vertex_index].groups[lightmap.index].weight \
-                    = self.mocv.vertColors[mesh.loops[i].vertex_index][3] / 255
+                mesh.vertices[mesh.loops[i].vertex_index].groups[lightmap.index].weight \
+                = self.mocv.vertColors[mesh.loops[i].vertex_index][3] / 255
 
         if self.mogp.Flags & MOGP_FLAG.HasTwoMOCV:
             blendmap = nobj.vertex_groups.new("Blendmap")    
@@ -464,26 +462,17 @@ class WMO_group_file:
                 material_indices[0xFF] = mat_ghost_ID
                 break
         
-        weird_flag = nobj.vertex_groups.new("Attenuation map")
-        flagged_faces = []  
         # set faces material 
         for i in range(len(mesh.polygons)):
             matID = self.mopy.TriangleMaterials[i].MaterialID
                       
             mesh.polygons[i].material_index = material_indices[matID]
             mesh.polygons[i].use_smooth = True
+
             # set texture displayed in viewport
             img = material_viewport_textures[material_indices[matID]]
             if img != None:
                 uv1.data[i].image = img
-            
-            if self.mopy.TriangleMaterials[i].Flags & 0x1:
-                flagged_faces.append(i)
-        
-        weird_flag.add(flagged_faces, 1.0, 'ADD')
-
-        nobj.WowVertexInfo.AttenuationMap = weird_flag.name
-                
 
         # set textured solid in all 3D views and switch to textured mode
         for area in bpy.context.screen.areas:
@@ -529,7 +518,7 @@ class WMO_group_file:
             # getting Liquid Type ID
             real_liquid_type = 0
         
-            if(root.mohd.Flags & 0x4):
+            if root.mohd.Flags & 0x4:
                 real_liquid_type = self.mogp.LiquidType
             else:
                 real_liquid_type = self.FromWMOLiquidType(self.mogp.LiquidType)
@@ -863,7 +852,6 @@ class WMO_group_file:
             
             if new_obj.WowVertexInfo.Lightmap != "":
                 vg_lightmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Lightmap)
-                root.useLightmap = True
 
             if new_obj.WowVertexInfo.Blendmap != "":
                 vg_blendmap = new_obj.vertex_groups.get(new_obj.WowVertexInfo.Blendmap)
@@ -872,10 +860,6 @@ class WMO_group_file:
             if new_obj.WowVertexInfo.SecondUV != "":
                 uv_second_uv = new_obj.data.uv_textures.get(new_obj.WowVertexInfo.SecondUV)
                 self.mogp.Flags |= MOGP_FLAG.HasTwoMOTV
-
-            if new_obj.WowVertexInfo.AttenuationMap != "":
-                vg_attenuation = new_obj.vertex_groups.get(new_obj.WowVertexInfo.AttenuationMap)
-
 
             for poly in mesh.polygons:
                 polyBatchMap.setdefault( (material_indices.get(poly.material_index), GetBatchType(poly, mesh, vg_batch_a.index, vg_batch_b.index)), [] ).append(poly.index)
@@ -929,7 +913,6 @@ class WMO_group_file:
 
                 for poly in polyBatch:
                     collision_counter = 0
-                    attenuation_counter = 0
 
                     for vertex_index in mesh.polygons[poly].vertices:
                         
@@ -951,20 +934,11 @@ class WMO_group_file:
                             for group_info in mesh.vertices[vertex_index].groups:
                                 if group_info.group == vg_collision.index:
                                     collision_counter += 1
-                        if vg_attenuation != None:
-                            for group_info in mesh.vertices[vertex_index].groups:
-                                if group_info.group == vg_attenuation.index:
-                                    attenuation_counter += 1
 
                     tri_mat = TriangleMaterial()
                     tri_mat.MaterialID = batchKey[0]
                     tri_mat.Flags = 0x0 if tri_mat.MaterialID == 0xFF else 0x20
                     tri_mat.Flags |= 0x40 if collision_counter == len(mesh.polygons[poly].vertices) else 0x4 & 0x8
-
-                    if attenuation_counter == len(mesh.polygons[poly].vertices):
-                        tri_mat.Flags |= 0x1
-
-                    self.mopy.TriangleMaterials.append(tri_mat)
 
                     for loop_index in mesh.polygons[poly].loop_indices:
                         
@@ -992,6 +966,7 @@ class WMO_group_file:
                                     for vertex_group_element in mesh.vertices[mesh.loops[loop_index].vertex_index].groups:
                                         if vertex_group_element.group == vg_lightmap.index:
                                             vertex_color[3] = round(vertex_group_element.weight * 255)
+                                            tri_mat.Flags |= 0x1
                                     
                                 self.mocv.vertColors[new_index] = vertex_color
                                 
@@ -1005,7 +980,8 @@ class WMO_group_file:
                                                                 round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255))
                         
                         normalMap.setdefault(new_index, []).append(mesh.loops[loop_index].normal)
-                        
+                     
+                    self.mopy.TriangleMaterials.append(tri_mat)   
 
                 nIndices = len(self.movi.Indices) - firstIndex
 

@@ -36,7 +36,6 @@ class WMO_root_file:
         self.liquidReferences = {}
         self.groupMap = {}
         self.portalDirectionMap = {}
-        self.useLightmap = False
 
     def Read(self, f):
         self.mver.Read(f)
@@ -548,6 +547,7 @@ class WMO_root_file:
         bpy.context.scene.WoWRoot.UseAmbient = bool(self.mohd.Flags & 0x2)
         bpy.context.scene.WoWRoot.WMOid = self.mohd.ID
         bpy.context.scene.WoWRoot.TextureRelPath = filepath
+        bpy.context.scene.WoWRoot.PortalDistanceAttenuation = bool(self.mohd.Flags & 0x1)
 
     def GetObjectBoundingBox(self, obj):
         corner1 = [0, 0, 0]
@@ -805,7 +805,7 @@ class WMO_root_file:
         
         self.mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
 
-        if not self.useLightmap:
+        if bpy.context.scene.WoWRoot.PortalDistanceAttenuation:
             self.mohd.Flags |= 0x01
         if bpy.context.scene.WoWRoot.UseAmbient:
             self.mohd.Flags |= 0x02 
