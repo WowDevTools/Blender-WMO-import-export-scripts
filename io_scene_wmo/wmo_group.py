@@ -965,8 +965,10 @@ class WMO_group_file:
                                 if vg_lightmap != None:
                                     for vertex_group_element in mesh.vertices[mesh.loops[loop_index].vertex_index].groups:
                                         if vertex_group_element.group == vg_lightmap.index:
-                                            vertex_color[3] = round(vertex_group_element.weight * 255)
-                                            tri_mat.Flags |= 0x1
+                                            weight = round(vertex_group_element.weight * 255)
+                                            vertex_color[3] = weight
+                                            if weight != 255:
+                                                tri_mat.Flags |= 0x1
                                     
                                 self.mocv.vertColors[new_index] = vertex_color
                                 
