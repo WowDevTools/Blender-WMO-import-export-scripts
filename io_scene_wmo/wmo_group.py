@@ -969,6 +969,7 @@ class WMO_group_file:
                     for loop_index in mesh.polygons[poly].loop_indices:
                         
                         new_index = vertexMap.get(mesh.loops[loop_index].vertex_index)
+                        vertex = mesh.vertices[mesh.loops[loop_index].vertex_index]
 
                         if len(mesh.uv_layers) > 0:
                             self.motv.TexCoords[new_index] = (mesh.uv_layers.active.data[loop_index].uv[0],
@@ -986,8 +987,11 @@ class WMO_group_file:
 
                                 for i in range(0, 3):
                                     vertex_color[i] = round(mesh.vertex_colors.active.data[loop_index].color[3 - i - 1] * 255)
+                                
                                 if vg_lightmap != None:
-                                    vertex_color[3] = round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_lightmap.index].weight * 255)
+                                    for vertex_group_element in mesh.vertices[mesh.loops[loop_index].vertex_index].groups:
+                                        if vertex_group_element.group == vg_lightmap.index:
+                                            vertex_color[3] = round(vertex_group_element.weight * 255)
                                     
                                 self.mocv.vertColors[new_index] = vertex_color
                                 

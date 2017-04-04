@@ -805,7 +805,7 @@ class WMO_root_file:
         
         self.mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
 
-        if self.useLightmap:
+        if not self.useLightmap:
             self.mohd.Flags |= 0x01
         if bpy.context.scene.WoWRoot.UseAmbient:
             self.mohd.Flags |= 0x02 
