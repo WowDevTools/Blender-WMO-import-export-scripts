@@ -72,13 +72,13 @@ class WowRootPropertyGroup(bpy.types.PropertyGroup):
 
     
     PortalDistanceAttenuation = bpy.props.BoolProperty(
-        name="Auto attenuation",
+        name="Auto Attenuation",
         description="Attenuate light on vertices based on distance from portal",
         default=True,
         )
     
     LightenIndoor = bpy.props.BoolProperty(
-        name="Lighten indoor",
+        name="Lighten Indoor",
         description="Lighten up all indoor groups automatically",
         default= False,
         )
