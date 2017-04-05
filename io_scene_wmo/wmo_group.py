@@ -963,7 +963,7 @@ class WMO_group_file:
                                     vertex_color[i] = round(mesh.vertex_colors.active.data[loop_index].color[3 - i - 1] * 255)
                                 
                                 if vg_lightmap != None:
-                                    for vertex_group_element in mesh.vertices[mesh.loops[loop_index].vertex_index].groups:
+                                    for vertex_group_element in vertex.groups:
                                         if vertex_group_element.group == vg_lightmap.index:
                                             weight = round(vertex_group_element.weight * 255)
                                             vertex_color[3] = weight
@@ -976,10 +976,12 @@ class WMO_group_file:
                                 self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0xFF]
 
                         if vg_blendmap != None:
-                            self.mocv2.vertColors[new_index] = (0,
-                                                                0, 
-                                                                0, 
-                                                                round(mesh.vertices[mesh.loops[loop_index].vertex_index].groups[vg_blendmap.index].weight * 255))
+                            for vertex_group_element in vertex.groups:
+                                        if vertex_group_element.group == vg_blendmap.index:
+                                            self.mocv2.vertColors[new_index] = (0,
+                                                                                0, 
+                                                                                0, 
+                                                                                round(vertex.groups[vg_blendmap.index].weight * 255))
                         
                         normalMap.setdefault(new_index, []).append(mesh.loops[loop_index].normal)
                      
