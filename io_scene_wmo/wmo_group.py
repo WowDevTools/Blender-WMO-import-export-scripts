@@ -437,7 +437,12 @@ class WMO_group_file:
                 mat_id = len(mesh.materials)
                 material_indices[self.moba.Batches[i].MaterialID] = mat_id
                 material = root.materials[self.moba.Batches[i].MaterialID]
-                material_viewport_textures[mat_id] = self.GetMaterialViewportImage(material)
+                image = self.GetMaterialViewportImage(material)
+                material_viewport_textures[mat_id] = image
+                texture = bpy.data.textures.new(os.path.split(image.filepath)[1], 'IMAGE')
+                texture.image = image
+                texture_slot = material.texture_slots.add()
+                texture_slot.texture = texture
                 mesh.materials.append(root.materials[self.moba.Batches[i].MaterialID])
             
                 material.WowMaterial.Enabled = True
