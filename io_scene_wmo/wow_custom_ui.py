@@ -1274,16 +1274,12 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
         water.name = water.name + "_Liquid"
         
         mesh = water.data
-        
-        mesh.vertex_colors.new("flag_0x1")
-        mesh.vertex_colors.new("flag_0x2")
-        mesh.vertex_colors.new("flag_0x4")
-        mesh.vertex_colors.new("flag_0x8")
-        mesh.vertex_colors.new("flag_0x10")
-        mesh.vertex_colors.new("flag_0x20")
-        mesh.vertex_colors.new("flag_0x40")
-        mesh.vertex_colors.new("flag_0x80")                                 
-        
+
+        bit = 1
+        while bit <= 0x80:
+            mesh.vertex_colors.new("flag_" + hex(bit))
+            bit <<= 1
+                                     
         water.WowLiquid.Enabled = True
 
         
