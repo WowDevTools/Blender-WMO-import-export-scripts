@@ -1032,14 +1032,22 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
         col = layout.column()
         
         col.label(text="Flags")
-        col.operator("scene.wow_mliq_flag_0x01", text = 'Flag 0x01', icon = 'MOD_SOFT')
-        col.operator("scene.wow_mliq_flag_0x02", text = 'Flag 0x02', icon = 'MOD_SOFT')
-        col.operator("scene.wow_mliq_flag_0x04", text = 'Flag 0x04', icon = 'MOD_SOFT')
-        col.operator("scene.wow_mliq_flag_0x08", text = 'Invisible', icon = 'VISIBLE_IPO_ON')
-        col.operator("scene.wow_mliq_flag_0x10", text = 'Flag 0x10', icon = 'MOD_SOFT')
-        col.operator("scene.wow_mliq_flag_0x20", text = 'Flag 0x20', icon = 'MOD_SOFT')
-        col.operator("scene.wow_mliq_flag_0x40", text = 'Flag 0x40', icon = 'MOD_SOFT')
-        col.operator("scene.wow_mliq_flag_0x80", text = 'Flag 0x80', icon = 'MOD_SOFT')
+        flag_0x1 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x01', icon = 'MOD_SOFT')
+        flag_0x1.Flag = '0x1'
+        flag_0x2 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x02', icon = 'MOD_SOFT')
+        flag_0x2.Flag = '0x2'
+        flag_0x4 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x04', icon = 'MOD_SOFT')
+        flag_0x4.Flag = '0x4'
+        flag_0x8 = col.operator("scene.wow_mliq_switch_flag", text = 'Invisible', icon = 'VISIBLE_IPO_ON')
+        flag_0x8.Flag = '0x8'
+        flag_0x10 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x10', icon = 'MOD_SOFT')
+        flag_0x10.Flag = '0x10'
+        flag_0x20 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x20', icon = 'MOD_SOFT')
+        flag_0x20.Flag = '0x20'
+        flag_0x40 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x40', icon = 'MOD_SOFT')
+        flag_0x40.Flag = '0x40'
+        flag_0x80 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x80', icon = 'MOD_SOFT')
+        flag_0x80.Flag = '0x80'
         col.label(text="Actions")
         col.operator("scene.wow_mliq_add_flag", text = 'Add flag', icon = 'MOD_SOFT')
         col.operator("scene.wow_mliq_add_all_flags", text = 'Fill all', icon = 'OUTLINER_OB_LATTICE')
@@ -1050,135 +1058,44 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
 ## Water operators
 ###############################  
     
-class OBJECT_OP_FLAG_0x01(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_flag_0x01'
+class OBJECT_OP_FLAG_SWITCHER(bpy.types.Operator):
+    bl_idname = 'scene.wow_mliq_switch_flag'
     bl_label = 'Flag 0x01'
     bl_description = 'Currently displayed flag layer'
+    bl_options = {'REGISTER', 'UNDO'}
     
-    def SwitchFlag(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            mesh.vertex_colors["flag_0x1"].active = True
-            mesh.use_paint_mask = True
-        
-    def execute(self, context):
-        self.SwitchFlag()
-        return {'FINISHED'}
-    
-    
-class OBJECT_OP_FLAG_0x02(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_flag_0x02'
-    bl_label = 'Flag 0x02'
-    bl_description = 'Currently displayed flag layer'
-    
-    def SwitchFlag(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            mesh.vertex_colors["flag_0x2"].active = True
-            mesh.use_paint_mask = True
-        
-    def execute(self, context):
-        self.SwitchFlag()
-        return {'FINISHED'}
+    Flag = bpy.props.EnumProperty(
+    name = "Flag Layer",
+    description = "Select scale reference type",
+    items = [
+            ('0x1', "flag_0x1", ""), 
+            ('0x2', "flag_0x2", ""),
+            ('0x4', "flag_0x4", ""),
+            ('0x8', "flag_0x8", ""),
+            ('0x10', "flag_0x10", ""),
+            ('0x20', "flag_0x20", ""),
+            ('0x40', "flag_0x40", ""),
+            ('0x80', "flag_0x80", ""),
+            ]
+    )
 
-class OBJECT_OP_FLAG_0x04(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_flag_0x04'
-    bl_label = 'Flag 0x04'
-    bl_description = 'Currently displayed flag layer'
-    
-    def SwitchFlag(self):
+    def SwitchFlag(self, Flag):
         water = bpy.context.scene.objects.active
         mesh = water.data
-        if(water.WowLiquid.Enabled):
-            mesh.vertex_colors["flag_0x4"].active = True
-            mesh.use_paint_mask = True
-        
-    def execute(self, context):
-        self.SwitchFlag()
-        return {'FINISHED'}
-    
-class OBJECT_OP_FLAG_0x08(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_flag_0x08'
-    bl_label = 'Invisible'
-    bl_description = 'Currently displayed flag layer'
-    
-    def SwitchFlag(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            mesh.vertex_colors["flag_0x8"].active = True
-            mesh.use_paint_mask = True
-        
-    def execute(self, context):
-        self.SwitchFlag()
-        return {'FINISHED'}
-    
-class OBJECT_OP_FLAG_0x10(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_flag_0x10'
-    bl_label = 'Flag 0x10'
-    bl_description = 'Currently displayed flag layer'
-    
-    def SwitchFlag(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            mesh.vertex_colors["flag_0x10"].active = True
-            mesh.use_paint_mask = True
-        
-    def execute(self, context):
-        self.SwitchFlag()
-        return {'FINISHED'}
-    
-class OBJECT_OP_FLAG_0x20(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_flag_0x20'
-    bl_label = 'Flag 0x20'
-    bl_description = 'Currently displayed flag layer'
-    
-    def SwitchFlag(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            mesh.vertex_colors["flag_0x20"].active = True
-            mesh.use_paint_mask = True
-        
-    def execute(self, context):
-        self.SwitchFlag()
-        return {'FINISHED'}
-    
-class OBJECT_OP_FLAG_0x40(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_flag_0x40'
-    bl_label = 'Flag 0x40'
-    bl_description = 'Currently displayed flag layer'
-    
-    def SwitchFlag(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            mesh.vertex_colors["flag_0x40"].active = True
-            mesh.use_paint_mask = True
-        
-    def execute(self, context):
-        self.SwitchFlag()
-        return {'FINISHED'}
-    
-class OBJECT_OP_FLAG_0x80(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_flag_0x80'
-    bl_label = 'Flag 0x80'
-    bl_description = 'Currently displayed flag layer'
-    
-    def SwitchFlag(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            mesh.vertex_colors["flag_0x80"].active = True
-            mesh.use_paint_mask = True
-        
-    def execute(self, context):
-        self.SwitchFlag()
-        return {'FINISHED'}
+        if water.WowLiquid.Enabled:
+            layer = mesh.vertex_colors.get("flag_" + Flag)
 
+            if layer:
+                layer.active = True
+                mesh.use_paint_mask = True
+            else:
+                layer = mesh.vertex_colors.new("flag_" + Flag)
+                layer.active = True
+                # todo: display warning
+        
+    def execute(self, context):
+        self.SwitchFlag(self.Flag)
+        return {'FINISHED'}
 
 class OBJECT_OP_ADD_FLAG(bpy.types.Operator):
     bl_idname = 'scene.wow_mliq_add_flag'
