@@ -232,35 +232,17 @@ class WMO_group_file:
                 for loop_index in poly.loop_indices:
                         uv_layer1.data[loop_index].uv = (uvMap.get(mesh.loops[loop_index].vertex_index)[0], 
                                                          - uvMap.get(mesh.loops[loop_index].vertex_index)[1])
-            
-        flag_0x1 = mesh.vertex_colors.new("flag_0x1")
-        flag_0x2 = mesh.vertex_colors.new("flag_0x2")
-        flag_0x4 = mesh.vertex_colors.new("flag_0x4")
-        flag_0x8 = mesh.vertex_colors.new("flag_0x8")
-        flag_0x10 = mesh.vertex_colors.new("flag_0x10")
-        flag_0x20 = mesh.vertex_colors.new("flag_0x20")
-        flag_0x40 = mesh.vertex_colors.new("flag_0x40")
-        flag_0x80 = mesh.vertex_colors.new("flag_0x80")
+        
+        # setting flags in a hacky way using vertex colors
+        flags = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80]
         
         for face in mesh.polygons:
             tileFlag = self.mliq.TileFlags[face.index]
             for loop in face.loop_indices:
-                if tileFlag & 0x1:
-                    flag_0x1.data[loop].color = (0, 0, 255)
-                if tileFlag & 0x2:
-                    flag_0x2.data[loop].color = (0, 0, 255)           
-                if tileFlag & 0x4:
-                    flag_0x4.data[loop].color = (0, 0, 255)
-                if tileFlag & 0x8:
-                    flag_0x8.data[loop].color = (0, 0, 255) 
-                if tileFlag & 0x10:
-                    flag_0x10.data[loop].color = (0, 0, 255)
-                if tileFlag & 0x20:
-                    flag_0x20.data[loop].color = (0, 0, 255)           
-                if tileFlag & 0x20:
-                    flag_0x40.data[loop].color = (0, 0, 255)
-                if tileFlag & 0x80:
-                    flag_0x80.data[loop].color = (0, 0, 255)
+                for flag in flags:
+                    vc_layer = mesh.vertex_colors.new("flag_" + hex(flag))
+                    if tileFlag & flag:
+                        vc_layer.data[loop].color = (0, 0, 255)
                     
         #set mesh location
         obj.location = pos
@@ -459,9 +441,7 @@ class WMO_group_file:
                 batchMapB.add(self.movi.Indices[self.moba.Batches[i].StartTriangle : self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle], 1.0, 'ADD')
                 
             batch_material_map[(self.moba.Batches[i].StartTriangle // 3, (self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle) // 3)] = self.moba.Batches[i].MaterialID
-
-            
-            
+ 
         # add ghost material
         for i in self.mopy.TriangleMaterials:
             if i.MaterialID == 0xFF:
@@ -1240,36 +1220,17 @@ class WMO_group_file:
                                 vertex.height = mesh.vertices[j].co[2]
                                 self.mliq.VertexMap.append(vertex)
 
-                        flag_0x1 = mesh.vertex_colors["flag_0x1"]
-                        flag_0x2 = mesh.vertex_colors["flag_0x2"]
-                        flag_0x4 = mesh.vertex_colors["flag_0x4"]
-                        flag_0x8 = mesh.vertex_colors["flag_0x8"]
-                        flag_0x10 = mesh.vertex_colors["flag_0x10"]
-                        flag_0x20 = mesh.vertex_colors["flag_0x20"]
-                        flag_0x40 = mesh.vertex_colors["flag_0x40"]
-                        flag_0x80 = mesh.vertex_colors["flag_0x80"]
-
+                        flags = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80]
 
                         for poly in mesh.polygons:
                                 tile_flag = 0
                                 blue = [0.0, 0.0, 1.0]
 
-                                if CompColors(flag_0x1.data[poly.loop_indices[0]].color, blue): 
-                                    tile_flag |= 0x1
-                                if CompColors(flag_0x2.data[poly.loop_indices[0]].color, blue):
-                                    tile_flag |= 0x2
-                                if CompColors(flag_0x4.data[poly.loop_indices[0]].color, blue):
-                                    tile_flag |= 0x4
-                                if CompColors(flag_0x8.data[poly.loop_indices[0]].color, blue):
-                                    tile_flag |= 0x8
-                                if CompColors(flag_0x10.data[poly.loop_indices[0]].color, blue):
-                                    tile_flag |= 0x10
-                                if CompColors(flag_0x20.data[poly.loop_indices[0]].color, blue):
-                                    tile_flag |= 0x20
-                                if CompColors(flag_0x40.data[poly.loop_indices[0]].color, blue):
-                                    tile_flag |= 0x40
-                                if CompColors(flag_0x80.data[poly.loop_indices[0]].color, blue):
-                                    tile_flag |= 0x80
+                                for flag in flags:
+                                    vc_layer = mesh.vertex_colors["flag_" + hex(flag)]
+
+                                    if CompColors(vc_layer.data[poly.loop_indices[0]].color, blue):
+                                        tile_flag |= flag
 
                                 self.mliq.TileFlags.append(tile_flag)
                                 
