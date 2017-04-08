@@ -21,49 +21,7 @@ import mathutils
 #from . import Utility
 #from .Utility import *
 
-def GetAvg(list):
-    normal = [0.0, 0.0, 0.0]
     
-    for n in list:
-        for i in range(0, 3):
-            normal[i] += n[i]
-    
-    for i in range(0, 3):
-        normal[i] /= len(list)
-        
-    return normal
-
-
-def CompColors(color1, color2):
-
-    for i in range(0, 3):
-        if color1[i] != color2[i]:
-            return False
-    return True
-
-def ret_min(a, b):
-    return a if a < b else b
-
-def ret_max(a, b):
-    return a if a > b else b
-
-def GetBatchType(polygon, mesh, vg_index_a, vg_index_b):
-    counter_a = 0
-    counter_b = 0
-
-    for i in polygon.vertices:
-        for group_info in mesh.vertices[i].groups:
-            if group_info.group == vg_index_a:
-                counter_a += 1
-            elif group_info.group == vg_index_b:
-                counter_b += 1
-
-    if counter_a == len(polygon.vertices):
-        return 0
-    else:
-        return 1 if counter_b == len(polygon.vertices) else 2
-    
-
 class WMO_group_file:
     def __init__(self):
         pass
@@ -148,6 +106,52 @@ class WMO_group_file:
         if self.mogp.Flags & MOGP_FLAG.HasTwoMOCV:
             self.mocv2 = MOCV_chunk()
             self.mocv2.Read(f)
+    
+    @staticmethod
+    def GetAvg(list):
+        normal = [0.0, 0.0, 0.0]
+    
+        for n in list:
+            for i in range(0, 3):
+                normal[i] += n[i]
+    
+        for i in range(0, 3):
+            normal[i] /= len(list)
+        
+        return normal
+
+    @staticmethod
+    def CompColors(color1, color2):
+
+        for i in range(0, 3):
+            if color1[i] != color2[i]:
+                return False
+        return True
+
+    @staticmethod
+    def ret_min(a, b):
+        return a if a < b else b
+
+    @staticmethod
+    def ret_max(a, b):
+        return a if a > b else b
+
+    @staticmethod
+    def GetBatchType(polygon, mesh, vg_index_a, vg_index_b):
+        counter_a = 0
+        counter_b = 0
+
+        for i in polygon.vertices:
+            for group_info in mesh.vertices[i].groups:
+                if group_info.group == vg_index_a:
+                    counter_a += 1
+                elif group_info.group == vg_index_b:
+                    counter_b += 1
+
+        if counter_a == len(polygon.vertices):
+            return 0
+        else:
+            return 1 if counter_b == len(polygon.vertices) else 2
 
     def GetMaterialViewportImage(self, material):
         for i in range(3):
@@ -851,7 +855,7 @@ class WMO_group_file:
                 self.mogp.Flags |= MOGP_FLAG.HasTwoMOTV
 
             for poly in mesh.polygons:
-                polyBatchMap.setdefault( (material_indices.get(poly.material_index), GetBatchType(poly, mesh, vg_batch_a.index, vg_batch_b.index)), [] ).append(poly.index)
+                polyBatchMap.setdefault( (material_indices.get(poly.material_index), self.GetBatchType(poly, mesh, vg_batch_a.index, vg_batch_b.index)), [] ).append(poly.index)
 
             vertex_size = len(mesh.vertices)
 
@@ -913,8 +917,8 @@ class WMO_group_file:
                             new_index_last += 1
                             self.movt.Vertices[new_index_current] = mesh.vertices[vertex_index].co
                             
-                        sentryIndices[0] = ret_min(sentryIndices[0], new_index_current)
-                        sentryIndices[1] = ret_max(sentryIndices[1], new_index_current)
+                        sentryIndices[0] = self.ret_min(sentryIndices[0], new_index_current)
+                        sentryIndices[1] = self.ret_max(sentryIndices[1], new_index_current)
                             
                         self.movi.Indices.append(new_index_current)
                         
@@ -983,13 +987,13 @@ class WMO_group_file:
                 for poly in polyBatch:
                     for vertex_index in mesh.polygons[poly].vertices:
                         new_index = vertexMap.get(vertex_index)
-                        self.monr.Normals[new_index] = GetAvg(normalMap.get(new_index))
+                        self.monr.Normals[new_index] = self.GetAvg(normalMap.get(new_index))
 
                         for i in range(0, 2):
                             for j in range(0, 3):
                                 idx = i * 3 + j
-                                BoundingBox[idx] = ret_min(BoundingBox[idx], floor(self.movt.Vertices[new_index][j])) if i == 0 \
-                                else ret_max(BoundingBox[idx], ceil(self.movt.Vertices[new_index][j]))
+                                BoundingBox[idx] = self.ret_min(BoundingBox[idx], floor(self.movt.Vertices[new_index][j])) if i == 0 \
+                                else self.ret_max(BoundingBox[idx], ceil(self.movt.Vertices[new_index][j]))
 
                 # skip batch writing if processed polyBatch is collision
 
@@ -1037,8 +1041,8 @@ class WMO_group_file:
             
             for vtx in self.movt.Vertices:
                 for i in range(0, 3):
-                    self.mogp.BoundingBoxCorner1[i] = ret_min(self.mogp.BoundingBoxCorner1[i], floor(vtx[i]))
-                    self.mogp.BoundingBoxCorner2[i] = ret_max(self.mogp.BoundingBoxCorner2[i], ceil(vtx[i]))
+                    self.mogp.BoundingBoxCorner1[i] = self.ret_min(self.mogp.BoundingBoxCorner1[i], floor(vtx[i]))
+                    self.mogp.BoundingBoxCorner2[i] = self.ret_max(self.mogp.BoundingBoxCorner2[i], ceil(vtx[i]))
                 
 
             self.mogp.Flags |= MOGP_FLAG.HasCollision # /!\ MUST HAVE 0x1 FLAG ELSE THE GAME CRASH !
@@ -1229,7 +1233,7 @@ class WMO_group_file:
                                 for flag in flags:
                                     vc_layer = mesh.vertex_colors["flag_" + hex(flag)]
 
-                                    if CompColors(vc_layer.data[poly.loop_indices[0]].color, blue):
+                                    if self.CompColors(vc_layer.data[poly.loop_indices[0]].color, blue):
                                         tile_flag |= flag
 
                                 self.mliq.TileFlags.append(tile_flag)
