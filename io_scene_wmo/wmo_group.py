@@ -18,10 +18,7 @@ import os
 import sys
 import mathutils
 
-#from . import Utility
-#from .Utility import *
 
-    
 class WMO_group_file:
     def __init__(self):
         pass
@@ -237,16 +234,17 @@ class WMO_group_file:
                         uv_layer1.data[loop_index].uv = (uvMap.get(mesh.loops[loop_index].vertex_index)[0], 
                                                          - uvMap.get(mesh.loops[loop_index].vertex_index)[1])
         
-        # setting flags in a hacky way using vertex colors
-        flags = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80]
-        
+        # setting flags in a hacky way using vertex colors      
         for face in mesh.polygons:
             tileFlag = self.mliq.TileFlags[face.index]
             for loop in face.loop_indices:
-                for flag in flags:
-                    vc_layer = mesh.vertex_colors.new("flag_" + hex(flag))
-                    if tileFlag & flag:
+                bit = 1
+                while bit <= 0x80:
+                    vc_layer = mesh.vertex_colors.new("flag_" + hex(bit))
+                    if tileFlag & bit:
                         vc_layer.data[loop].color = (0, 0, 255)
+
+                    bit <<= 1
                     
         #set mesh location
         obj.location = pos
@@ -1224,17 +1222,17 @@ class WMO_group_file:
                                 vertex.height = mesh.vertices[j].co[2]
                                 self.mliq.VertexMap.append(vertex)
 
-                        flags = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80]
-
                         for poly in mesh.polygons:
                                 tile_flag = 0
                                 blue = [0.0, 0.0, 1.0]
 
-                                for flag in flags:
-                                    vc_layer = mesh.vertex_colors["flag_" + hex(flag)]
+                                bit = 1
+                                while bit <= 0x80:
+                                    vc_layer = mesh.vertex_colors["flag_" + hex(bit)]
 
                                     if self.CompColors(vc_layer.data[poly.loop_indices[0]].color, blue):
-                                        tile_flag |= flag
+                                        tile_flag |= bit
+                                    bit <<= 1
 
                                 self.mliq.TileFlags.append(tile_flag)
                                 
