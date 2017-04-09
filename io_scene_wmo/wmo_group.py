@@ -953,8 +953,8 @@ class WMO_group_file:
 
                         if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192'):
                             if len(mesh.vertex_colors) > 0:
-                                vertex_color = [0x7F, 0x7F, 0x7F, 0xFF]
-                                vertex_color2 = [0x7F, 0x7F, 0x7F, 0xFF]
+                                vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
+                                vertex_color2 = [0x7F, 0x7F, 0x7F, 0x00]
 
                                 for i in range(0, 3):
                                     vertex_color[i] = round(mesh.vertex_colors.active.data[loop_index].color[3 - i - 1] * 255)
@@ -964,13 +964,16 @@ class WMO_group_file:
                                         if vertex_group_element.group == vg_lightmap.index:
                                             weight = round(vertex_group_element.weight * 255)
                                             vertex_color[3] = weight
-                                            if weight != 255:
+                                            if weight != 0:
                                                 tri_mat.Flags |= 0x1
                                     
                                 self.mocv.vertColors[new_index] = vertex_color
                                 
                             else:
-                                self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0xFF]
+                                if batchKey != 1 or batchKey != 2:
+                                    self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0xFF]
+                                else:
+                                    self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0x00]
 
                         if vg_blendmap != None:
                             for vertex_group_element in vertex.groups:
@@ -1182,7 +1185,7 @@ class WMO_group_file:
                         if self.mogp.LiquidType == 3 \
                         or self.mogp.LiquidType == 7 \
                         or self.mogp.LiquidType == 11:
-                            material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\LAVA\MM_MOLTEN_01.BLP"
+                            material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\METAL\BM_BRSPIRE_CATWALK01.BLP"
 
                         elif self.mogp.LiquidType == 4 \
                         or self.mogp.LiquidType == 8 \
