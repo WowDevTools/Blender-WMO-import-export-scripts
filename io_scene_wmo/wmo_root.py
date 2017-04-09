@@ -60,14 +60,7 @@ class WMO_root_file:
             self.mcvp.Read(f)
         
         self.LoadDoodads()
-
-    def LoadReferences(self, refType):
-        if refType == "LIQUID":
-            for ob in bpy.context.scene.objects:
-                if (ob.type == "MESH") and (ob.WowLiquid.Enabled):
-                    ob.WowLiquid.WMOGroup = self.liquidReferences.get(ob.name)
-                    
-                    
+                
     def CompareMaterials(self, material):      
         
         for material2, index in self.materialLookup.items():

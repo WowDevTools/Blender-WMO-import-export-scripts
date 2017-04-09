@@ -71,8 +71,5 @@ def read(filename, file_format):
         Log(2, True, "Importing group", objName)
         group_list[i].LoadObject(objName, None, i, bpy.path.display_name_from_filepath(rootName), root)
 
-    # set cross references
-    root.LoadReferences("LIQUID")
-    
     root.LoadPortals(bpy.path.display_name_from_filepath(rootName), root)
 

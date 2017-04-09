@@ -234,17 +234,16 @@ class WMO_group_file:
                         uv_layer1.data[loop_index].uv = (uvMap.get(mesh.loops[loop_index].vertex_index)[0], 
                                                          - uvMap.get(mesh.loops[loop_index].vertex_index)[1])
         
-        # setting flags in a hacky way using vertex colors      
-        for face in mesh.polygons:
-            tileFlag = self.mliq.TileFlags[face.index]
-            for loop in face.loop_indices:
-                bit = 1
-                while bit <= 0x80:
-                    vc_layer = mesh.vertex_colors.new("flag_" + hex(bit))
+        # setting flags in a hacky way using vertex colors
+        bit = 1
+        while bit <= 0x80:
+            vc_layer = mesh.vertex_colors.new("flag_" + hex(bit))     
+            for poly in mesh.polygons:
+                tileFlag = self.mliq.TileFlags[poly.index]
+                for loop in poly.loop_indices:
                     if tileFlag & bit:
                         vc_layer.data[loop].color = (0, 0, 255)
-
-                    bit <<= 1
+            bit <<= 1
                     
         #set mesh location
         obj.location = pos
@@ -273,6 +272,7 @@ class WMO_group_file:
 
         
         obj.WowLiquid.LiquidType = str(real_liquid_type)
+        obj.WowLiquid.WMOGroup = objName
         root.liquidReferences[name] = objName
 
                
