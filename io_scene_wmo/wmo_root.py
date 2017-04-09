@@ -797,9 +797,9 @@ class WMO_root_file:
         self.mohd.nDoodads = len(self.modd.Definitions)
         self.mohd.nSets = len(self.mods.Sets)
 
-        self.mohd.AmbientColor = [int(bpy.context.scene.WoWRoot.AmbientColor[2]*255),
+        self.mohd.AmbientColor = [int(bpy.context.scene.WoWRoot.AmbientColor[0]*255),
                                   int(bpy.context.scene.WoWRoot.AmbientColor[1]*255),
-                                  int(bpy.context.scene.WoWRoot.AmbientColor[0]*255),
+                                  int(bpy.context.scene.WoWRoot.AmbientColor[2]*255),
                                   bpy.context.scene.WoWRoot.AmbientAlpha] 
 
         self.mohd.ID =  bpy.context.scene.WoWRoot.WMOid
