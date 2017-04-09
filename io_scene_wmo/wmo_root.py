@@ -147,16 +147,14 @@ class WMO_root_file:
                 WowMat.RunTimeData = (0, 0)
 
                 if mat.WowMaterial.TwoSided:
-                    WowMat.Flags1 = WowMat.Flags1 | 4
+                    WowMat.Flags1 |= 0x4
                     
                 if mat.WowMaterial.Darkened:
-                    WowMat.Flags1 = WowMat.Flags1 | 8              
+                    WowMat.Flags1 |= 0x8          
                 
                 if mat.WowMaterial.NightGlow:
-                    WowMat.Flags1 = WowMat.Flags1 | 16
+                    WowMat.Flags1 |= 0x10
                     WowMat.Shader = 1
-                    #WowMat.Color1 = (255, 255, 255, 255)
-                    #WowMat.TextureFlags2 = WowMat.TextureFlags2 | 10
 
                 self.momt.Materials.append(WowMat)
 
@@ -214,6 +212,13 @@ class WMO_root_file:
             mat.WowMaterial.Texture3 = self.motx.GetString(self.momt.Materials[i].Texture3Ofs)
             mat.WowMaterial.Color3 = [x / 255 for x in self.momt.Materials[i].Color3[0:3]]
             mat.WowMaterial.Flags3 = '0' #1' if momt.Materials[i].TextureFlags1 & 0x80 else '0'
+
+            if self.momt.Materials[i].Flags1 & 0x4:
+                mat.WowMaterial.TwoSided = True
+            if self.momt.Materials[i].Flags1 & 0x8:
+                mat.WowMaterial.Darkened = True
+            if self.momt.Materials[i].Flags1 & 0x10:
+                mat.WowMaterial.NightGlow = True
 
             # set texture slot and load texture
             
