@@ -38,6 +38,7 @@ class WMO_root_file:
         self.portalDirectionMap = {}
 
     def Read(self, f):
+        """ Read WoW WMO root file """
         self.mver.Read(f)
         self.mohd.Read(f)
         self.motx.Read(f)
@@ -61,8 +62,8 @@ class WMO_root_file:
         
         self.LoadDoodads()
                 
-    def CompareMaterials(self, material):      
-        
+    def CompareMaterials(self, material):
+        """ Compare two WoW material properties """      
         for material2, index in self.materialLookup.items():
             
             if material.WowMaterial.Shader == material2.WowMaterial.Shader \
@@ -177,6 +178,7 @@ class WMO_root_file:
         return (group_info.NameOfs, descOfs)
 
     def LoadMaterials(self, name, texturePath, file_format):
+        """ Load materials from WoW WMO root file """
         self.materials = {}
 
         images = []
@@ -310,6 +312,7 @@ class WMO_root_file:
                     pass
 
     def LoadLights(self, name):
+        """ Load WoW WMO MOLT lights """
         self.lights = []
         for i in range(len(self.molt.Lights)):
             light_name = name + "_Light_" + str(i).zfill(2)
@@ -357,6 +360,7 @@ class WMO_root_file:
             
     
     def LoadFogs(self, name):
+        """ Load WoW WMO fog objects """
         self.fogs = []
         for i in range(len(self.mfog.Fogs)):
             
@@ -425,6 +429,7 @@ class WMO_root_file:
             fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)       
 
     def LoadDoodads(self):
+        """ Load doodad data for storing. Does not actually load models """
         scene = bpy.context.scene
         string_filter = []
 
@@ -465,6 +470,7 @@ class WMO_root_file:
                 string_filter.append(property_definition.NameOfs) 
 
     def LoadPortals(self, name, root):
+        """ Load WoW WMO portal planes """
         self.portals = []
         self.vert_count = 0
         for i in range(len(self.mopt.Infos)):
@@ -502,6 +508,7 @@ class WMO_root_file:
             bpy.context.scene.objects.link(obj)
             
     def LoadConvexVolumePlanes(self, name):
+        """ Load WoW WMO convex volume planes used for trasport objects """
         self.convex_volume_planes = []
         
         faces = []
@@ -530,6 +537,7 @@ class WMO_root_file:
 
             
     def LoadProperties(self, name, filepath):
+        """ Load global WoW WMO properties """
         bpy.context.scene.WoWRoot.AmbientColor = [float(self.mohd.AmbientColor[0] / 255),
                                                   float(self.mohd.AmbientColor[1] / 255),
                                                   float(self.mohd.AmbientColor[2]) / 255]
@@ -543,8 +551,9 @@ class WMO_root_file:
         bpy.context.scene.WoWRoot.PortalDistanceAttenuation = bool(self.mohd.Flags & 0x1)
 
     def GetObjectBoundingBox(self, obj):
-        corner1 = [0, 0, 0]
-        corner2 = [0, 0, 0]
+        """ Calculate bounding box of an object """
+        corner1 = [0.0, 0.0, 0.0]
+        corner2 = [0.0, 0.0, 0.0]
         
         for v in obj.bound_box:
             if v[0] < corner1[0]:
@@ -564,6 +573,7 @@ class WMO_root_file:
         return (corner1, corner2)
 
     def GetGlobalBoundingBox(self):
+        """ Calculate bounding box of an entire scene """
         corner1 = self.mogi.Infos[0].BoundingBoxCorner1
         corner2 = self.mogi.Infos[0].BoundingBoxCorner2
         
@@ -587,7 +597,7 @@ class WMO_root_file:
         return (corner1, corner2)
 
     def Save(self, source_doodads, autofill_textures, wmo_groups, nPortals):
-                 
+        """ Save WoW WMO root file for future export """        
         # set version header
         self.mver.Version = 17
         self.mopt = MOPT_chunk(nPortals)
@@ -808,6 +818,7 @@ class WMO_root_file:
         return
 
     def Write(self, f):
+        """ Write a saved WoW WMO root to a file """
         
         self.mver.Write(f)
         self.mohd.Write(f)

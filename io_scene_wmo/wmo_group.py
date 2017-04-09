@@ -25,6 +25,7 @@ class WMO_group_file:
         
 
     def Read(self, f):
+        """ Read WoW WMO group file """
         self.filename = f.name
         self.index = None
 
@@ -106,6 +107,7 @@ class WMO_group_file:
     
     @staticmethod
     def GetAvg(list):
+        """ Get single average normal vector from a split normal """
         normal = [0.0, 0.0, 0.0]
     
         for n in list:
@@ -119,6 +121,7 @@ class WMO_group_file:
 
     @staticmethod
     def CompColors(color1, color2):
+        """ Compare two colors """
 
         for i in range(0, 3):
             if color1[i] != color2[i]:
@@ -135,6 +138,7 @@ class WMO_group_file:
 
     @staticmethod
     def GetBatchType(polygon, mesh, vg_index_a, vg_index_b):
+        """ Find which MOBA batch type a passed polygon belongs two """
         counter_a = 0
         counter_b = 0
 
@@ -151,6 +155,7 @@ class WMO_group_file:
             return 1 if counter_b == len(polygon.vertices) else 2
 
     def GetMaterialViewportImage(self, material):
+        """ Get viewport image assigned to a material """
         for i in range(3):
             try:
                 img = material.texture_slots[3 - i].texture.image
@@ -160,6 +165,7 @@ class WMO_group_file:
         return None
     
     def FromWMOLiquidType(self, basic_liquid_type):
+        """ Convert simplified WMO liquid type IDs to real LiquidType.dbc IDs """
         real_liquid_type = 0
 
         if basic_liquid_type < 20:
@@ -180,6 +186,7 @@ class WMO_group_file:
                 
     # return array of vertice and array of faces in a tuple
     def LoadLiquids(self, objName, pos, root):
+        """ Load liquid plane of the WMO group. Should only be called if MLIQ is present. """
         
         # load vertices
         vertices = []
@@ -275,10 +282,9 @@ class WMO_group_file:
         obj.WowLiquid.WMOGroup = objName
         root.liquidReferences[name] = objName
 
-               
-    
     # Return faces indices
     def GetBSPNodeIndices(self, iNode, nodes, faces, indices):
+        """ Get indices of a WMO BSP tree nodes """
         # last node in branch
         nodeIndices = []
         if(nodes[iNode].PlaneType & BSP_PLANE_TYPE.Leaf):
@@ -294,6 +300,7 @@ class WMO_group_file:
         return nodeIndices
 
     def GetCollisionIndices(self):
+        """ Get indices of a WMO BSP tree nodes that have collision """
         nodeIndices = self.GetBSPNodeIndices(0, self.mobn.Nodes, self.mobr.Faces, self.movi.Indices)
         indices = []
         for i in nodeIndices:
@@ -306,7 +313,7 @@ class WMO_group_file:
 
     # Create mesh from file data
     def LoadObject(self, objName, doodads, objId, base_name, root):
-
+        """ Load WoW WMO group as an object to the Blender scene """
         vertices = []
         normals = []
         custom_normals = []
@@ -548,6 +555,7 @@ class WMO_group_file:
         root.groupMap[objId] = nobj.name  
         
     def GetPortalDirection(self, portal_obj, group, result_map, portal_relations):
+        """ Get the direction of MOPR portal relation given a portal object and a target group """
 
         cur_relation = result_map.get(portal_obj)
 
@@ -644,10 +652,8 @@ class WMO_group_file:
                 
             return -cur_relation
 
-
-
-
     def Save(self, obj, root, objNumber, source_doodads, autofill_textures, group_filename):
+        """ Save WoW WMO group data for future export """
         Log(1, False, "Saving group: <<" + obj.name + ">>")
         self.filename = group_filename
 
@@ -1323,10 +1329,9 @@ class WMO_group_file:
             Log(0, False, "Done saving group: <<" + str(obj.name) + ">>")
 
             return
-        
-        
-    
+         
     def Write(self):
+        """ Write a saved WoW WMO group to a file """
         Log(1, False, "Writing file: <<" +  os.path.basename(self.filename) + ">>")
         
         try:
