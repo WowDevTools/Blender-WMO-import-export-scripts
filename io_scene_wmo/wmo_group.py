@@ -657,11 +657,6 @@ class WMO_group_file:
         Log(1, False, "Saving group: <<" + obj.name + ">>")
         self.filename = group_filename
 
-        # check Wow WMO panel enabled
-        if(not obj.WowWMOGroup.Enabled):
-            #bpy.ops.error.message(message="Error: Trying to export " + obj.name + " but Wow WMO Group properties not enabled")
-            LogError(2, "Trying to export object: <<" + obj.name + ">> but WoW WMO Group properties not enabled")
-
         bpy.context.scene.objects.active = obj
         
         bpy.ops.object.mode_set(mode='EDIT')
@@ -755,26 +750,24 @@ class WMO_group_file:
             else:
                 mesh.calc_normals_split()
 
-            
-            # doing some safety checks to notify the user if the object is badly formed
+            # doing safety checks
             if len(mesh.vertices) > 65535:
                 LogError(2,
-                         "Object " 
-                         + str(obj.name) 
-                         + " contains more vertices (" 
-                         + str(len(mesh.vertices)) 
-                         + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535."
-                         )
-            
-            if len(mesh.materials) > 255 or len(root.momt.Materials) > 256:
+                        "Object " 
+                        + str(obj.name) 
+                        + " contains more vertices (" 
+                        + str(len(mesh.vertices)) 
+                        + ") than it is supported.  Maximum amount of vertices you can use per one object is 65535."
+                        )
+
+            if len(root.momt.Materials) > 256:
                 LogError(2, 
-                         "Scene has excceeded the maximum allowed number of WoW materials (255). Your scene now has <<",
+                        "Scene has excceeded the maximum allowed number of WoW materials (255). Your scene now has <<",
                         len(root.momt.Materials), 
                         ">> materials. So, <<", 
                         (len(root.momt.Materials) - 256),  
                         ">> extra ones." 
                         )
-            
             
             self.mver = MVER_chunk()
             self.mver.Version = 17

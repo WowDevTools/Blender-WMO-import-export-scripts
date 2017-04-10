@@ -42,6 +42,7 @@ def read(filename, file_format):
         root.Read(f)
         rootName = os.path.splitext(filename)[0]
         group_list.extend(OpenAllWMOGroups(rootName))
+
     elif(hdr.Magic == "PGOM"):
         # group WMO
 
@@ -53,9 +54,11 @@ def read(filename, file_format):
         group = WMO_group_file()
         group.Read(f)
         group_list.append(group)
+
     else:
         LogError(2, "File seems to be corrupted")
-
+    
+    Log(2, True, "Importing WMO components")
     # load all materials in root file
     root.LoadMaterials(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\", file_format)
 
@@ -65,10 +68,11 @@ def read(filename, file_format):
     root.LoadFogs(bpy.path.display_name_from_filepath(rootName))
     # root.LoadConvexVolumePlanes(bpy.path.display_name_from_filepath(rootName))
 
+    Log(2, True, "Importing group files")
     # create meshes
     for i in range(len(group_list)):
         objName = bpy.path.display_name_from_filepath(group_list[i].filename)
-        Log(2, True, "Importing group", objName)
+        Log(1, False, "Importing group", objName)
         group_list[i].LoadObject(objName, None, i, bpy.path.display_name_from_filepath(rootName), root)
 
     root.LoadPortals(bpy.path.display_name_from_filepath(rootName), root)

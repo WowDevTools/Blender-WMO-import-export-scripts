@@ -10,8 +10,11 @@ from .debug_utils import *
 
 import os
 
+
 def write(filepath, source_doodads, autofill_textures, export_selected):
-    
+    bpy.ops.scene.wow_wmo_validate_scene
+    Log(1, True, "Scene successfuly validated")
+
     f = open(filepath, "wb")
     root_filename = filepath
     
@@ -38,8 +41,6 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
                 
         bpy.context.scene.objects.active = None
             
-    
-    
     wmo_root = WMO_root_file()
     wmo_groups = {}
     
@@ -60,7 +61,7 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
         if bpy.context.scene.objects[index].hide == True:
             continue
         
-        #check if selected (optional)
+        # check if selected (optional)
         if export_selected and selectedMap.get(bpy.context.scene.objects[index], True):
             continue
         
@@ -74,6 +75,10 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
 
         # check if object is a liquid
         if bpy.context.scene.objects[index].WowLiquid.Enabled:
+            continue
+
+        # check if WoW WMO group is turned off
+        if not bpy.context.scene.objects[index].WowWMOGroup.Enabled:
             continue
         
         group_filename = base_name + "_" + str(iObj).zfill(3) + ".wmo"
@@ -102,7 +107,7 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
         iObj+=1
         
     # write group files
-    Log(2, True, "Writing group files")
+    Log(1, True, "Writing group files")
     for name, group in wmo_groups.items():
         group.Write()
         
