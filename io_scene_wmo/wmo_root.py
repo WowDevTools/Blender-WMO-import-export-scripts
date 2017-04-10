@@ -422,7 +422,7 @@ class WMO_root_file:
                 fog.WowFog.Unknown = True
             
             if f.SmallRadius != 0:     
-                fog.WowFog.InnerRadius = round(f.BigRadius / f.SmallRadius * 100, 2)
+                fog.WowFog.InnerRadius = int(f.SmallRadius / f.BigRadius * 100)
             else:
                 fog.WowFog.InnerRadius = 0
             
