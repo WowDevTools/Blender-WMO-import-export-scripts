@@ -44,15 +44,14 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
     wmo_groups = {}
     
     iObj = 0
-    mohd_0x1 = True
     
     Log(2, True, "Saving group files")
 
     nObjects = len(bpy.context.scene.objects)
     
     for i in range(nObjects):
-
         index = nObjects - i - 1
+
         # check if object is mesh       
         if bpy.context.scene.objects[index].type != 'MESH':
             continue
@@ -66,15 +65,15 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
             continue
         
         # check if object is portal
-        if(bpy.context.scene.objects[index].WowPortalPlane.Enabled):
+        if bpy.context.scene.objects[index].WowPortalPlane.Enabled:
             continue
         
         # check if object is a fog
-        if(bpy.context.scene.objects[index].WowFog.Enabled):
+        if bpy.context.scene.objects[index].WowFog.Enabled:
             continue
 
         # check if object is a liquid
-        if(bpy.context.scene.objects[index].WowLiquid.Enabled):
+        if bpy.context.scene.objects[index].WowLiquid.Enabled:
             continue
         
         group_filename = base_name + "_" + str(iObj).zfill(3) + ".wmo"
