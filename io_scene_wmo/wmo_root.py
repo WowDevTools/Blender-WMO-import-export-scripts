@@ -374,11 +374,7 @@ class WMO_root_file:
             bpy.ops.mesh.primitive_uv_sphere_add()
             fog = bpy.context.scene.objects.active
             
-            if i == 0 and f.Color1 == (0xFF, 0xFF, 0xFF, 0xFF) \
-            and  f.Color2 == (0x00, 0x00, 0x00, 0xFF) and f.EndDist == 444.4445 \
-            and f.EndDist2 == 222.2222 and f.StartFactor == 0.25 \
-            and f.StartFactor2 == -0.5: 
-                # Checking if the fog is default
+            if not f.BigRadius:
                 fog.hide = True
                 
             fog.name = name + "_Fog_" + str(i).zfill(2)
