@@ -3,7 +3,7 @@ import os
 from . import m2 as m2_
 from . import skin as skin_
 
-def M2ToBlenderMesh(dir, filepath, pos, scale, rotation, filedata=None):
+def M2ToBlenderMesh(dir, filepath, filedata=None):
 
     skin_path = os.path.splitext(filepath)[0] + "00.skin"
     abs_path_m2 = os.path.join(dir, filepath)
@@ -95,11 +95,6 @@ def M2ToBlenderMesh(dir, filepath, pos, scale, rotation, filedata=None):
 
     nobj = bpy.data.objects.new(name, mesh)
     scn.objects.link(nobj)
-
-    # place the object correctly on the scene
-    nobj.location = pos
-    nobj.scale = (scale, scale, scale)
-    nobj.rotation = rotation
 
     return nobj
 

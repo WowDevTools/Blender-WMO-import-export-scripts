@@ -5,6 +5,7 @@ from . import wmo_format
 from .wmo_format import *
 from . import debug_utils
 from .debug_utils import *
+from .m2 import import_m2 as m2
 
 import os
 
@@ -59,8 +60,30 @@ class WMO_root_file:
         
         if f.tell() != os.fstat(f.fileno()).st_size:
             self.mcvp.Read(f)
-        
-        self.LoadDoodads()
+
+    def to_eulerian_angle(qtrn):
+
+        quaternion = (qtrn[3], qtrn[0], qtrn[1], qtrn[2])
+        #quaternion = qtrn
+        y_sqr = quaternion[2] ** 2
+
+        # roll
+        t0 = 2.0 * (quaternion[0] * quaternion[1] + quaternion[2] * quaternion[3])
+        t1 = 1.0 - 2.0 * (quaternion[1] * quaternion[2] + y_sqr)
+        roll = math.atan2(t0, t1)
+
+        # pitch
+        t2 = 2.0 * (quaternion[0] * quaternion[2] - quaternion[3] * quaternion[1]);
+        t2 = 1.0 if t2 > 1.0 else t2
+        t2 = -1.0 if t2 < -1.0 else t2
+        pitch = math.asin(t2)
+
+        # yaw
+        t3 = 2.0 * (quaternion[0] * quaternion[3] + quaternion[1] * quaternion[2])
+        t4 = 1.0 - 2.0 * (y_sqr + quaternion[3] ** 2)
+        yaw = math.atan2(t3, t4)
+
+        return (roll, pitch, yaw)
                 
     def CompareMaterials(self, material):
         """ Compare two WoW material properties """      
@@ -428,46 +451,75 @@ class WMO_root_file:
             fog.WowFog.StartFactor2 = f.StartFactor2
             fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)       
 
-    def LoadDoodads(self):
-        """ Load doodad data for storing. Does not actually load models """
+    def LoadDoodads(self, mode, dir=None, game_data=None):
+        """ Load doodad sets to scene. Two modes are supported: data storing and actual import."""
         scene = bpy.context.scene
-        string_filter = []
+        if mode:
+            obj_map = {}
+            for doodad_set in self.mods.Sets:
+                bpy.ops.group.create(name=doodad_set.Name)
 
-        scene.WoWRoot.MODS_Sets.clear()
-        scene.WoWRoot.MODN_StringTable.clear()
-        scene.WoWRoot.MODD_Definitions.clear()
+                for i in range(doodad_set.StartDoodad, doodad_set.StartDoodad + doodad_set.nDoodads):
+                    doodad = self.modd.Definitions[i]
+                    doodad_path = os.path.splitext(self.modn.GetString(doodad.NameOfs))[0] + ".m2"
+
+                    nobj = None
+                    obj = obj_map.get(doodad_path)
+
+                    if not obj:
+                        obj = m2.M2ToBlenderMesh(dir, doodad_path, game_data)
+                        obj_map[doodad_path] = obj
+                        nobj = obj
+                    else:
+                        nobj = obj.copy()
+                        scene.objects.link(nobj)
+
+                    # place the object correctly on the scene
+                    nobj.location = doodad.Position
+                    nobj.scale = (doodad.Scale, doodad.Scale, doodad.Scale)
+                    nobj.rotation_euler = WMO_root_file.to_eulerian_angle(doodad.Rotation)
+
+                    scene.objects.active = nobj
+                    bpy.ops.object.group_link(group=doodad_set.Name)
+
+        else:
+            string_filter = []
+
+            scene.WoWRoot.MODS_Sets.clear()
+            scene.WoWRoot.MODN_StringTable.clear()
+            scene.WoWRoot.MODD_Definitions.clear()
         
-        for doodad_set in self.mods.Sets:
-            property_set = scene.WoWRoot.MODS_Sets.add()
-            property_set.Name = doodad_set.Name
-            property_set.StartDoodad = doodad_set.StartDoodad
-            property_set.nDoodads = doodad_set.nDoodads
-            property_set.Padding = doodad_set.Padding
+            for doodad_set in self.mods.Sets:
+                property_set = scene.WoWRoot.MODS_Sets.add()
+                property_set.Name = doodad_set.Name
+                property_set.StartDoodad = doodad_set.StartDoodad
+                property_set.nDoodads = doodad_set.nDoodads
+                property_set.Padding = doodad_set.Padding
 
-        for doodad_definition in self.modd.Definitions:
-            property_definition = scene.WoWRoot.MODD_Definitions.add()
-            property_definition.NameOfs = doodad_definition.NameOfs
-            property_definition.Flags = doodad_definition.Flags
-            property_definition.Position = doodad_definition.Position
+            for doodad_definition in self.modd.Definitions:
+                property_definition = scene.WoWRoot.MODD_Definitions.add()
+                property_definition.NameOfs = doodad_definition.NameOfs
+                property_definition.Flags = doodad_definition.Flags
+                property_definition.Position = doodad_definition.Position
 
-            property_definition.Rotation = (doodad_definition.Rotation[0],
-                                            doodad_definition.Rotation[1],
-                                            doodad_definition.Rotation[2])
+                property_definition.Rotation = (doodad_definition.Rotation[0],
+                                                doodad_definition.Rotation[1],
+                                                doodad_definition.Rotation[2])
 
-            property_definition.Tilt = doodad_definition.Rotation[3]
-            property_definition.Scale = doodad_definition.Scale
+                property_definition.Tilt = doodad_definition.Rotation[3]
+                property_definition.Scale = doodad_definition.Scale
 
-            property_definition.Color = (doodad_definition.Color[0],
-                                         doodad_definition.Color[1],
-                                         doodad_definition.Color[2])
+                property_definition.Color = (doodad_definition.Color[0],
+                                             doodad_definition.Color[1],
+                                             doodad_definition.Color[2])
 
-            property_definition.ColorAlpha = doodad_definition.Color[3]
+                property_definition.ColorAlpha = doodad_definition.Color[3]
 
-            if property_definition.NameOfs not in string_filter:
-                path = scene.WoWRoot.MODN_StringTable.add()
-                path.Ofs = property_definition.NameOfs
-                path.String = self.modn.GetString(property_definition.NameOfs)
-                string_filter.append(property_definition.NameOfs) 
+                if property_definition.NameOfs not in string_filter:
+                    path = scene.WoWRoot.MODN_StringTable.add()
+                    path.Ofs = property_definition.NameOfs
+                    path.String = self.modn.GetString(property_definition.NameOfs)
+                    string_filter.append(property_definition.NameOfs) 
 
     def LoadPortals(self, name, root):
         """ Load WoW WMO portal planes """

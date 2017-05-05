@@ -7,7 +7,6 @@ from . import wmo_group
 from .wmo_group import *
 from . import debug_utils
 from .debug_utils import *
-from .m2 import import_m2 as m2
 from .mpq import wow as mpyq
 
 import os
@@ -72,7 +71,10 @@ def read(filename, file_format, load_textures, import_doodads):
         if load_textures:
             pass
         if import_doodads:
-            root.LoadDoodads(os.path.dirname(filename), game_data)
+            root.LoadDoodads(True, os.path.dirname(filename), game_data)
+
+    else:
+        root.LoadDoodads(False)
     
     Log(2, True, "Importing WMO components")
     # load all materials in root file

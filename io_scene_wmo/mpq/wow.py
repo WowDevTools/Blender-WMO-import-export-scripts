@@ -34,6 +34,9 @@ class WoWFileData():
 
         for filename in filenames:
             file = self.read_file(filename, force_decompress)
+            if not file:
+                continue
+
             abs_path = os.path.join(dir, filename)
             local_dir = os.path.dirname(abs_path)
 
@@ -54,6 +57,13 @@ class WoWFileData():
                 abs_path = os.path.join(dir, filename)
                 if not os.path.exists(os.path.splitext(abs_path)[0] + ".png"):
                     file = self.read_file(filename, force_decompress)
+                    if not file:
+                        continue
+                    local_dir = os.path.dirname(abs_path)
+
+                    if not os.path.exists(local_dir):
+                        os.makedirs(local_dir)
+
                     f = open(abs_path, 'wb')
                     f.write(file or b'')
                     f.close()
@@ -131,9 +141,10 @@ class BLPConverter:
 
         for filename in filenames:
             if not os.path.exists(os.path.splitext(filename)[0] + ".png") or alwaysReplace:
-                files_to_convert += filename + " "
-
-                if os.system(self.toolPath + " /M " + files_to_convert) == 0:
-                    print("\nSuccessfully converted:", filenames)
-                else:
-                    raise Exception("\nBLP convertion failed.")
+                files_to_convert += "\"" + filename + "\" "
+        
+        if files_to_convert:
+            if os.system(self.toolPath + " /M " + files_to_convert) == 0:
+                print("\nSuccessfully converted:", filenames)
+            else:
+                raise Exception("\nBLP convertion failed.")
