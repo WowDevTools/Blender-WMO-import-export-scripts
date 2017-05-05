@@ -1169,29 +1169,6 @@ class OBJECT_OP_ADD_ALL_FLAGS(bpy.types.Operator):
         return {'FINISHED'}
     
 ###############################
-## Tech operators
-###############################  
-class TECH_OP_REPORT(bpy.types.Operator):
-    bl_idname = 'render.report_message'
-    bl_label = 'Report'
-    bl_description = 'Reports passed message as error or warning'
-    bl_options = {'REGISTER'}
-    
-    message = bpy.props.StringProperty()
-    type = bpy.props.BoolProperty(name="Report type", description="Type of message displayed", default = True)
-    
-    def execute(self, context):
-        if self.type:
-            self.report({'INFO'}, self.message)
-        else:
-            self.report({'INFO'}, self.message)
-            
-        return {'FINISHED'}
-
-    def invoke(self, context, event):
-        return self.execute(context)
-
-###############################
 ## Object operators
 ############################### 
 
@@ -1237,6 +1214,8 @@ class OBJECT_OP_Add_Scale(bpy.types.Operator):
             scale_obj = bpy.context.object
             scale_obj.name = "Gnome Scale"
             scale_obj.dimensions = (0.362, 0.758, 0.991)
+
+        report_message("Added " + ScaleType + " scale")
         
     def execute(self, context):
         self.AddScale(self.ScaleType)
@@ -1389,32 +1368,10 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
                                 bpy.context.scene.WoWRoot.TextureRelPath 
                                 )
                             )[0] + ".blp"
-
-                        LogDebug(
-                            1,
-                            False,
-                            os.path.splitext(
-                                os.path.relpath(
-                                    mesh.materials[i].active_texture.image.filepath,
-                                    bpy.context.scene.WoWRoot.TextureRelPath
-                                    )
-                                )[0] + ".blp"
-                            )
                     else:
                         mesh.materials[i].WowMaterial.Texture1 = os.path.splitext(
                             mesh.materials[i].active_texture.image.filepath
-                            )[0] + ".blp"
-
-                        LogDebug(
-                            1,
-                            False,
-                            os.path.splitext(
-                                os.path.relpath(
-                                    mesh.materials[i].active_texture.image.filepath,
-                                    bpy.context.scene.WoWRoot.TextureRelPath
-                                    )
-                                )[0] + ".blp"
-                            )              
+                            )[0] + ".blp"            
 
     def execute(self, context):
         
@@ -1491,19 +1448,44 @@ class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
     bl_idname = 'scene.wow_selected_objects_to_portals'
     bl_label = 'Selected objects to WMO portals'
     bl_description = 'Transfer all selected objects to WoW WMO portals'
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+         
+        column = layout.column()
+        idproperty.layout_id_prop(column, context.object.WowPortalPlane, "First")
+        idproperty.layout_id_prop(column, context.object.WowPortalPlane, "Second")
     
     
-    def ToPortal(self):
+    First = idproperty.ObjectIDProperty(
+            name="First group",
+            validator=portal_validator
+            )
+
+    Second = idproperty.ObjectIDProperty(
+        name="Second group",
+        validator=portal_validator
+        )
+
+    def portal_validator(ob):
+        return ob.type == 'MESH' and ob.WowWMOGroup.Enabled
+    
+    def ToPortal(self, First, Second):
         for ob in bpy.context.selected_objects:
             if ob.type == 'MESH':
                 ob.WowWMOGroup.Enabled = False
                 ob.WowLiquid.Enabled = False
                 ob.WowFog.Enabled = False
                 ob.WowPortalPlane.Enabled = True
+                ob.WowPortalPlane.First = First
+                ob.WowPortalPlane.Second = Second
+
 
     def execute(self, context):
         
-        self.ToPortal()
+        self.ToPortal(self.First, self.Second)
         return {'FINISHED'}
         
 class OBJECT_OP_To_Group(bpy.types.Operator):

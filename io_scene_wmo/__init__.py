@@ -21,11 +21,11 @@
 
 bl_info = {
     "name": "Wow WMO format (.wmo)",
-    "author": "Happyhack",
-    "version": (0, 1),
-    "blender": (2, 57, 0),
-    "location": "File > Import-Export > Wow WMO (.wmo) ",
-    "description": "Import-Export Wow WMO",
+    "author": "Happyhack, Skarn",
+    "version": (1, 1),
+    "blender": (2, 78, 0),
+    "location": "File > Import-Export > WoW WMO (.wmo) ",
+    "description": "Import-Export WoW WMO",
     "warning": "",
     "wiki_url": "http://wiki.blender.org/index.php/Extensions:2.6/Py/"
         "Scripts/Import-Export/Wow_WMO_IO",
@@ -60,6 +60,18 @@ from . import debug_utils
 from .idproperty import idproperty
 #from . import Utility
 
+class WMOPreferences(bpy.types.AddonPreferences):
+    bl_idname = __name__
+
+    wow_path = StringProperty(name="WoW Client Path")
+    wmv_path = StringProperty(name="WoW Model Viewer Path")
+    blp_path = StringProperty(name="BLP Converter Path")
+
+    def draw(self, context):
+        self.layout.prop(self, "wow_path")
+        self.layout.prop(self, "wmv_path")
+        self.layout.prop(self, "blp_path")
+
 class WMOImporter(bpy.types.Operator):
     """Load WMO mesh data"""
     bl_idname = "import_mesh.wmo"
@@ -67,18 +79,38 @@ class WMOImporter(bpy.types.Operator):
     bl_options = {'UNDO'}
     
     filepath = StringProperty(
-            subtype='FILE_PATH',
-            )
-    filter_glob = StringProperty(default="*.wmo", options={'HIDDEN'})
+        subtype='FILE_PATH',
+        )
+
+    filter_glob = StringProperty(
+        default="*.wmo", 
+        options={'HIDDEN'}
+        )
     
-    formatEnum = [('.png', "PNG", ""), ('.bmp', "BMP", ""), ('.dds', "DDS", ""), \
-        ('.jpg', "JPG", ""), ('.tga', "TGA", ""), ('.tiff', "TIFF", "")]
+    formatEnum = [('.png', "PNG", ""), ('.bmp', "BMP", ""), ('.dds', "DDS", ""), 
+                  ('.jpg', "JPG", ""), ('.tga', "TGA", ""), ('.tiff', "TIFF", "")]
         
-    texture_format = bpy.props.EnumProperty(items=formatEnum, name="Texture format", description="Choose your texture file format")
+    texture_format = bpy.props.EnumProperty(
+        items=formatEnum, 
+        name="Texture format", 
+        description="Choose your texture file format"
+        )
+
+    load_textures = BoolProperty(
+        name="Fetch textures",
+        description="Automatically fetch textures from game data",
+        default=True,
+        )
+
+    import_doodads = BoolProperty(
+        name="Import doodad sets",
+        description="Import WMO doodad set to scene",
+        default=True,
+        )
 
     def execute(self, context):
         from . import import_wmo
-        import_wmo.read(self.filepath, self.texture_format)
+        import_wmo.read(self.filepath, self.texture_format, self.load_textures, self.import_doodads)
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -113,25 +145,14 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
         description="Automatically fills WoW Material texture paths based on texture filenames",
         default=True,
         )           
-        
-
-    """is_Zero = BoolProperty(
-            name="Save default WMO DBC ID",
-            description="Check if you change default Blizzard WMO and wants to save its WMO DBC ID",
-            default=False,
-            )"""
 
     """apply_modifiers = BoolProperty(
             name="Apply Modifiers",
             description="Use transformed mesh data from each object",
             default=True,
             )
-    triangulate = BoolProperty(
-            name="Triangulate",
-            description="Triangulate quads",
-            default=True,
-            )"""
-
+    """
+    
     def execute(self, context):
         from . import export_wmo
         export_wmo.write(self.filepath, self.source_doodads, self.autofill_textures, self.export_selected)

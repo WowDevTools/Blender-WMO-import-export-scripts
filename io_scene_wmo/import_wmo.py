@@ -7,6 +7,8 @@ from . import wmo_group
 from .wmo_group import *
 from . import debug_utils
 from .debug_utils import *
+from .m2 import import_m2 as m2
+from .mpq import wow as mpyq
 
 import os
 
@@ -24,8 +26,8 @@ def OpenAllWMOGroups(rootName):
 
     return group_list
 
-def read(filename, file_format):
-    
+def read(filename, file_format, load_textures, import_doodads):
+
     f = open(filename, "rb")
     
     # Check if file is WMO root or WMO group, or unknown
@@ -36,14 +38,14 @@ def read(filename, file_format):
     
     group_list = []
     
-    if(hdr.Magic == "DHOM"):
+    if hdr.Magic == "DHOM":
         # root WMO
         root = WMO_root_file()
         root.Read(f)
         rootName = os.path.splitext(filename)[0]
         group_list.extend(OpenAllWMOGroups(rootName))
 
-    elif(hdr.Magic == "PGOM"):
+    elif hdr.Magic == "PGOM":
         # group WMO
 
         # load root WMO
@@ -57,6 +59,20 @@ def read(filename, file_format):
 
     else:
         LogError(2, "File seems to be corrupted")
+
+    preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
+
+    game_data = None
+
+    if load_textures or import_doodads:
+        Log(2, True, "Loading game data")
+        
+        game_data = mpyq.WoWFileData(preferences.wow_path, preferences.blp_path)
+
+        if load_textures:
+            pass
+        if import_doodads:
+            root.LoadDoodads(os.path.dirname(filename), game_data)
     
     Log(2, True, "Importing WMO components")
     # load all materials in root file
@@ -76,4 +92,9 @@ def read(filename, file_format):
         group_list[i].LoadObject(objName, None, i, bpy.path.display_name_from_filepath(rootName), root)
 
     root.LoadPortals(bpy.path.display_name_from_filepath(rootName), root)
+
+    preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
+
+    #m2.M2ToBlenderMesh(os.path.dirname(filename), "World\\Arttest\\boxtest\\xyz.m2", 
+    #                   mpyq.WoWFileData(preferences.wow_path, preferences.blp_path))
 

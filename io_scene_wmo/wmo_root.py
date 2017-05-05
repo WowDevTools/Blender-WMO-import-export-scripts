@@ -323,8 +323,7 @@ class WMO_root_file:
             light_name = name + "_Light_" + str(i).zfill(2)
 
             l = self.molt.Lights[i]
-
-            
+         
             if(l.LightType == 0): # omni
                 l_type = 'POINT'
             elif(l.LightType == 1): # spot
@@ -375,7 +374,7 @@ class WMO_root_file:
             fog = bpy.context.scene.objects.active
             
             if not f.BigRadius:
-                fog.hide = True
+                fog.hide = False
                 
             fog.name = name + "_Fog_" + str(i).zfill(2)
             
