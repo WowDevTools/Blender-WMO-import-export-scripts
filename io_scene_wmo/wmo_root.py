@@ -457,7 +457,8 @@ class WMO_root_file:
         if mode:
             obj_map = {}
             for doodad_set in self.mods.Sets:
-                bpy.ops.group.create(name=doodad_set.Name)
+                set_name = doodad_set.Name.rstrip("\0")
+                bpy.ops.group.create(name=set_name)
 
                 for i in range(doodad_set.StartDoodad, doodad_set.StartDoodad + doodad_set.nDoodads):
                     doodad = self.modd.Definitions[i]
@@ -481,6 +482,10 @@ class WMO_root_file:
 
                     scene.objects.active = nobj
                     bpy.ops.object.group_link(group=doodad_set.Name)
+
+                if set_name != "Set_$DefaultGlobal":
+                    for obj in bpy.data.groups[doodad_set.Name].objects:
+                        obj.hide = True
 
         else:
             string_filter = []
