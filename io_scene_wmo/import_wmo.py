@@ -96,8 +96,6 @@ def read(filename, file_format, load_textures, import_doodads):
 
     root.LoadPortals(bpy.path.display_name_from_filepath(rootName), root)
 
-    preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
 
-    #m2.M2ToBlenderMesh(os.path.dirname(filename), "World\\Arttest\\boxtest\\xyz.m2", 
-    #                   mpyq.WoWFileData(preferences.wow_path, preferences.blp_path))
+
 
