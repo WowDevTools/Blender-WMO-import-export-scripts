@@ -312,7 +312,7 @@ class WMO_group_file:
         return indices
 
     # Create mesh from file data
-    def LoadObject(self, objName, doodads, objId, base_name, root):
+    def LoadObject(self, objName, doodads, objId, base_name, root, editable_doodads):
         """ Load WoW WMO group as an object to the Blender scene """
         vertices = []
         normals = []
@@ -524,8 +524,8 @@ class WMO_group_file:
         
             nobj.WowWMOGroup.LiquidType = str(real_liquid_type)
         
-        if self.mogp.Flags & MOGP_FLAG.HasDoodads:
-            if len(self.modr.DoodadRefs) > 0:
+        if not editable_doodads and self.mogp.Flags & MOGP_FLAG.HasDoodads:
+            if not self.modr.DoodadRefs:
                 for i in range(len(self.modr.DoodadRefs)):
                     doodad = nobj.WowWMOGroup.MODR.add()
                     doodad.value = self.modr.DoodadRefs[i]

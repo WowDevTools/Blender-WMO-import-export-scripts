@@ -61,9 +61,9 @@ def read(filename, file_format, load_textures, import_doodads):
 
     Log(2, True, "Importing WMO components")
 
-    preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
-
     game_data = None
+
+    preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
 
     if load_textures or import_doodads:
         Log(2, True, "Loading game data")
@@ -73,31 +73,35 @@ def read(filename, file_format, load_textures, import_doodads):
         if game_data.files:
             if load_textures:
                 game_data.extract_textures_as_png(os.path.dirname(filename), root.motx.GetAllStrings())
-            if import_doodads:
-                root.LoadDoodads(os.path.dirname(filename), game_data)
         else:
-            Log(1, False, "Failed to load textures or doodad sets because game data was not loaded.")
+            Log(1, False, "Failed to load textures because game data was not loaded.")
 
-    else:
+    if not import_doodads:
         root.LoadDoodads()
+
+    display_name = bpy.path.display_name_from_filepath(rootName)
     
     # load all materials in root file
-    root.LoadMaterials(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\", file_format)
+    root.LoadMaterials(display_name, os.path.dirname(filename) + "\\", file_format)
 
     # load all WMO components
-    root.LoadLights(bpy.path.display_name_from_filepath(rootName))
-    root.LoadProperties(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\")
-    root.LoadFogs(bpy.path.display_name_from_filepath(rootName))
-    # root.LoadConvexVolumePlanes(bpy.path.display_name_from_filepath(rootName))
+    root.LoadLights(display_name)
+    root.LoadProperties(display_name, os.path.dirname(filename) + "\\")
+    root.LoadFogs(display_name)
+    # root.LoadConvexVolumePlanes(display_name)
 
     Log(2, True, "Importing group files")
     # create meshes
     for i in range(len(group_list)):
         objName = bpy.path.display_name_from_filepath(group_list[i].filename)
         Log(1, False, "Importing group", objName)
-        group_list[i].LoadObject(objName, None, i, bpy.path.display_name_from_filepath(rootName), root)
+        group_list[i].LoadObject(objName, None, i, display_name, root, import_doodads)
 
-    root.LoadPortals(bpy.path.display_name_from_filepath(rootName), root)
+    root.LoadPortals(display_name, root)
+
+    if import_doodads:
+        root.LoadDoodads(os.path.dirname(filename), game_data)
+
 
 
 

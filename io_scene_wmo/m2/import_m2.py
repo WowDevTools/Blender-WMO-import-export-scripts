@@ -4,40 +4,19 @@ import time
 from . import m2 as m2_
 from . import skin as skin_
 
-read_file_time = 0
-m2_time = 0
-skin_time = 0
-blp_time = 0
-other_time = 0
 
 def M2ToBlenderMesh(dir, filepath, filedata):
 
-    global read_file_time
-    global m2_time
-    global skin_time
-    global blp_time
-    global other_time
-        
     print("\nImporting model: <<" + filepath + ">>")
-    cur_time = 0.0
-    total_time = time.time()
 
     m2_path = os.path.splitext(filepath)[0] + ".m2"
     skin_path = os.path.splitext(filepath)[0] + "00.skin"
     
-    cur_time = time.time()
     m2_file = filedata.read_file(m2_path)
     skin_file = filedata.read_file(skin_path)
-    read_file_time += time.time() - cur_time
 
-
-    cur_time = time.time()
     m2 = m2_.M2File((m2_file, os.path.basename(m2_path)))
-    m2_time += time.time() - cur_time
-
-    cur_time = time.time()
     skin = skin_.SkinFile((skin_file, os.path.basename(skin_path)))
-    skin_time += time.time() - cur_time
 
     if not m2 or not skin:
         print("Failed to import: <<" + filepath + ">> Model import seems to have failed.")
@@ -81,9 +60,7 @@ def M2ToBlenderMesh(dir, filepath, filedata):
     for texture in m2.textures:
         texture_paths.append(texture.name.decode("utf-8").rstrip('\0'))
 
-    cur_time = time.time()
     filedata.extract_textures_as_png(dir, texture_paths)
-    blp_time += time.time() - cur_time
 
     # set textures
     for batch in skin.texunit:
@@ -114,7 +91,6 @@ def M2ToBlenderMesh(dir, filepath, filedata):
     nobj = bpy.data.objects.new(name, mesh)
     scn.objects.link(nobj)
 
-    other_time += time.time() - total_time
     return nobj
 
 

@@ -97,6 +97,7 @@ class WMO_root_file:
             and material.WowMaterial.Color3 == material.WowMaterial.Color3 \
             and material.WowMaterial.Flags3 == material2.WowMaterial.Flags3:
                 return index
+            """
             
         return None     
 
@@ -490,12 +491,6 @@ class WMO_root_file:
                                                 doodad.Rotation[2])
                     nobj.parent = anchor
                     nobj.hide = True
-
-            print("File reading:", m2.read_file_time)
-            print("M2 constructor:", m2.m2_time)
-            print("Skin constructor:", m2.skin_time)
-            print("BLP constructor:", m2.blp_time)
-            print("Crap time:", m2.other_time - (m2.read_file_time + m2.m2_time + m2.skin_time + m2.blp_time))
 
         else:
             string_filter = []
