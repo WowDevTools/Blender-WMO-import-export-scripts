@@ -129,6 +129,20 @@ class MOTX_chunk:
             i += 1
         return self.StringTable[start:i].decode('ascii')
 
+    def GetAllStrings(self):
+        strings = []
+        cur_str = ""
+
+        for byte in self.StringTable:
+            if byte:
+                cur_str += chr(byte)
+            elif cur_str:
+                strings.append(cur_str)
+                cur_str = ""
+
+        return strings
+
+
 class WMO_Material:
     def __init__(self):
         self.Flags1 = 0

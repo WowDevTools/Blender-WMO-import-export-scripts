@@ -136,15 +136,22 @@ class BLPConverter:
         else:
             print("\nNo BLPConverter found at given path: " + toolPath)
 
-    def convert(self, filenames, alwaysReplace=False):
-        files_to_convert = ""
+    def convert(self, filepaths, alwaysReplace=False):
+        init_length = len(self.toolPath) + 4
 
-        for filename in filenames:
-            if not os.path.exists(os.path.splitext(filename)[0] + ".png") or alwaysReplace:
-                files_to_convert += "\"" + filename + "\" "
-        
-        if files_to_convert:
-            if os.system(self.toolPath + " /M " + files_to_convert) == 0:
-                print("\nSuccessfully converted:", filenames)
-            else:
+        cur_length = 0
+        cur_command = ""
+        for filepath in filepaths:
+            if not os.path.exists(os.path.splitext(filepath)[0] + ".png") or alwaysReplace:
+                length = len(filepath)
+                if 2047 - (cur_length + init_length) < length + 2:
+                    if os.system(self.toolPath + " /M " + cur_command):
+                        raise Exception("\nBLP convertion failed.")
+                    cur_length = 0
+                    cur_command = ""
+                cur_command += "\"" + filepath + "\" "
+                cur_length += length + 3
+
+        if cur_length:
+            if os.system(self.toolPath + " /M " + cur_command):
                 raise Exception("\nBLP convertion failed.")

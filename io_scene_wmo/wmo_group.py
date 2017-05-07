@@ -432,7 +432,7 @@ class WMO_group_file:
                 image = self.GetMaterialViewportImage(material)
                 material_viewport_textures[mat_id] = image
 
-                if image:
+                if not len(material.texture_slots) and image:
                     texture = bpy.data.textures.new(os.path.split(image.filepath)[1], 'IMAGE')
                     texture.image = image
                     texture_slot = material.texture_slots.add()

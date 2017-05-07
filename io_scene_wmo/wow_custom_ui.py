@@ -136,6 +136,58 @@ def UnregisterWowRootProperties():
     bpy.types.Scene.WoWRoot = None
 
 ###############################
+## Doodads
+###############################
+
+class WoWDoodadPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "object"
+    bl_label = "WoW Doodad"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw_header(self, context):
+        layout = self.layout
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        self.layout.prop(context.object.WoWDoodad, "Path")
+        self.layout.prop(context.object.WoWDoodad, "Color")
+        layout.enabled = context.object.WoWDoodad.Enabled
+
+    @classmethod
+    def poll(cls, context):
+        return (context.object is not None
+                and context.object.WoWDoodad.Enabled
+                and isinstance(context.object.data, bpy.types.Mesh))
+
+class WoWDoodadPropertyGroup(bpy.types.PropertyGroup):
+
+    Path = bpy.props.StringProperty()
+
+    Color = bpy.props.FloatVectorProperty(
+        name="Color",
+        subtype='COLOR',
+        size=4,
+        default=(1,1,1,1),
+        min=0.0, 
+        max=1.0
+        )
+
+    Enabled = bpy.props.BoolProperty(
+        name="", 
+        description="Enable WoW Doodad properties"
+        )
+
+
+def RegisterWoWDoodadProperties():
+    bpy.types.Object.WoWDoodad = bpy.props.PointerProperty(type=WoWDoodadPropertyGroup)
+
+def UnregisterWoWDoodadProperties():
+    bpy.types.Object.WoWDoodad = None
+
+###############################
 ## Material
 ###############################
 
@@ -514,7 +566,8 @@ class WowWMOGroupPanel(bpy.types.Panel):
                 and isinstance(context.object.data,bpy.types.Mesh)
                 and not context.object.WowPortalPlane.Enabled 
                 and not context.object.WowLiquid.Enabled 
-                and not context.object.WowFog.Enabled 
+                and not context.object.WowFog.Enabled
+                and not context.object.WoWDoodad.Enabled 
                 )
 
 def fog_validator(ob):
@@ -657,6 +710,7 @@ class WowPortalPlanePanel(bpy.types.Panel):
                 and not context.object.WowWMOGroup.Enabled
                 and not context.object.WowLiquid.Enabled
                 and not context.object.WowFog.Enabled
+                and not context.object.WoWDoodad.Enabled
                 )
     
 def portal_validator(ob):
@@ -1758,6 +1812,7 @@ class OBJECT_OP_Hide_Show_Light(bpy.types.Operator):
 
 def register():
     RegisterWowRootProperties()
+    RegisterWoWDoodadProperties()
     RegisterWowMaterialProperties()
     RegisterWowLiquidProperties()
     RegisterWowLightProperties()
@@ -1772,6 +1827,7 @@ def register():
 
 def unregister():
     UnregisterWowRootProperties()
+    UnregisterWoWDoodadProperties()
     UnregisterWowMaterialProperties()
     UnregisterWowLiquidProperties()
     UnregisterWowLightProperties()

@@ -59,6 +59,8 @@ def read(filename, file_format, load_textures, import_doodads):
     else:
         LogError(2, "File seems to be corrupted")
 
+    Log(2, True, "Importing WMO components")
+
     preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
 
     game_data = None
@@ -69,14 +71,13 @@ def read(filename, file_format, load_textures, import_doodads):
         game_data = mpyq.WoWFileData(preferences.wow_path, preferences.blp_path)
 
         if load_textures:
-            pass
+            game_data.extract_textures_as_png(os.path.dirname(filename), root.motx.GetAllStrings())
         if import_doodads:
-            root.LoadDoodads(True, os.path.dirname(filename), game_data)
+            root.LoadDoodads(os.path.dirname(filename), game_data)
 
     else:
-        root.LoadDoodads(False)
+        root.LoadDoodads()
     
-    Log(2, True, "Importing WMO components")
     # load all materials in root file
     root.LoadMaterials(bpy.path.display_name_from_filepath(rootName), os.path.dirname(filename) + "\\", file_format)
 

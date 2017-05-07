@@ -451,11 +451,12 @@ class WMO_root_file:
             fog.WowFog.StartFactor2 = f.StartFactor2
             fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)       
 
-    def LoadDoodads(self, mode, dir=None, game_data=None):
+    def LoadDoodads(self, dir=None, game_data=None):
         """ Load doodad sets to scene. Two modes are supported: data storing and actual import."""
         scene = bpy.context.scene
-        if mode:
+        if game_data:
             obj_map = {}
+
             for doodad_set in self.mods.Sets:
                 set_name = doodad_set.Name.rstrip("\0")
                 bpy.ops.group.create(name=set_name)
@@ -469,6 +470,9 @@ class WMO_root_file:
 
                     if not obj:
                         obj = m2.M2ToBlenderMesh(dir, doodad_path, game_data)
+                        obj.WoWDoodad.Enabled = True
+                        obj.WoWDoodad.Path = doodad_path
+                        obj.WoWDoodad.Color = doodad.Color
                         obj_map[doodad_path] = obj
                         nobj = obj
                     else:
@@ -486,6 +490,12 @@ class WMO_root_file:
                 if set_name != "Set_$DefaultGlobal":
                     for obj in bpy.data.groups[doodad_set.Name].objects:
                         obj.hide = True
+
+            print("File reading:", m2.read_file_time)
+            print("M2 constructor:", m2.m2_time)
+            print("Skin constructor:", m2.skin_time)
+            print("BLP constructor:", m2.blp_time)
+            print("Crap time:", m2.other_time - (m2.read_file_time + m2.m2_time + m2.skin_time + m2.blp_time))
 
         else:
             string_filter = []

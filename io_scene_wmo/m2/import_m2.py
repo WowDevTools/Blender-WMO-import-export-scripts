@@ -1,31 +1,46 @@
 import bpy
 import os
+import time
 from . import m2 as m2_
 from . import skin as skin_
 
-def M2ToBlenderMesh(dir, filepath, filedata=None):
+read_file_time = 0
+m2_time = 0
+skin_time = 0
+blp_time = 0
+other_time = 0
 
+def M2ToBlenderMesh(dir, filepath, filedata):
+
+    global read_file_time
+    global m2_time
+    global skin_time
+    global blp_time
+    global other_time
+        
+    print("\nImporting model: <<" + filepath + ">>")
+    cur_time = 0.0
+    total_time = time.time()
+
+    m2_path = os.path.splitext(filepath)[0] + ".m2"
     skin_path = os.path.splitext(filepath)[0] + "00.skin"
-    abs_path_m2 = os.path.join(dir, filepath)
-    abs_path_skin = os.path.join(dir, skin_path)
+    
+    cur_time = time.time()
+    m2_file = filedata.read_file(m2_path)
+    skin_file = filedata.read_file(skin_path)
+    read_file_time += time.time() - cur_time
 
-    m2 = None
-    skin = None
 
-    if os.path.exists(abs_path_m2) and os.path.exists(abs_path_skin):
-        m2 = m2_.M2File(abs_path_m2)
-        skin = skin_.SkinFile(abs_path_skin)
-    elif filedata:
-        filedata.extract_files(dir, (filepath, skin_path))
-        if os.path.exists(abs_path_m2) and os.path.exists(abs_path_skin):
-            m2 = m2_.M2File(abs_path_m2)
-            skin = skin_.SkinFile(abs_path_skin)
-    else:
-        print("Failed to import: " + filepath + "Missing in the client and working directory.")
-        return
+    cur_time = time.time()
+    m2 = m2_.M2File((m2_file, os.path.basename(m2_path)))
+    m2_time += time.time() - cur_time
+
+    cur_time = time.time()
+    skin = skin_.SkinFile((skin_file, os.path.basename(skin_path)))
+    skin_time += time.time() - cur_time
 
     if not m2 or not skin:
-        print("Failed to import: " + filepath + "Model import seems to have failed.")
+        print("Failed to import: <<" + filepath + ">> Model import seems to have failed.")
 
     name = m2.name.decode("utf-8")
 
@@ -62,12 +77,13 @@ def M2ToBlenderMesh(dir, filepath, filedata=None):
         uv_layer1.data[i].uv = (uv[0], 1 - uv[1])
 
     # unpack and convert textures
-    if filedata:
-        texture_paths = []
-        for texture in m2.textures:
-            texture_paths.append(texture.name.decode("utf-8").rstrip('\0'))
+    texture_paths = []
+    for texture in m2.textures:
+        texture_paths.append(texture.name.decode("utf-8").rstrip('\0'))
 
-        filedata.extract_textures_as_png(dir, texture_paths)
+    cur_time = time.time()
+    filedata.extract_textures_as_png(dir, texture_paths)
+    blp_time += time.time() - cur_time
 
     # set textures
     for batch in skin.texunit:
@@ -78,10 +94,12 @@ def M2ToBlenderMesh(dir, filepath, filedata=None):
             m2.textures[m2.tex_lookup[batch.texture].Id].name.decode("utf-8").rstrip('\0')
             )[0] + ".png"
 
+        img = None 
+
         try:
             img = bpy.data.images.load(os.path.join(dir, path), check_existing=True)
         except:
-            print("\nFailed to load texture:" + path + " File is missing or invalid.")
+            print("\nFailed to load texture: " + path + " File is missing or invalid.")
 
         if img:
             for i in range(m2_mesh.tri_offset // 3, (m2_mesh.tri_offset + m2_mesh.num_tris) // 3):
@@ -96,6 +114,7 @@ def M2ToBlenderMesh(dir, filepath, filedata=None):
     nobj = bpy.data.objects.new(name, mesh)
     scn.objects.link(nobj)
 
+    other_time += time.time() - total_time
     return nobj
 
 
