@@ -70,10 +70,13 @@ def read(filename, file_format, load_textures, import_doodads):
         
         game_data = mpyq.WoWFileData(preferences.wow_path, preferences.blp_path)
 
-        if load_textures:
-            game_data.extract_textures_as_png(os.path.dirname(filename), root.motx.GetAllStrings())
-        if import_doodads:
-            root.LoadDoodads(os.path.dirname(filename), game_data)
+        if game_data.files:
+            if load_textures:
+                game_data.extract_textures_as_png(os.path.dirname(filename), root.motx.GetAllStrings())
+            if import_doodads:
+                root.LoadDoodads(os.path.dirname(filename), game_data)
+        else:
+            Log(1, False, "Failed to load textures or doodad sets because game data was not loaded.")
 
     else:
         root.LoadDoodads()
