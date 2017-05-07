@@ -454,7 +454,7 @@ class WMO_root_file:
     def LoadDoodads(self, dir=None, game_data=None):
         """ Load doodad sets to scene. Two modes are supported: data storing and actual import."""
         scene = bpy.context.scene
-        if game_data:
+        if game_data and dir:
             obj_map = {}
 
             for doodad_set in self.mods.Sets:
