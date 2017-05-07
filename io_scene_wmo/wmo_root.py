@@ -1,6 +1,7 @@
 
 import bpy
 import math
+import mathutils
 from . import wmo_format
 from .wmo_format import *
 from . import debug_utils
@@ -60,30 +61,6 @@ class WMO_root_file:
         
         if f.tell() != os.fstat(f.fileno()).st_size:
             self.mcvp.Read(f)
-
-    def to_eulerian_angle(qtrn):
-
-        quaternion = (qtrn[3], qtrn[0], qtrn[1], qtrn[2])
-        #quaternion = qtrn
-        y_sqr = quaternion[2] ** 2
-
-        # roll
-        t0 = 2.0 * (quaternion[0] * quaternion[1] + quaternion[2] * quaternion[3])
-        t1 = 1.0 - 2.0 * (quaternion[1] * quaternion[2] + y_sqr)
-        roll = math.atan2(t0, t1)
-
-        # pitch
-        t2 = 2.0 * (quaternion[0] * quaternion[2] - quaternion[3] * quaternion[1]);
-        t2 = 1.0 if t2 > 1.0 else t2
-        t2 = -1.0 if t2 < -1.0 else t2
-        pitch = math.asin(t2)
-
-        # yaw
-        t3 = 2.0 * (quaternion[0] * quaternion[3] + quaternion[1] * quaternion[2])
-        t4 = 1.0 - 2.0 * (y_sqr + quaternion[3] ** 2)
-        yaw = math.atan2(t3, t4)
-
-        return (roll, pitch, yaw)
                 
     def CompareMaterials(self, material):
         """ Compare two WoW material properties """      
@@ -474,7 +451,12 @@ class WMO_root_file:
                         obj = m2.M2ToBlenderMesh(dir, doodad_path, game_data)
                         obj.WoWDoodad.Enabled = True
                         obj.WoWDoodad.Path = doodad_path
-                        obj.WoWDoodad.Color = doodad.Color
+
+                        obj.WoWDoodad.Color = (doodad.Color[0] / 255,
+                                               doodad.Color[1] / 255,
+                                               doodad.Color[2] / 255,
+                                               doodad.Color[3] / 255)
+
                         obj_map[doodad_path] = obj
                         nobj = obj
                     else:
@@ -484,7 +466,12 @@ class WMO_root_file:
                     # place the object correctly on the scene
                     nobj.location = doodad.Position
                     nobj.scale = (doodad.Scale, doodad.Scale, doodad.Scale)
-                    nobj.rotation_euler = WMO_root_file.to_eulerian_angle(doodad.Rotation)
+
+                    nobj.rotation_mode = 'QUATERNION'
+                    nobj.rotation_quaternion = (doodad.Rotation[3],
+                                                doodad.Rotation[0],
+                                                doodad.Rotation[1],
+                                                doodad.Rotation[2])
                     nobj.parent = anchor
                     nobj.hide = True
 
@@ -660,7 +647,7 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, source_doodads, autofill_textures, wmo_groups, nPortals):
+    def Save(self, export_doodads, autofill_textures, wmo_groups, nPortals):
         """ Save WoW WMO root file for future export """        
         # set version header
         self.mver.Version = 17
@@ -671,6 +658,9 @@ class WMO_root_file:
         global_object_count = 0
         global_fog_count = 0
         global_outdoor_object_count = 0
+
+        source_doodads = True
+        doodad_map = {}
         
         for ob in bpy.context.scene.objects:
             if ob.type == "LAMP":
@@ -782,6 +772,12 @@ class WMO_root_file:
                     self.mfog.Fogs.append(fog)
                     
                     Log(0, False, "Done exporting fog: <<" + ob.name + ">>")
+
+                if ob.WoWDoodad.Enabled:
+                    source_doodads = False
+                    if ob.parent and ob.parent.type == "EMPTY":
+                        doodad_map.setdefault(ob.parent.name, []).append(ob)
+
                     
         if source_doodads and len(bpy.context.scene.WoWRoot.MODS_Sets):
             scene = bpy.context.scene
@@ -820,7 +816,46 @@ class WMO_root_file:
 
                 doodad_definition.Color[3] = int(property_definition.ColorAlpha)
 
-                self.modd.Definitions.append(doodad_definition) 
+                self.modd.Definitions.append(doodad_definition)
+
+        elif len(doodad_map):
+
+            doodad_sets = {}
+            doodad_paths = {}
+
+            for set_name, doodads in doodad_map.items():
+                Log(1, False, "Exporting doodadset: <<" + set_name + ">>")
+
+                doodad_set = DoodadSet()
+                doodad_set.Name = set_name
+                doodad_set.StartDoodad = len(self.modd.Definitions)
+
+                for doodad in doodads:
+                    doodad_definition = DoodadDefinition()
+          
+                    path = doodad.WoWDoodad.Path
+                    doodad_definition.NameOfs = doodad_paths.setdefault(path, self.modn.AddString(path))
+                    doodad_definition.Position = doodad.location
+
+                    doodad_definition.Rotation = (doodad.rotation_quaternion[1],
+                                                  doodad.rotation_quaternion[2],
+                                                  doodad.rotation_quaternion[3],
+                                                  doodad.rotation_quaternion[0])
+
+                    doodad_definition.Scale = doodad.scale[0]
+
+                    doodad_definition.Color = (int(doodad.WoWDoodad.Color[0] * 255),
+                                               int(doodad.WoWDoodad.Color[1] * 255),
+                                               int(doodad.WoWDoodad.Color[2] * 255),
+                                               int(doodad.WoWDoodad.Color[3] * 255))
+
+                    self.modd.Definitions.append(doodad_definition)
+
+                doodad_set.nDoodads = len(self.modd.Definitions) - doodad_set.StartDoodad
+                
+                self.mods.Sets.append(doodad_set)
+
+                Log(0, False, "Done exporting doodadset: <<" + set_name + ">>")
 
                        
         if global_object_count > 512:
