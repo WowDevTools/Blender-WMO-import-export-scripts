@@ -2,6 +2,7 @@
 import bpy
 import math
 import mathutils
+import operator
 from . import wmo_format
 from .wmo_format import *
 from . import debug_utils
@@ -63,9 +64,24 @@ class WMO_root_file:
             self.mcvp.Read(f)
                 
     def CompareMaterials(self, material):
-        """ Compare two WoW material properties """      
+        """ Compare two WoW material properties """  
+
+        get_attributes = operator.attrgetter(
+        'Shader', 'TerrainType', 'BlendingMode',
+        'TwoSided', 'Darkened', 'NightGlow',
+        'Texture1', 'Color1', 'Flags1',
+        'Texture2', 'Color2', 'Texture3',
+        'Color3', 'Flags3' )
+
+        mat1 = get_attributes(material.WowMaterial)
+
+
         for material2, index in self.materialLookup.items():
-            
+
+            if mat1 == get_attributes(material2.WowMaterial):
+                return index
+
+            """
             if material.WowMaterial.Shader == material2.WowMaterial.Shader \
             and material.WowMaterial.TerrainType == material2.WowMaterial.TerrainType \
             and material.WowMaterial.BlendingMode == material2.WowMaterial.BlendingMode \
