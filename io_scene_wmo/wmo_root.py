@@ -458,8 +458,10 @@ class WMO_root_file:
             obj_map = {}
 
             for doodad_set in self.mods.Sets:
-                set_name = doodad_set.Name.rstrip("\0")
-                bpy.ops.group.create(name=set_name)
+
+                bpy.ops.object.empty_add(type='SPHERE', location=(0, 0, 0))
+                anchor = bpy.context.scene.objects.active
+                anchor.name = doodad_set.Name
 
                 for i in range(doodad_set.StartDoodad, doodad_set.StartDoodad + doodad_set.nDoodads):
                     doodad = self.modd.Definitions[i]
@@ -483,13 +485,8 @@ class WMO_root_file:
                     nobj.location = doodad.Position
                     nobj.scale = (doodad.Scale, doodad.Scale, doodad.Scale)
                     nobj.rotation_euler = WMO_root_file.to_eulerian_angle(doodad.Rotation)
-
-                    scene.objects.active = nobj
-                    bpy.ops.object.group_link(group=doodad_set.Name)
-
-                if set_name != "Set_$DefaultGlobal":
-                    for obj in bpy.data.groups[doodad_set.Name].objects:
-                        obj.hide = True
+                    nobj.parent = anchor
+                    nobj.hide = True
 
             print("File reading:", m2.read_file_time)
             print("M2 constructor:", m2.m2_time)
