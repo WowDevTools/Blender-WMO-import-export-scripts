@@ -9,8 +9,11 @@ from . import debug_utils
 from .debug_utils import *
 
 import os
+import time
 
 def write(filepath, source_doodads, autofill_textures, export_selected):
+
+    start_time = time.time()
     
     bpy.ops.scene.wow_wmo_validate_scene
     Log(1, True, "Scene successfuly validated")
@@ -25,6 +28,7 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
     fog_counter = 0
     lamp_counter = 0
 
+    objects_to_unlink = []
     reference_map = {}
 
     # ref: fogs, liquid, portals, lights
@@ -52,8 +56,8 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
                 ref[0] = fogs
 
             elif object.WowLiquid.Enabled:
-                ref = reference_map.setdefault(group.name, [None, None, [], []])
-                ref[1] = object.WoWLiquid.WMOGroup
+                ref = reference_map.setdefault(object.WowLiquid.WMOGroup, [None, None, [], []])
+                ref[1] = object.name
 
             elif object.WowPortalPlane.Enabled:
                 object.WowPortalPlane.PortalID = portal_counter
@@ -70,9 +74,16 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
                 object.WowFog.FogID = fog_counter
                 fog_counter += 1
 
+            elif object.WoWDoodad.Enabled:
+                objects_to_unlink.append(object)
+                bpy.context.scene.objects.unlink(object)
+                continue
+
+
         elif object.type == "LAMP" and object.data.WowLight.Enabled:
-            ref = reference_map.setdefault(group.parent, [None, None, [], []])
-            ref[3].append(lamp_counter)
+            if object.parent:
+                ref = reference_map.setdefault(object.parent, [None, None, [], []])
+                ref[3].append(lamp_counter)
             lamp_counter += 1
 
         # prepare object for export
@@ -85,7 +96,10 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
     Log(2, True, "Saving group files")
     wmo_groups = []
 
-    for group in reversed(list(reference_map.keys())):
+    group_list = list(reference_map.keys())
+    group_list.sort()
+
+    for group in group_list:
 
         obj = bpy.context.scene.objects[group]
         group_id = obj.WowWMOGroup.GroupID
@@ -95,6 +109,9 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
         wmo_group = WMO_group_file()
         wmo_group.Save(obj, wmo_root, group_id, source_doodads, autofill_textures, group_filename, reference_map)
         wmo_groups.append(wmo_group)
+
+    # reveal temporary hidden objects
+    map(bpy.context.scene.objects.link, objects_to_unlink)
 
     # write group files
     Log(1, True, "Writing group files")
@@ -108,6 +125,8 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
     # write root file
     Log(2, True, "Writing root file")
     wmo_root.Write(f)
+
+    Log(1, False, "Total export time: ", time.time() - start_time)
     
     return
 

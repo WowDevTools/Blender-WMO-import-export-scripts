@@ -657,11 +657,12 @@ class WMO_group_file:
         mesh = ob.data
                         
         # apply mesh transformations
+        active = bpy.context.scene.objects.active
         bpy.context.scene.objects.active = ob
         ob.select = True
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
         ob.select = False
-        bpy.context.scene.objects.active = new_obj
+        bpy.context.scene.objects.active = active
                         
         StartVertex = 0
         sum = 0
@@ -773,8 +774,8 @@ class WMO_group_file:
             first = ob.WowPortalPlane.First
             second = ob.WowPortalPlane.Second
 
-            first_id = objects[first].WowWMOGroup.GroupID
-            second_id =  objects[second].WowWMOGroup.GroupID
+            first_id = objects[first].WowWMOGroup.GroupID if first else None
+            second_id =  objects[second].WowWMOGroup.GroupID if second else None
                         
             portalRef = [0, "", 1]
 
@@ -1002,7 +1003,6 @@ class WMO_group_file:
             vertex_size = len(mesh.vertices)
 
             # count A and B batches amount
-
             nBatchesA = 0
             nBatchesB = 0
             nBatchesC = 0
@@ -1035,7 +1035,6 @@ class WMO_group_file:
             new_index_last = 0
                         
             # write geometry data and batches
-
             batch_counter_a = 0
             batch_counter_b = 0
             batch_counter_c = 0
@@ -1141,16 +1140,13 @@ class WMO_group_file:
                                 else self.ret_max(BoundingBox[idx], ceil(self.movt.Vertices[new_index][j]))
 
                 # skip batch writing if processed polyBatch is collision
-
                 if batchKey[0] == 0xFF:
                     continue
 
                 # write current batch
-
                 batch = Batch()
 
                 batch.BoundingBox = BoundingBox
-
 
                 batch.StartTriangle = firstIndex
                 batch.nTriangle = nIndices
@@ -1160,9 +1156,7 @@ class WMO_group_file:
 
                 batch.MaterialID = batchKey[0]
 
-
                 # sort and write batches
-
                 if batchKey[1] == 0:
                     self.moba.Batches[batch_counter_a] = batch
                     batch_counter_a += 1

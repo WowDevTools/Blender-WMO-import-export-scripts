@@ -145,7 +145,7 @@ class BLPConverter:
             if not os.path.exists(os.path.splitext(filepath)[0] + ".png") or alwaysReplace:
                 length = len(filepath)
                 if 2047 - (cur_length + init_length) < length + 2:
-                    if os.system(self.toolPath + " /M " + cur_command):
+                    if os.system("\"" + self.toolPath + "\"" + " /M " + cur_command):
                         raise Exception("\nBLP convertion failed.")
                     cur_length = 0
                     cur_command = ""
@@ -153,5 +153,5 @@ class BLPConverter:
                 cur_length += length + 3
 
         if cur_length:
-            if os.system(self.toolPath + " /M " + cur_command):
+            if os.system("\"" + self.toolPath + "\"" + " /M " + cur_command):
                 raise Exception("\nBLP convertion failed.")
