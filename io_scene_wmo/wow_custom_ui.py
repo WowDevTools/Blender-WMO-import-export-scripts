@@ -68,6 +68,11 @@ class WowRootPropertyGroup(bpy.types.PropertyGroup):
     MODN_StringTable = bpy.props.CollectionProperty(type=MODN_String)
     MODD_Definitions = bpy.props.CollectionProperty(type=MODD_Definition)
 
+    GroupID = bpy.props.IntProperty(
+        name="WMO Group ID",
+        description="Used internally for exporting",
+        default= 0,
+        )
     
     PortalDistanceAttenuation = bpy.props.BoolProperty(
         name="Auto Attenuation",
@@ -893,6 +898,12 @@ class WowFogPropertyGroup(bpy.types.PropertyGroup):
     Enabled = bpy.props.BoolProperty(
         name="",
         description="Enable WoW WMO fog properties"
+        )
+
+    FogID = bpy.props.IntProperty(
+        name="WMO Group ID",
+        description="Used internally for exporting",
+        default= 0,
         )
 
     IgnoreRadius = bpy.props.BoolProperty(
