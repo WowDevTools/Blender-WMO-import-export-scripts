@@ -1,5 +1,6 @@
 import re
 import os
+import subprocess
 from . import mpyq
 from .mpyq import *
 
@@ -136,22 +137,29 @@ class BLPConverter:
         else:
             print("\nNo BLPConverter found at given path: " + toolPath)
 
-    def convert(self, filepaths, alwaysReplace=False):
+    def convert(self, filepaths, alwaysReplace = False):
         init_length = len(self.toolPath) + 4
-
+        init_command = self.toolPath
         cur_length = 0
-        cur_command = ""
+        cur_args = []
+
         for filepath in filepaths:
-            if not os.path.exists(os.path.splitext(filepath)[0] + ".png") or alwaysReplace:
+            if alwaysReplace or not os.path.exists(os.path.splitext(filepath)[0] + ".png"):
                 length = len(filepath)
+
                 if 2047 - (cur_length + init_length) < length + 2:
-                    if os.system("\"" + self.toolPath + "\"" + " /M " + cur_command):
+                    final_command = [init_command, '/M']
+                    final_command.extend(cur_args)
+                    if subprocess.call(final_command):
                         raise Exception("\nBLP convertion failed.")
                     cur_length = 0
-                    cur_command = ""
-                cur_command += "\"" + filepath + "\" "
+                    cur_args = []
+
                 cur_length += length + 3
+                cur_args.append(filepath)
 
         if cur_length:
-            if os.system("\"" + self.toolPath + "\"" + " /M " + cur_command):
+            final_command = [init_command, '/M']
+            final_command.extend(cur_args)
+            if subprocess.call(final_command):
                 raise Exception("\nBLP convertion failed.")
