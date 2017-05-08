@@ -31,7 +31,9 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
 
     for object in bpy.context.scene.objects:
 
-        if object.hide and (export_selected and not object.select):
+        if object.hide:
+            continue
+        elif export_selected and not object.select:
             object.select = False
             continue
         else:
@@ -83,7 +85,7 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
     Log(2, True, "Saving group files")
     wmo_groups = []
 
-    for group in reversed(reference_map.keys()):
+    for group in reversed(list(reference_map.keys())):
 
         obj = bpy.context.scene.objects[group]
         group_id = obj.WowWMOGroup.GroupID
@@ -91,7 +93,7 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
         group_filename = base_name + "_" + str(group_id).zfill(3) + ".wmo"
 
         wmo_group = WMO_group_file()
-        wmo_group.Save(obj, wmo_root, group_id, source_doodads, autofill_textures, group_filename)
+        wmo_group.Save(obj, wmo_root, group_id, source_doodads, autofill_textures, group_filename, reference_map)
         wmo_groups.append(wmo_group)
 
     # write group files

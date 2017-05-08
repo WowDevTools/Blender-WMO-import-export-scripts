@@ -650,7 +650,154 @@ class WMO_group_file:
                 
             return -cur_relation
 
-    def Save(self, obj, root, objNumber, source_doodads, autofill_textures, group_filename):
+    def SaveLiquid(self, ob):
+
+        Log(1, False, "Exporting liquid: <<" + ob.name + ">>")
+
+        mesh = ob.data
+                        
+        # apply mesh transformations
+        bpy.context.scene.objects.active = ob
+        ob.select = True
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        ob.select = False
+        bpy.context.scene.objects.active = new_obj
+                        
+        StartVertex = 0
+        sum = 0
+        for vertex in obj_mesh.vertices:
+            curSum = vertex.co[0] + vertex.co[1]
+                            
+            if (curSum < sum):
+                StartVertex = vertex.index
+                sum = curSum
+                                
+        self.mliq.xTiles = round(ob.dimensions[0] / 4.1666625)
+        self.mliq.yTiles = round(ob.dimensions[1] / 4.1666625)
+        self.mliq.xVerts = self.mliq.xTiles + 1
+        self.mliq.yVerts = self.mliq.yTiles + 1
+        self.mliq.Position = mesh.vertices[StartVertex].co
+
+        self.mogp.Flags |= 0x1000
+        self.mogp.LiquidType = int(ob.WowLiquid.LiquidType)
+                        
+        # creating liquid material
+                        
+        material = bpy.data.materials.new(ob.name)
+        material.WowMaterial.Enabled = True
+        material.WowMaterial.Color2 = ob.WowLiquid.Color
+
+        material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\STORMWIND\GRAY12.BLP"
+
+        if self.mogp.LiquidType == 3 \
+        or self.mogp.LiquidType == 7 \
+        or self.mogp.LiquidType == 11:
+            material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\METAL\BM_BRSPIRE_CATWALK01.BLP"
+
+        elif self.mogp.LiquidType == 4 \
+        or self.mogp.LiquidType == 8 \
+        or self.mogp.LiquidType == 12:
+            material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
+
+        self.mliq.materialID = root.AddMaterial(material) 
+
+
+        if self.mogp.LiquidType == 3 \
+        or self.mogp.LiquidType == 4 \
+        or self.mogp.LiquidType == 7 \
+        or self.mogp.LiquidType == 8 \
+        or self.mogp.LiquidType == 11 \
+        or self.mogp.LiquidType == 12:
+                            
+            if mesh.uv_layers.active is not None:
+
+                uvMap = {}
+
+                for poly in mesh.polygons:
+                    for loop_index in poly.loop_indices:
+                        if mesh.loops[loop_index].vertex_index not in uvMap:
+                            uvMap[mesh.loops[loop_index].vertex_index] = mesh.uv_layers.active.data[loop_index].uv
+
+                for i in range(self.mliq.xVerts * self.mliq.yVerts):
+                    vertex = MagmaVertex()
+
+                    vertex.u = int( uvMap.get(mesh.vertices[i].index)[0]) 
+                    vertex.v = int( uvMap.get(mesh.vertices[i].index)[1])
+
+                    vertex.height = mesh.vertices[i].co[2]
+                    self.mliq.VertexMap.append(vertex)
+            else:
+                                
+                LogError(2, "Slime and magma (lava) liquids require a UV map to be created.")
+
+        else:
+
+            for j in range(self.mliq.xVerts * self.mliq.yVerts):
+                vertex = WaterVertex()
+
+                vertex.height = mesh.vertices[j].co[2]
+                self.mliq.VertexMap.append(vertex)
+
+        for poly in mesh.polygons:
+                tile_flag = 0
+                blue = [0.0, 0.0, 1.0]
+
+                bit = 1
+                while bit <= 0x80:
+                    vc_layer = mesh.vertex_colors["flag_" + hex(bit)]
+
+                    if self.CompColors(vc_layer.data[poly.loop_indices[0]].color, blue):
+                        tile_flag |= bit
+                    bit <<= 1
+
+                self.mliq.TileFlags.append(tile_flag)
+                                
+        Log(0, False, "Done exporting liquid: <<" + ob.name + ">>")
+        return True
+
+    def SavePortalRelations(self, obj, ob, root):
+        obj_mesh = ob.data
+                    
+        # save portal relations and MOGP indexing data
+        if ob.WowPortalPlane.Enabled \
+        and (ob.WowPortalPlane.First == obj.name \
+        or ob.WowPortalPlane.Second == obj.name):
+            Log(1, 
+                False, 
+                "Building portal relation between: <<" + ob.name + ">> (portal) and <<" 
+                + obj.name + ">> (group)"
+                )
+
+            objects = bpy.context.scene.objects
+
+            first = ob.WowPortalPlane.First
+            second = ob.WowPortalPlane.Second
+
+            first_id = objects[first].WowWMOGroup.GroupID
+            second_id =  objects[second].WowWMOGroup.GroupID
+                        
+            portalRef = [0, "", 1]
+
+            portalRef[0] = ob.WowPortalPlane.PortalID
+ 
+            if first == obj.name:
+                portalRef[1] = second_id if second else first_id
+            else:
+                portalRef[1] = first_id if first else second_id
+
+            portalRef[2] = self.GetPortalDirection(ob, obj, root.portalDirectionMap, root.PortalR)
+         
+            root.PortalR.append(portalRef)
+            self.mogp.PortalCount += 1
+                        
+            Log(0, 
+                False, 
+                "Done building portal relation between: <<" + ob.name + ">> (portal) and <<" 
+                + obj.name + ">> (group)"
+                )
+
+
+    def Save(self, obj, root, objNumber, source_doodads, autofill_textures, group_filename, ref_map):
         """ Save WoW WMO group data for future export """
         Log(1, False, "Saving group: <<" + obj.name + ">>")
         self.filename = group_filename
@@ -1069,188 +1216,42 @@ class WMO_group_file:
             light_counter = 0
             
             self.molr = MOLR_chunk()
-            self.mliq = MLIQ_chunk()       
+            self.mliq = MLIQ_chunk()
             
-            for ob in bpy.context.scene.objects:
-                if ob.type == "LAMP" and obj.WowWMOGroup.PlaceType == '8192':
-                    if ob.location[0] > self.mogp.BoundingBoxCorner1[0]  \
-                    and ob.location[1] > self.mogp.BoundingBoxCorner1[1] \
-                    and ob.location[2] > self.mogp.BoundingBoxCorner1[2] \
-                    and ob.location[0] < self.mogp.BoundingBoxCorner2[0] \
-                    and ob.location[1] < self.mogp.BoundingBoxCorner2[1] \
-                    and ob.location[2] < self.mogp.BoundingBoxCorner2[2]:
-                        self.molr.LightRefs.append(light_counter)
-                        hasLights = True
-                    light_counter += 1
-                if ob.type == "MESH":
-                    obj_mesh = ob.data
-                    
-                    # save portal relations and MOGP indexing data
-                    if ob.WowPortalPlane.Enabled \
-                    and (ob.WowPortalPlane.First == obj.name \
-                    or ob.WowPortalPlane.Second == obj.name):
-                        Log(1, 
-                            False, 
-                            "Building portal relation between: <<" 
-                            + ob.name 
-                            + ">> (portal) and <<" 
-                            + obj.name 
-                            + ">> (group)"
-                            )
-                        
-                        portalRef = [0, "", 1]
+            cur_ref = ref_map.get(obj.name)
+            
+            fogs = cur_ref[0]
+            liquid = cur_ref[1]
+            portal_relations = cur_ref[2]
+            lamps = cur_ref[3]
 
-                        portalRef[0] = ob.WowPortalPlane.PortalID
- 
-                        if ob.WowPortalPlane.First == obj.name:
-                            portalRef[1] = ob.WowPortalPlane.Second if ob.WowPortalPlane.Second != "" else ob.WowPortalPlane.First
-                        else:
-                            portalRef[1] = ob.WowPortalPlane.First if ob.WowPortalPlane.First != "" else ob.WowPortalPlane.Second
+            objects = bpy.context.scene.objects
 
-                        portalRef[2] = self.GetPortalDirection(ob, obj, root.portalDirectionMap, root.PortalR)
-         
-                        root.PortalR.append(portalRef)
-                        self.mogp.PortalCount += 1
-                        
-                        Log(0, 
-                            False, 
-                            "Done building portal relation between: <<" 
-                            + ob.name 
-                            + ">> (portal) and <<" 
-                            + obj.name 
-                            + ">> (group)"
-                            )
-                        
-                    # save fog references
-                    if ob.WowFog.Enabled:
-                        
-                        fogMap[ob.name] = fog_id
-                            
-                        fog_id += 1
-                    
-                    # export liquids
-                    if ob.WowLiquid.Enabled and obj.name == ob.WowLiquid.WMOGroup:
+            # set fog references
+            self.mogp.FogIndices = (objects[fogs[0]].WowFog.FogID if fogs[0] else 0,
+                                    objects[fogs[1]].WowFog.FogID if fogs[0] else 0, 
+                                    objects[fogs[2]].WowFog.FogID if fogs[0] else 0, 
+                                    objects[fogs[3]].WowFog.FogID if fogs[0] else 0, 
+                                    )
 
-                        if not hasWater:
-                            hasWater = True
-                        else:
-                            LogError(2, "Only one liquid instance per WMO group is allowed.")
+            # save liquid
+            if liquid:
+                hasWater = self.SaveLiquid(objects[liquid])
 
-                        Log(1, False, "Exporting liquid: <<" + ob.name + ">>")
+            # save lamps
+            if lamps:
+                hasLights = True
+                self.molr.LightRefs = lamps
 
-                        mesh = ob.data
-                        
-                        # apply mesh transformations
-                        bpy.context.scene.objects.active = ob
-                        ob.select = True
-                        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-                        ob.select = False
-                        bpy.context.scene.objects.active = new_obj
-                        
-                        StartVertex = 0
-                        sum = 0
-                        for vertex in obj_mesh.vertices:
-                            curSum = vertex.co[0] + vertex.co[1]
-                            
-                            if (curSum < sum):
-                                StartVertex = vertex.index
-                                sum = curSum
-                                
-                        self.mliq.xTiles = round(ob.dimensions[0] / 4.1666625)
-                        self.mliq.yTiles = round(ob.dimensions[1] / 4.1666625)
-                        self.mliq.xVerts = self.mliq.xTiles + 1
-                        self.mliq.yVerts = self.mliq.yTiles + 1
-                        self.mliq.Position = mesh.vertices[StartVertex].co
-
-                        self.mogp.Flags |= 0x1000
-                        self.mogp.LiquidType = int(ob.WowLiquid.LiquidType)
-                        
-                        # creating liquid material
-                        
-                        material = bpy.data.materials.new(ob.name)
-                        material.WowMaterial.Enabled = True
-                        material.WowMaterial.Color2 = ob.WowLiquid.Color
-
-                        material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\STORMWIND\GRAY12.BLP"
-
-                        if self.mogp.LiquidType == 3 \
-                        or self.mogp.LiquidType == 7 \
-                        or self.mogp.LiquidType == 11:
-                            material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\METAL\BM_BRSPIRE_CATWALK01.BLP"
-
-                        elif self.mogp.LiquidType == 4 \
-                        or self.mogp.LiquidType == 8 \
-                        or self.mogp.LiquidType == 12:
-                            material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
-
-                        self.mliq.materialID = root.AddMaterial(material) 
-
-
-                        if self.mogp.LiquidType == 3 \
-                        or self.mogp.LiquidType == 4 \
-                        or self.mogp.LiquidType == 7 \
-                        or self.mogp.LiquidType == 8 \
-                        or self.mogp.LiquidType == 11 \
-                        or self.mogp.LiquidType == 12:
-                            
-                            if mesh.uv_layers.active is not None:
-
-                                uvMap = {}
-
-                                for poly in mesh.polygons:
-                                    for loop_index in poly.loop_indices:
-                                        if mesh.loops[loop_index].vertex_index not in uvMap:
-                                            uvMap[mesh.loops[loop_index].vertex_index] = mesh.uv_layers.active.data[loop_index].uv
-
-                                for i in range(self.mliq.xVerts * self.mliq.yVerts):
-                                    vertex = MagmaVertex()
-
-                                    vertex.u = int( uvMap.get(mesh.vertices[i].index)[0]) 
-                                    vertex.v = int( uvMap.get(mesh.vertices[i].index)[1])
-
-                                    vertex.height = mesh.vertices[i].co[2]
-                                    self.mliq.VertexMap.append(vertex)
-                            else:
-                                
-                                LogError(2, "Slime and magma (lava) liquids require a UV map to be created.")
-
-                        else:
-
-                            for j in range(self.mliq.xVerts * self.mliq.yVerts):
-                                vertex = WaterVertex()
-
-                                vertex.height = mesh.vertices[j].co[2]
-                                self.mliq.VertexMap.append(vertex)
-
-                        for poly in mesh.polygons:
-                                tile_flag = 0
-                                blue = [0.0, 0.0, 1.0]
-
-                                bit = 1
-                                while bit <= 0x80:
-                                    vc_layer = mesh.vertex_colors["flag_" + hex(bit)]
-
-                                    if self.CompColors(vc_layer.data[poly.loop_indices[0]].color, blue):
-                                        tile_flag |= bit
-                                    bit <<= 1
-
-                                self.mliq.TileFlags.append(tile_flag)
-                                
-                        Log(0, False, "Done exporting liquid: <<" + ob.name + ">>")
-
+            # save portal relations
+            for relation in portal_relations:
+                self.SavePortalRelations(obj, objects[relation], root)
              
             root.PortalRCount += self.mogp.PortalCount
             self.mogp.nBatchesA = nBatchesA
             self.mogp.nBatchesB = nBatchesB
             self.mogp.nBatchesC = nBatchesC
             self.mogp.nBatchesD = 0
-
-            self.mogp.FogIndices = (fogMap.get(new_obj.WowWMOGroup.Fog1, 0), 
-                                    fogMap.get(new_obj.WowWMOGroup.Fog2, 0), 
-                                    fogMap.get(new_obj.WowWMOGroup.Fog3, 0), 
-                                    fogMap.get(new_obj.WowWMOGroup.Fog4, 0), 
-                                    )
-
             self.mogp.GroupID = int(new_obj.WowWMOGroup.GroupID)
             self.mogp.Unknown1 = 0
             self.mogp.Unknown2 = 0
@@ -1374,7 +1375,7 @@ class WMO_group_file:
             
             LogError(2, 
                      "Something went wrong while writing file: <<" 
-                     + os.path.basename(filename) 
+                     + os.path.basename(self.filename) 
                      + ">>. See the error above for details."
                      )
             

@@ -37,6 +37,7 @@ class WMO_root_file:
         self.PortalRCount = 0
         self.PortalR = []
         self.portalDirectionMap = {}
+        self.groupMap = {}
 
     def Read(self, f):
         """ Read WoW WMO root file """
