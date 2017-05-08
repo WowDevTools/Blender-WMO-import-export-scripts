@@ -95,7 +95,7 @@ def read(filename, file_format, load_textures, import_doodads):
     for i in range(len(group_list)):
         objName = bpy.path.display_name_from_filepath(group_list[i].filename)
         Log(1, False, "Importing group", objName)
-        group_list[i].LoadObject(objName, None, i, display_name, root, import_doodads)
+        group_list[i].LoadObject(objName, i, display_name, root, import_doodads)
 
     root.LoadPortals(display_name, root)
 

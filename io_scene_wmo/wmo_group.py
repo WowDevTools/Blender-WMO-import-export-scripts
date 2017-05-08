@@ -310,7 +310,7 @@ class WMO_group_file:
         return indices
 
     # Create mesh from file data
-    def LoadObject(self, objName, doodads, objId, base_name, root, editable_doodads):
+    def LoadObject(self, objName, objId, base_name, root, editable_doodads):
         """ Load WoW WMO group as an object to the Blender scene """
         vertices = []
         normals = []
