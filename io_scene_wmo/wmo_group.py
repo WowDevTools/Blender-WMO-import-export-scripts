@@ -666,7 +666,7 @@ class WMO_group_file:
                         
         StartVertex = 0
         sum = 0
-        for vertex in obj_mesh.vertices:
+        for vertex in mesh.vertices:
             curSum = vertex.co[0] + vertex.co[1]
                             
             if (curSum < sum):
