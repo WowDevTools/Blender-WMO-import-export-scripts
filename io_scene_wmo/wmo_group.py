@@ -184,7 +184,7 @@ class WMO_group_file:
         return real_liquid_type
                 
     # return array of vertice and array of faces in a tuple
-    def LoadLiquids(self, objName, pos, root):
+    def LoadLiquids(self, objName, pos):
         """ Load liquid plane of the WMO group. Should only be called if MLIQ is present. """
         
         # load vertices
@@ -279,7 +279,6 @@ class WMO_group_file:
         
         obj.WowLiquid.LiquidType = str(real_liquid_type)
         obj.WowLiquid.WMOGroup = objName
-        root.liquidReferences[name] = objName
 
     # Return faces indices
     def GetBSPNodeIndices(self, iNode, nodes, faces, indices):

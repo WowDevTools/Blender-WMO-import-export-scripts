@@ -36,7 +36,6 @@ class WMO_root_file:
         self.textureLookup = {}
         self.PortalRCount = 0
         self.PortalR = []
-        self.liquidReferences = {}
         self.portalDirectionMap = {}
 
     def Read(self, f):
