@@ -27,7 +27,6 @@ class WMO_group_file:
     def Read(self, f):
         """ Read WoW WMO group file """
         self.filename = f.name
-        self.index = None
 
         # read version header
         self.mver = MVER_chunk()

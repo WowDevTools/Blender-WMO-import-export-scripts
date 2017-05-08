@@ -10,7 +10,106 @@ from .debug_utils import *
 
 import os
 
+def write(filepath, source_doodads, autofill_textures, export_selected):
+    
+    bpy.ops.scene.wow_wmo_validate_scene
+    Log(1, True, "Scene successfuly validated")
 
+    f = open(filepath, "wb")
+    root_filename = filepath
+    
+    base_name = os.path.splitext(filepath)[0]
+
+    group_counter = 0
+    portal_counter = 0
+    fog_counter = 0
+    lamp_counter = 0
+
+    reference_map = {}
+
+    # ref: fogs, liquid, portals, lights
+
+    for object in bpy.context.scene.objects:
+
+        if object.hide and (export_selected and not object.select):
+            object.select = False
+            continue
+        else:
+            object.select = False
+
+        # find references
+        if object.type == "MESH":
+            if object.WowWMOGroup.Enabled:
+                object.WowWMOGroup.GroupID = group_counter
+                group_counter += 1
+
+                fogs = (object.WowWMOGroup.Fog1, object.WowWMOGroup.Fog2,
+                        object.WowWMOGroup.Fog3, object.WowWMOGroup.Fog4)
+
+                ref = reference_map.setdefault(object.name, [None, None, [], []])
+                ref[0] = fogs
+
+            elif object.WowLiquid.Enabled:
+                ref = reference_map.setdefault(group.name, [None, None, [], []])
+                ref[1] = object.WoWLiquid.WMOGroup
+
+            elif object.WowPortalPlane.Enabled:
+                object.WowPortalPlane.PortalID = portal_counter
+                portal_counter += 1
+
+                groups = (object.WowPortalPlane.First, object.WowPortalPlane.Second)
+
+                for group in groups:
+                    if group:
+                        ref = reference_map.setdefault(group, [None, None, [], []])
+                        ref[2].append(object.name)
+
+            elif object.WowFog.Enabled:
+                object.WowFog.FogID = fog_counter
+                fog_counter += 1
+
+        elif object.type == "LAMP" and object.data.WowLight.Enabled:
+            ref = reference_map.setdefault(group.parent, [None, None, [], []])
+            ref[3].append(lamp_counter)
+            lamp_counter += 1
+
+        # prepare object for export
+        bpy.context.scene.objects.active = object
+        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.context.scene.objects.active = None
+
+    wmo_root = WMO_root_file()
+
+    Log(2, True, "Saving group files")
+    wmo_groups = []
+
+    for group in reversed(reference_map.keys()):
+
+        obj = bpy.context.scene.objects[group]
+        group_id = obj.WowWMOGroup.GroupID
+
+        group_filename = base_name + "_" + str(group_id).zfill(3) + ".wmo"
+
+        wmo_group = WMO_group_file()
+        wmo_group.Save(obj, wmo_root, group_id, source_doodads, autofill_textures, group_filename)
+        wmo_groups.append(wmo_group)
+
+    # write group files
+    Log(1, True, "Writing group files")
+    for group in wmo_groups:
+        group.Write()
+        
+    # save root file
+    Log(2, True, "Saving root file")
+    wmo_root.Save(source_doodads, autofill_textures, portal_counter)
+    
+    # write root file
+    Log(2, True, "Writing root file")
+    wmo_root.Write(f)
+    
+    return
+
+'''           
 def write(filepath, source_doodads, autofill_textures, export_selected):
     bpy.ops.scene.wow_wmo_validate_scene
     Log(1, True, "Scene successfuly validated")
@@ -123,3 +222,5 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
     wmo_root.Write(f)
     
     return
+
+'''

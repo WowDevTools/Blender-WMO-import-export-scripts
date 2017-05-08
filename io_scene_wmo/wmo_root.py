@@ -37,7 +37,6 @@ class WMO_root_file:
         self.PortalRCount = 0
         self.PortalR = []
         self.liquidReferences = {}
-        self.groupMap = {}
         self.portalDirectionMap = {}
 
     def Read(self, f):
@@ -658,7 +657,7 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, export_doodads, autofill_textures, wmo_groups, nPortals):
+    def Save(self, export_doodads, autofill_textures, nPortals):
         """ Save WoW WMO root file for future export """        
         # set version header
         self.mver.Version = 17
@@ -889,10 +888,10 @@ class WMO_root_file:
         # set portal relations
         self.mopr.Relationships = []
         for i in range(len(self.PortalR)):
-            group_id = wmo_groups.get(self.PortalR[i][1])
+            group_id = self.PortalR[i][1]
             relation = PortalRelationship()
             relation.PortalIndex = self.PortalR[i][0]
-            relation.GroupIndex = group_id.index
+            relation.GroupIndex = group_id
             relation.Side = self.PortalR[i][2]
             self.mopr.Relationships.append(relation)
 
