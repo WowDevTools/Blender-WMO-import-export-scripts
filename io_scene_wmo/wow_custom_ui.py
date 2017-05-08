@@ -11,8 +11,6 @@ from bpy.utils import register_module, unregister_module
 from .idproperty import idproperty
 from .idproperty.idproperty import *
 
-from bpy.app.handlers import persistent
-
 ###############################
 ## Root properties
 ###############################
