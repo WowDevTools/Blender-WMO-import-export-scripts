@@ -1,5 +1,4 @@
 import bpy
-from functools import partial
 
 ###############################
 ## Debug output system
@@ -11,8 +10,12 @@ class SceneSafetyWatcher():
         self.func = func
             
     def __del__(self):
-        for object in self.objects:
-            self.func(object)
+        if self.objects:
+            for object in self.objects:
+                self.func(object)
+        else:
+            self.func()
+
 
 
 class TECH_OP_VALIDATE_SCENE(bpy.types.Operator):
