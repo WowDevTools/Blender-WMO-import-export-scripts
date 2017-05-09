@@ -34,6 +34,7 @@ class WMO_root_file:
 
         self.materialLookup = {}
         self.textureLookup = {}
+        self.lightsLookup = {}
         self.PortalRCount = 0
         self.PortalR = []
         self.portalDirectionMap = {}
@@ -334,7 +335,6 @@ class WMO_root_file:
 
     def LoadLights(self, name):
         """ Load WoW WMO MOLT lights """
-        self.lights = []
         for i in range(len(self.molt.Lights)):
             light_name = name + "_Light_" + str(i).zfill(2)
 
@@ -377,6 +377,8 @@ class WMO_root_file:
             obj.location = self.molt.Lights[i].Position
 
             bpy.context.scene.objects.link(obj)
+
+            self.lightsLookup[i] = obj
             
     
     def LoadFogs(self, name):

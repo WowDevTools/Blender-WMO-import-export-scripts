@@ -1,37 +1,19 @@
 import bpy
+from functools import partial
 
 ###############################
 ## Debug output system
 ###############################
 
-def report_message(message, type=True):
-    for window in bpy.context.window_manager.windows:
-        screen = window.screen
-    
-        for area in screen.areas:
-            if area.type == 'VIEW_3D':
-                override = {'window': window, 'screen': screen, 'area': area}
-                bpy.ops.render.report_message(override,'INVOKE_DEFAULT', message=message, type=type)
-    
-class TECH_OP_REPORT(bpy.types.Operator):
-    bl_idname = 'render.report_message'
-    bl_label = 'Report'
-    bl_description = 'Reports passed message as error or warning'
-    bl_options = {'REGISTER', 'UNDO'}
-    
-    message = bpy.props.StringProperty()
-    type = bpy.props.BoolProperty(name="Report type", description="Type of message displayed", default = True)
-
-    def execute(self, context):
-        if self.type:
-            self.report({'INFO'}, self.message)
-        else:
-            self.report({'INFO'}, self.message)
+class SceneSafetyWatcher():
+    def __init__(self, func, objs=[]):
+        self.objects = objs
+        self.func = func
             
-        return {'FINISHED'}
+    def __del__(self):
+        for object in self.objects:
+            self.func(object)
 
-    def invoke(self, context, event):
-        return self.execute(context)
 
 class TECH_OP_VALIDATE_SCENE(bpy.types.Operator):
     bl_idname = 'scene.wow_wmo_validate_scene'

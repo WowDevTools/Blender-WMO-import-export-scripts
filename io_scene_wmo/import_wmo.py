@@ -27,6 +27,8 @@ def OpenAllWMOGroups(rootName):
 
 def read(filename, file_format, load_textures, import_doodads):
 
+    start_time = time.time()
+
     f = open(filename, "rb")
     
     # Check if file is WMO root or WMO group, or unknown
@@ -76,9 +78,6 @@ def read(filename, file_format, load_textures, import_doodads):
         else:
             Log(1, False, "Failed to load textures because game data was not loaded.")
 
-    if not import_doodads:
-        root.LoadDoodads()
-
     display_name = bpy.path.display_name_from_filepath(rootName)
     
     # load all materials in root file
@@ -99,8 +98,14 @@ def read(filename, file_format, load_textures, import_doodads):
 
     root.LoadPortals(display_name, root)
 
-    if import_doodads:
+    Log(2, True, "Importing doodad sets")
+
+    if import_doodads and game_data.files:
         root.LoadDoodads(os.path.dirname(filename), game_data)
+    else:
+        root.LoadDoodads()
+
+    Log(1, False, "Total export time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
 
 
 
