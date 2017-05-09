@@ -341,7 +341,8 @@ class WMO_group_file:
         nobj = bpy.data.objects.new(objName, mesh)
         scn.objects.link(nobj)
         
-        mesh.polygons.foreach_set("use_smooth", True)
+        for poly in mesh.polygons:
+            poly.use_smooth = True
 
         # set normals
         for i in range(len(normals)):

@@ -47,8 +47,9 @@ def M2ToBlenderMesh(dir, filepath, filedata):
     # create mesh
     mesh = bpy.data.meshes.new(name)
     mesh.from_pydata(vertices, [], polygons)
-
-    mesh.polygons.foreach_set("use_smooth", True)
+    
+    for poly in mesh.polygons:
+        poly.use_smooth = True
 
     # set normals
     for index, vertex in enumerate(mesh.vertices):
