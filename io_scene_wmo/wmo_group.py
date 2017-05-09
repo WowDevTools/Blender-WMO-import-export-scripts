@@ -462,7 +462,6 @@ class WMO_group_file:
             matID = self.mopy.TriangleMaterials[i].MaterialID
                       
             mesh.polygons[i].material_index = material_indices[matID]
-            mesh.polygons[i].use_smooth = True
 
             # set texture displayed in viewport
             img = material_viewport_textures[material_indices[matID]]
