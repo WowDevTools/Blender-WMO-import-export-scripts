@@ -1066,6 +1066,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_add_fog", text = 'Add fog', icon = 'GROUP_VERTEX')
         col.operator("scene.wow_add_water", text = 'Add water', icon = 'MOD_WAVE')
         col.operator("scene.wow_add_scale_reference", text = 'Add scale', icon = 'OUTLINER_OB_ARMATURE')
+        col.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Last M2 from WMV', icon = 'LOAD_FACTORY')
         col.label(text="Display")
         col.operator("scene.wow_hide_show_outdoor", text = 'Outdoor', icon = 'BBOX')
         col.operator("scene.wow_hide_show_indoor", text = 'Indoor', icon = 'ROTATE')
@@ -1073,7 +1074,13 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_hide_show_fog", text = 'Fog', icon = 'FORCE_TURBULENCE')
         col.operator("scene.wow_hide_show_water", text = 'Water', icon = 'MOD_FLUIDSIM')
         col.operator("scene.wow_hide_show_light", text = 'Light', icon = 'LAMP_SPOT')
-        col.operator("scene.wow_hide_show_all_objects", text = 'All', icon = 'VISIBLE_IPO_ON') 
+        col.operator("scene.wow_hide_show_all_objects", text = 'All', icon = 'VISIBLE_IPO_ON')
+
+        col.label(text="Game data")
+        state = hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files
+        icon = 'COLOR_GREEN' if state else 'COLOR_RED'
+        text = "Unload game data" if state else "Load game data"
+        load_data = col.operator("scene.load_wow_filesystem", text = text, icon = icon)
 
     def RegisterWMOToolsPanelObjectMode():
         bpy.utils.register_module(WMOToolsPanelObjectMode)

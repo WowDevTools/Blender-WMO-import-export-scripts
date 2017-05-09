@@ -1,6 +1,7 @@
 import bpy
 import os
 import time
+import re
 from . import m2 as m2_
 from . import skin as skin_
 
@@ -8,6 +9,9 @@ from . import skin as skin_
 def M2ToBlenderMesh(dir, filepath, filedata):
 
     print("\nImporting model: <<" + filepath + ">>")
+
+    active_obj = bpy.context.scene.objects.active
+    is_select = bpy.context.scene.objects.active.select if active_obj else False
 
     m2_path = os.path.splitext(filepath)[0] + ".m2"
     skin_path = os.path.splitext(filepath)[0] + "00.skin"
@@ -91,7 +95,81 @@ def M2ToBlenderMesh(dir, filepath, filedata):
     nobj = bpy.data.objects.new(name, mesh)
     scn.objects.link(nobj)
 
+    if active_obj:
+        bpy.context.scene.objects.active = active_obj
+        active_obj.select = is_select
+
     return nobj
+
+
+def wmv_get_last_m2():
+    preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
+
+    if preferences.wmv_path:
+
+        lines = open(preferences.wmv_path).readlines()
+
+        for line in reversed(lines):
+            result = re.search("[^ ]*\\.*\.m2", line)
+            if result:
+                return result.string[result.regs[0][0]:result.regs[0][1]]
+
+        return 
+
+
+class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
+    bl_idname = 'scene.wow_wmo_import_doodad_from_wmv'
+    bl_label = 'Import last M2 from WMV'
+    bl_description = 'Import last M2 from WoW Model Viewer'
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+
+        game_data = getattr(bpy, "wow_game_data", None)
+
+        if not game_data or not game_data.files:
+            self.report({'ERROR'}, "Failed to import model. Connect to game client first.")
+            return {'CANCELLED'}
+
+        relpath = bpy.context.scene.WoWRoot.TextureRelPath
+        dir = relpath if relpath else bpy.path.abspath("//") if bpy.data.is_saved else None
+        m2_path = wmv_get_last_m2()
+
+        if not m2_path:
+            self.report({'ERROR'}, """WoW Model Viewer log contains no model entries. 
+            \nMake sure to use compatible WMV version""")
+            return {'CANCELLED'}
+
+        obj = None
+
+        if dir:
+            try:
+                obj = M2ToBlenderMesh(dir, m2_path, game_data)
+            except:
+                bpy.ops.mesh.primitive_cube_add()
+                obj = bpy.context.scene.objects.active
+                self.report({'WARNING'}, "Failed to import model. Placeholder is imported instead.")
+
+            if bpy.context.scene.objects.active and bpy.context.scene.objects.active.select:
+                obj.location = bpy.context.scene.objects.active.location
+            else:
+                obj.location = bpy.context.scene.cursor_location
+                
+            obj.WoWDoodad.Enabled = True
+            obj.WoWDoodad.Path = m2_path
+
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.scene.objects.active = obj
+            obj.select = True
+
+        else:
+            self.report({'ERROR'}, """Failed to import model. 
+            \nSave your blendfile or enter texture relative path first.""")
+            return {'CANCELLED'}
+
+        self.report({'INFO'}, "Imported model: " + m2_path)
+
+        return {'FINISHED'}
 
 
    

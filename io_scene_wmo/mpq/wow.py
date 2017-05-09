@@ -1,5 +1,7 @@
 import re
 import os
+import bpy
+import time
 import subprocess
 from . import mpyq
 from .mpyq import *
@@ -109,6 +111,7 @@ class WoWFileData():
         """Open game resources and store links to them in memory"""
 
         print("\nProcessing available game resources of client: " + wow_path)
+        start_time = time.time()
 
         if WoWFileData.is_wow_path_valid(wow_path):
             data_packages = WoWFileData.list_game_data_paths(os.path.join(wow_path, "Data\\"))
@@ -122,7 +125,8 @@ class WoWFileData():
                     resource_map.append((package, False))
                     print("\nLoaded folder patch: " + os.path.basename(package))
 
-            print("\nDone loading game data.")
+            print("\nDone initializing data packages.")
+            print("Total loading time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
             return resource_map
         else:
             print("\nPath to World of Warcraft is empty or invalid. Failed to load game data.")
@@ -163,3 +167,30 @@ class BLPConverter:
             final_command.extend(cur_args)
             if subprocess.call(final_command):
                 raise Exception("\nBLP convertion failed.")
+
+class WOW_FILESYSTEM_LOAD_OP(bpy.types.Operator):
+    bl_idname = 'scene.load_wow_filesystem'
+    bl_label = 'Load WoW filesystem'
+    bl_description = 'Establish connection to World of Warcraft client files'
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+
+        if hasattr(bpy, "wow_game_data"):
+
+            delattr(bpy, "wow_game_data")
+            self.report({'INFO'}, "WoW game data is unloaded.")
+
+        else:
+
+            preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
+        
+            bpy.wow_game_data = WoWFileData(preferences.wow_path, preferences.blp_path)
+
+            if not bpy.wow_game_data.files:
+                self.report({'ERROR'}, "WoW game data is not loaded. Check settings.")
+                return {'CANCELLED'}
+
+            self.report({'INFO'}, "WoW game data is loaded.")
+
+        return {'FINISHED'}

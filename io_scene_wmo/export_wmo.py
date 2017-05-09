@@ -10,7 +10,6 @@ from .debug_utils import *
 
 import os
 import time
-import datetime
 
 def write(filepath, source_doodads, autofill_textures, export_selected):
 

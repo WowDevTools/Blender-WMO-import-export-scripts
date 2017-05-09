@@ -17,7 +17,6 @@ class SceneSafetyWatcher():
             self.func()
 
 
-
 class TECH_OP_VALIDATE_SCENE(bpy.types.Operator):
     bl_idname = 'scene.wow_wmo_validate_scene'
     bl_label = 'Validate Scene'

@@ -10,6 +10,7 @@ from .debug_utils import *
 from .mpq import wow as mpyq
 
 import os
+import time
 
 def OpenAllWMOGroups(rootName):
     i = 0
@@ -65,15 +66,17 @@ def read(filename, file_format, load_textures, import_doodads):
 
     game_data = None
 
-    preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
-
     if load_textures or import_doodads:
-        Log(2, True, "Loading game data")
-        
-        game_data = mpyq.WoWFileData(preferences.wow_path, preferences.blp_path)
+        game_data = getattr(bpy, "wow_game_data", None)
+
+        if not game_data:
+            Log(2, True, "Loading game data")
+            bpy.ops.scene.load_wow_filesystem()
+            game_data = bpy.wow_game_data
 
         if game_data.files:
             if load_textures:
+                Log(2, True, "Extracting textures")
                 game_data.extract_textures_as_png(os.path.dirname(filename), root.motx.GetAllStrings())
         else:
             Log(1, False, "Failed to load textures because game data was not loaded.")

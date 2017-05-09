@@ -64,7 +64,7 @@ class WMOPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
 
     wow_path = StringProperty(name="WoW Client Path")
-    wmv_path = StringProperty(name="WoW Model Viewer Path")
+    wmv_path = StringProperty(name="WoW Model Viewer Log Path")
     blp_path = StringProperty(name="BLP Converter Path")
 
     def draw(self, context):
