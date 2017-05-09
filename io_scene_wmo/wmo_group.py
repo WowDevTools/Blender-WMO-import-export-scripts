@@ -341,8 +341,7 @@ class WMO_group_file:
         nobj = bpy.data.objects.new(objName, mesh)
         scn.objects.link(nobj)
         
-        for poly in mesh.polygons:
-            poly.use_smooth = True
+        mesh.polygons.foreach_set("use_smooth", True)
 
         # set normals
         for i in range(len(normals)):
@@ -1208,9 +1207,6 @@ class WMO_group_file:
 
             self.mogp.PortalStart = root.PortalRCount
             self.mogp.PortalCount = 0
-            
-            fog_id = 0
-            fogMap = {}
 
             hasWater = False
             hasLights = False

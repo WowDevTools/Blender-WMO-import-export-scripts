@@ -163,8 +163,8 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
             obj.select = True
 
         else:
-            self.report({'ERROR'}, """Failed to import model. 
-            \nSave your blendfile or enter texture relative path first.""")
+            self.report({'ERROR'}, """Failed to import model.
+            Save your blendfile or enter texture relative path first.""")
             return {'CANCELLED'}
 
         self.report({'INFO'}, "Imported model: " + m2_path)
