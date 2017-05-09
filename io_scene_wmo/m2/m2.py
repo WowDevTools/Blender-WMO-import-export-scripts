@@ -1089,9 +1089,7 @@ def CreateAnimFileName(a_name,anim,animfile):
     fname = a_name + first + "-" + scnd + ".anim"
     return (animfile[0],fname)
                 
-        
-
-        
+           
 class M2File:
     def __init__(self, file):
  
