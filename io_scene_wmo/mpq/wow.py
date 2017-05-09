@@ -24,7 +24,7 @@ class WoWFileData():
             else:
                 abs_path = os.path.join(storage, filepath)
                 if os.path.exists(abs_path):
-                    file = open(abs_path, "rb")
+                    file = open(abs_path, "rb").read()
             if file:
                 return file
 
