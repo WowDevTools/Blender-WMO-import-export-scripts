@@ -157,6 +157,7 @@ class WoWDoodadPanel(bpy.types.Panel):
         row = layout.row()
         self.layout.prop(context.object.WoWDoodad, "Path")
         self.layout.prop(context.object.WoWDoodad, "Color")
+        self.layout.prop(context.object.WoWDoodad, "Flags")
         layout.enabled = context.object.WoWDoodad.Enabled
 
     @classmethod
@@ -176,6 +177,18 @@ class WoWDoodadPropertyGroup(bpy.types.PropertyGroup):
         default=(1,1,1,1),
         min=0.0, 
         max=1.0
+        )
+
+    Flags = bpy.props.EnumProperty(
+        name = "My enum",
+        description = "My enum description",
+        items = [
+            ("1" , "Accept Projected Tex." , ""),
+            ("2", "Adjust lighting", ""),
+            ("4", "Unknown", ""),
+            ("8", "Unknown", "")
+        ],
+        options = {"ENUM_FLAG"}
         )
 
     Enabled = bpy.props.BoolProperty(

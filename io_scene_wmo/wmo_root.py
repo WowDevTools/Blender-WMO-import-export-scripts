@@ -470,15 +470,25 @@ class WMO_root_file:
                         obj.WoWDoodad.Enabled = True
                         obj.WoWDoodad.Path = doodad_path
 
-                        obj.WoWDoodad.Color = (doodad.Color[0] / 255,
-                                               doodad.Color[1] / 255,
-                                               doodad.Color[2] / 255,
-                                               doodad.Color[3] / 255)
-
                         obj_map[doodad_path] = obj
                         nobj = obj
                     else:
                         nobj = obj.copy()
+
+                        nobj.WoWDoodad.Color = (doodad.Color[0] / 255,
+                                               doodad.Color[1] / 255,
+                                               doodad.Color[2] / 255,
+                                               doodad.Color[3] / 255)
+
+                        flags = []
+                        bit = 1
+                        while bit <= 0x8:
+                            if doodad.Flags & bit:
+                                flags.append(str(bit))
+                            bit <<= 1
+
+                        nobj.WoWDoodad.Flags = set(flags)
+
                         scene.objects.link(nobj)
 
                     # place the object correctly on the scene
@@ -673,6 +683,11 @@ class WMO_root_file:
 
         source_doodads = True
         doodad_map = {}
+
+        scn = bpy.context.scene
+                    
+        for o in scn.objects:
+            o.select = False
         
         for ob in bpy.context.scene.objects:
             if ob.type == "LAMP":
@@ -860,6 +875,9 @@ class WMO_root_file:
                                                int(doodad.WoWDoodad.Color[1] * 255),
                                                int(doodad.WoWDoodad.Color[2] * 255),
                                                int(doodad.WoWDoodad.Color[3] * 255))
+
+                    for flag in doodad.WoWDoodad.Flags:
+                        doodad_definition.Flags |= int(flag)
 
                     self.modd.Definitions.append(doodad_definition)
 

@@ -30,18 +30,14 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
 
     reference_map = {}
 
-    def link_object(object):
-        bpy.context.scene.objects.link(object)
-        object.use_fake_user = False
-
-    safety_watcher = SceneSafetyWatcher(link_object)
+    objects_to_restore = []
 
     # ref: fogs, liquid, portals, lights
 
     for object in bpy.context.scene.objects:
 
         if object.type == "MESH" and object.WoWDoodad.Enabled:
-                safety_watcher.objects.append(object)
+                objects_to_restore.append(object)
                 object.use_fake_user = True
                 bpy.context.scene.objects.unlink(object)
                 continue
@@ -99,29 +95,34 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
         bpy.context.scene.objects.active = None
 
 
-    wmo_root = WMO_root_file()
+    try: 
+        wmo_root = WMO_root_file()
 
-    Log(2, True, "Saving group files")
-    wmo_groups = []
+        Log(2, True, "Saving group files")
+        wmo_groups = []
 
-    group_list = list(reference_map.keys())
-    group_list.sort()
+        group_list = list(reference_map.keys())
+        group_list.sort()
 
-    for group in group_list:
+        for group in group_list:
 
-        obj = bpy.context.scene.objects[group]
-        group_id = obj.WowWMOGroup.GroupID
+            obj = bpy.context.scene.objects[group]
+            group_id = obj.WowWMOGroup.GroupID
 
-        group_filename = base_name + "_" + str(group_id).zfill(3) + ".wmo"
+            group_filename = base_name + "_" + str(group_id).zfill(3) + ".wmo"
 
-        wmo_group = WMO_group_file()
-        wmo_group.Save(obj, wmo_root, group_id, source_doodads, 
-                       autofill_textures, group_filename, reference_map.get(group))
+            wmo_group = WMO_group_file()
+            wmo_group.Save(obj, wmo_root, group_id, source_doodads, 
+                           autofill_textures, group_filename, reference_map.get(group))
 
-        wmo_groups.append(wmo_group)
+            wmo_groups.append(wmo_group)
 
-    # reveal temporary hidden objects
-    del safety_watcher
+    except:
+        pass
+    finally:
+        for object in objects_to_restore:
+            bpy.context.scene.objects.link(object)
+            object.use_fake_user = False
 
     # write group files
     Log(1, True, "Writing group files")

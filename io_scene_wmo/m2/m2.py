@@ -1054,8 +1054,6 @@ def WriteFakeBlock(f,block):
         f.write(struct.pack("h",j))
     FillLine(f)
             
-    
-    
     block.ofsKeys = f.tell()
     for j in block.Keys:
         if   (block.type == DATA_SHORT):

@@ -4,19 +4,6 @@ import bpy
 ## Debug output system
 ###############################
 
-class SceneSafetyWatcher():
-    def __init__(self, func, objs=[]):
-        self.objects = objs
-        self.func = func
-            
-    def __del__(self):
-        if self.objects:
-            for object in self.objects:
-                self.func(object)
-        else:
-            self.func()
-
-
 class TECH_OP_VALIDATE_SCENE(bpy.types.Operator):
     bl_idname = 'scene.wow_wmo_validate_scene'
     bl_label = 'Validate Scene'
