@@ -1298,7 +1298,7 @@ class OBJECT_OP_Add_Scale(bpy.types.Operator):
             scale_obj.name = "Gnome Scale"
             scale_obj.dimensions = (0.362, 0.758, 0.991)
 
-        report_message("Added " + ScaleType + " scale")
+        self.report({'INFO'}, "Added " + ScaleType + " scale")
         
     def execute(self, context):
         self.AddScale(self.ScaleType)
