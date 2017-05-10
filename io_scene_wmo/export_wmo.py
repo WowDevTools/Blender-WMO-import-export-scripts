@@ -117,8 +117,6 @@ def write(filepath, source_doodads, autofill_textures, export_selected):
 
             wmo_groups.append(wmo_group)
 
-    except:
-        pass
     finally:
         for object in objects_to_restore:
             bpy.context.scene.objects.link(object)
