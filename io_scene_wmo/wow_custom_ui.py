@@ -1044,12 +1044,12 @@ def get_doodad_sets(self, context):
             else:
                 has_global = True
 
-    for index, obj in enumerate(doodad_set_objects, 1 + has_global):
+    for index, obj in enumerate(sorted(doodad_set_objects, key=lambda x:x.name), 1 + has_global):
         doodad_sets.append((obj.name, obj.name, "", 'SCENE_DATA', index))
 
     doodad_sets.insert(0, ("None", "No set", "", 'X', 0))
     if has_global:
-        doodad_sets.insert(1, ("Set_$DefaultGlobal", "Set_$DefaultGlobal", "", 'SCENE_DATA', 1))
+        doodad_sets.insert(1, ("Set_$DefaultGlobal", "Set_$DefaultGlobal", "", 'WORLD', 1))
 
     return doodad_sets
 
@@ -1094,7 +1094,7 @@ def RegisterWoWVisibilityProperties():
         )
 
     bpy.types.Scene.WoWDoodadVisibility = bpy.props.EnumProperty(
-        name="Doodad Sets:",
+        name="",
         description="Switch doodad sets",
         items=get_doodad_sets,
         update=switch_doodad_set
@@ -1130,6 +1130,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_add_fog", text = 'Add fog', icon = 'GROUP_VERTEX')
         col.operator("scene.wow_add_water", text = 'Add water', icon = 'MOD_WAVE')
         col.operator("scene.wow_add_scale_reference", text = 'Add scale', icon = 'OUTLINER_OB_ARMATURE')
+        col.operator("scene.wow_doodad_set_add", text = 'Add to doodadset', icon = 'ZOOMIN')
         col.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Last M2 from WMV', icon = 'LOAD_FACTORY')
 
         col.label(text="Display:")
@@ -1137,7 +1138,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         box.label(text="Unit Types:")
         box.prop(context.scene, "WoWVisibility")
         box.label(text="Doodad Sets:")
-        box.prop(context.scene, "WoWDoodadVisibility", expand=True)
+        box.prop(context.scene, "WoWDoodadVisibility", expand=False)
 
         col.label(text="Game data:")
         state = hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files
@@ -1172,6 +1173,110 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
         col.operator("scene.wow_mliq_add_all_flags", text = 'Fill all', icon = 'OUTLINER_OB_LATTICE')
         col.operator("scene.wow_mliq_clear_flag", text = 'Clear flag', icon = 'LATTICE_DATA')
         col.operator("scene.wow_mliq_clear_all_flags", text = 'Clear all', icon = 'MOD_LATTICE')
+
+###############################
+## Doodad operators
+############################### 
+ 
+class DOODAD_SET_ADD(bpy.types.Operator):
+    bl_idname = 'scene.wow_doodad_set_add'
+    bl_label = 'Add doodad set'
+    bl_description = 'Add models to doodadset'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    Action = bpy.props.EnumProperty(
+        name="",
+        description="Choose operator action",
+        items=[
+            ("ADD", "Add to existing set", "", 'PLUGIN', 0),
+            ("CUSTOM", "Create new set", "", 'ZOOMIN', 1),
+            ("GLOBAL", "Create new global set", "", 'WORLD',2),
+            ]
+        )
+
+    Set = bpy.props.EnumProperty(
+        name="",
+        description="Select doodad set",
+        items=get_doodad_sets,
+        update=switch_doodad_set
+        )
+
+    Name = bpy.props.StringProperty()
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+
+        col.label(text="Action")
+        col.prop(self, "Action", expand=False)
+
+        text = None
+        if self.Action == "ADD":
+            text = "Select set:"
+        elif self.Action == "CUSTOM":
+            text = "Enter set name:"
+
+        col.label(text=text)
+
+        if self.Action == "ADD":
+            col.prop(self, "Set")
+        elif self.Action == "CUSTOM":
+            col.prop(self, "Name")
+   
+    def execute(self, context):
+
+        selected_objs = []
+        for obj in bpy.context.scene.objects:
+            if obj.select and obj.WoWDoodad.Enabled:
+                selected_objs.append(obj)
+
+        if self.Action == "ADD":
+            if self.Set != "None":
+                for obj in selected_objs:
+                    obj.parent = bpy.context.scene.objects[self.Set]
+
+                self.report({'INFO'}, "Successfully added doodads to doodad set")
+
+            else:
+                self.report({'WARNING'}, "Select a doodad set to link objects to first")
+
+        elif self.Action == "CUSTOM":
+            if self.Name:
+                bpy.ops.object.empty_add(type='SPHERE', location=(0, 0, 0))
+                obj = bpy.context.scene.objects.active
+                obj.name = self.Name
+                obj.hide = True
+                obj.hide_select = True
+
+                for object in selected_objs:
+                    object.parent = obj
+
+                self.report({'INFO'}, "Successfully created new doodadset and added doodads to it")
+
+            else:
+                self.report({'WARNING'}, "Enter name of the doodadset")
+
+        elif self.Action == "GLOBAL":
+            if not bpy.context.scene.objects.get("Set_$DefaultGlobal"):
+                bpy.ops.object.empty_add(type='SPHERE', location=(0, 0, 0))
+                obj = bpy.context.scene.objects.active
+                obj.name = "Set_$DefaultGlobal"
+                obj.hide = True
+                obj.hide_select = True
+
+                for object in selected_objs:
+                    object.parent = obj
+
+                self.report({'INFO'}, "Successfully created global doodadset and added doodads to it")
+
+            else:
+                self.report({'WARNING'}, "There can only be one global doodadset")
+
+        switch_doodad_set(bpy.context.scene, None)
+
+        return {'FINISHED'}
+
+
 
 ###############################
 ## Water operators

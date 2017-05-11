@@ -457,6 +457,8 @@ class WMO_root_file:
                 bpy.ops.object.empty_add(type='SPHERE', location=(0, 0, 0))
                 anchor = bpy.context.scene.objects.active
                 anchor.name = doodad_set.Name
+                anchor.hide = True
+                anchor.hide_select = True
 
                 for i in range(doodad_set.StartDoodad, doodad_set.StartDoodad + doodad_set.nDoodads):
                     doodad = self.modd.Definitions[i]
@@ -502,6 +504,10 @@ class WMO_root_file:
                                                 doodad.Rotation[2])
                     nobj.parent = anchor
                     nobj.hide = True
+                    nobj.lock_location = (True, True, True)
+                    nobj.lock_rotation = (True, True, True)
+                    nobj.lock_scale = (True, True, True)
+
 
         else:
             string_filter = []
