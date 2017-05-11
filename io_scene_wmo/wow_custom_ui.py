@@ -1031,6 +1031,39 @@ def update_liquid_flags(self, context):
         else:
             layer = mesh.vertex_colors.new("flag_" + value)
             layer.active = True
+
+def get_doodad_sets(self, context):
+    has_global = False
+    doodad_set_objects = set()
+    doodad_sets = []
+
+    for obj in bpy.context.scene.objects:
+        if obj.WoWDoodad.Enabled and obj.parent:
+            if obj.parent.name != "Set_$DefaultGlobal":
+                doodad_set_objects.add(obj.parent)
+            else:
+                has_global = True
+
+    for index, obj in enumerate(doodad_set_objects, 1 + has_global):
+        doodad_sets.append((obj.name, obj.name, "", 'SCENE_DATA', index))
+
+    doodad_sets.insert(0, ("None", "No set", "", 'X', 0))
+    if has_global:
+        doodad_sets.insert(1, ("Set_$DefaultGlobal", "Set_$DefaultGlobal", "", 'SCENE_DATA', 1))
+
+    return doodad_sets
+
+def switch_doodad_set(self, context):
+    set = self.WoWDoodadVisibility
+
+    for obj in bpy.context.scene.objects:
+        if obj.WoWDoodad.Enabled:
+            if obj.parent:
+                name = obj.parent.name
+                obj.hide = set == "None" or name != set and name != "Set_$DefaultGlobal"
+            else:
+                obj.hide = True
+
     
 def RegisterWoWVisibilityProperties():
     bpy.types.Scene.WoWVisibility = bpy.props.EnumProperty(
@@ -1038,12 +1071,11 @@ def RegisterWoWVisibilityProperties():
             ('0', "Outdoor", "Display outdoor groups", 'BBOX', 0x1),
             ('1', "Indoor", "Display indoor groups", 'ROTATE', 0x2),
             ('2', "Portals", "Display portals", 'MOD_PARTICLES', 0x4),
-            ('3', "Doodads", "Switch doodadset display", 'SCENE_DATA', 0x8),
-            ('4', "Fogs", "Display fogs", 'FORCE_TURBULENCE', 0x10),
-            ('5', "Liquids", "Display liquids", 'MOD_FLUIDSIM', 0x20),
-            ('6', "Lights", "Display lights", 'LAMP_SPOT', 0x40)],
+            ('3', "Fogs", "Display fogs", 'FORCE_TURBULENCE', 0x8),
+            ('4', "Liquids", "Display liquids", 'MOD_FLUIDSIM', 0x10),
+            ('5', "Lights", "Display lights", 'LAMP_SPOT', 0x20)],
         options={'ENUM_FLAG'},
-        default={'0', '1', '2', '3', '4', '5', '6'},
+        default={'0', '1', '2', '3', '4', '5'},
         update=update_wow_visibility
         )
 
@@ -1060,8 +1092,18 @@ def RegisterWoWVisibilityProperties():
         default='0x1',
         update=update_liquid_flags
         )
+
+    bpy.types.Scene.WoWDoodadVisibility = bpy.props.EnumProperty(
+        name="Doodad Sets:",
+        description="Switch doodad sets",
+        items=get_doodad_sets,
+        update=switch_doodad_set
+        )
+
 def UnregisterWoWVisibilityProperties():
     bpy.types.Scene.WoWVisibility = None
+    bpy.types.Scene.WoWLiquidFlags = None
+    bpy.types.Scene.WoWDoodadVisibility = None
 
 class WMOToolsPanelObjectMode(bpy.types.Panel):
     bl_label = 'Quick WMO'
@@ -1076,7 +1118,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         
         col = layout.column()
         
-        col.label(text="Actions")
+        col.label(text="Actions:")
         col.operator("scene.wow_selected_objects_to_group", text = 'To WMO group', icon = 'OBJECT_DATA')
         col.operator("scene.wow_selected_objects_to_wow_material", text = 'To WMO material', icon = 'SMOOTH')
         col.operator("scene.wow_selected_objects_to_portals", text = 'To WMO portal', icon = 'MOD_MIRROR')
@@ -1090,10 +1132,14 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_add_scale_reference", text = 'Add scale', icon = 'OUTLINER_OB_ARMATURE')
         col.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Last M2 from WMV', icon = 'LOAD_FACTORY')
 
-        col.label(text="Display")
-        col.prop(context.scene, "WoWVisibility")
+        col.label(text="Display:")
+        box = col.box()
+        box.label(text="Unit Types:")
+        box.prop(context.scene, "WoWVisibility")
+        box.label(text="Doodad Sets:")
+        box.prop(context.scene, "WoWDoodadVisibility", expand=True)
 
-        col.label(text="Game data")
+        col.label(text="Game data:")
         state = hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files
         icon = 'COLOR_GREEN' if state else 'COLOR_RED'
         text = "Unload game data" if state else "Load game data"
