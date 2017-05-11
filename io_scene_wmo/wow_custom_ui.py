@@ -997,60 +997,69 @@ def UnregisterWowFogProperties():
 
 ###############################
 ## WMO Toolbar
-###############################    
+###############################  
 
-class WoWVisibilityPropertyGroup(bpy.types.PropertyGroup):
+def update_wow_visibility(self, context):
+    values = self.WoWVisibility
+    for obj in bpy.context.scene.objects:
+        if obj.type == "MESH":
+            if obj.WowWMOGroup.Enabled:
+                if obj.WowWMOGroup.PlaceType == '8':
+                    obj.hide = False if '0' in values else True
+                else:
+                    obj.hide = False if '1' in values else True
+            elif obj.WowPortalPlane.Enabled:
+                obj.hide = False if '2' in values else True
+            elif obj.WowFog.Enabled:
+                obj.hide = False if '4' in values else True
+            elif obj.WowLiquid.Enabled:
+                obj.hide = False if '5' in values else True
+        elif obj.type == "LAMP" and obj.data.WowLight.Enabled:
+            obj.hide = False if '6' in values else True
 
-    Enabled = bpy.props.BoolProperty(
-        name="",
-        description="Enable WoW visibility properties",
-        default = True
-        )
+def update_liquid_flags(self, context):
+    value = self.WoWLiquidFlags
 
-    Outdoor = bpy.props.BoolProperty(
-        name="Outdoor",
-        description="Show/hide outdoor groups",
-        default= True,
-        )
+    water = bpy.context.scene.objects.active
+    mesh = water.data
+    if water.WowLiquid.Enabled:
+        layer = mesh.vertex_colors.get("flag_" + value)
 
-    Indoor = bpy.props.BoolProperty(
-        name="Indoor",
-        description="Show/hide indoor groups",
-        default= True,
-        )
+        if layer:
+            layer.active = True
+            mesh.use_paint_mask = True
+        else:
+            layer = mesh.vertex_colors.new("flag_" + value)
+            layer.active = True
     
-    Portals = bpy.props.BoolProperty(
-        name="Portals",
-        description="Show/hide portal objects",
-        default= True,
-        )
-    
-    Fog = bpy.props.BoolProperty(
-        name="Fog",
-        description="Show/hide fog objects",
-        default= True,
-        )
-    
-    Light = bpy.props.BoolProperty(
-        name="Light",
-        description="Show/hide light objects",
-        default= True,
-        ) 
-    
-    Water = bpy.props.BoolProperty(
-        name="Water",
-        description="Show/hide water planes",
-        default= True,
-        )     
-    
-    All = bpy.props.BoolProperty(
-        name="All",
-        description="Show/hide all WoW objects",
-        default= True,
-        )
 def RegisterWoWVisibilityProperties():
-    bpy.types.Scene.WoWVisibility = bpy.props.PointerProperty(type=WoWVisibilityPropertyGroup)
+    bpy.types.Scene.WoWVisibility = bpy.props.EnumProperty(
+        items=[
+            ('0', "Outdoor", "Display outdoor groups", 'BBOX', 0x1),
+            ('1', "Indoor", "Display indoor groups", 'ROTATE', 0x2),
+            ('2', "Portals", "Display portals", 'MOD_PARTICLES', 0x4),
+            ('3', "Doodads", "Switch doodadset display", 'SCENE_DATA', 0x8),
+            ('4', "Fogs", "Display fogs", 'FORCE_TURBULENCE', 0x10),
+            ('5', "Liquids", "Display liquids", 'MOD_FLUIDSIM', 0x20),
+            ('6', "Lights", "Display lights", 'LAMP_SPOT', 0x40)],
+        options={'ENUM_FLAG'},
+        default={'0', '1', '2', '3', '4', '5', '6'},
+        update=update_wow_visibility
+        )
 
+    bpy.types.Scene.WoWLiquidFlags = bpy.props.EnumProperty(
+        items=[
+            ('0x1', "Flag 0x01", "Switch to this flag", 'MOD_SOFT', 0),
+            ('0x2', "Flag 0x02", "Switch to this flag", 'MOD_SOFT', 1),
+            ('0x4', "Flag 0x04", "Switch to this flag", 'MOD_SOFT', 2),
+            ('0x8', "Invisible", "Switch to this flag", 'RESTRICT_VIEW_OFF', 3),
+            ('0x10', "Flag 0x10", "Switch to this flag", 'MOD_SOFT', 4),
+            ('0x20', "Flag 0x20", "Switch to this flag", 'MOD_SOFT', 5),
+            ('0x40', "Flag 0x40", "Switch to this flag", 'MOD_SOFT', 6),
+            ('0x80', "Flag 0x80", "Switch to this flag", 'MOD_SOFT', 7)],
+        default='0x1',
+        update=update_liquid_flags
+        )
 def UnregisterWoWVisibilityProperties():
     bpy.types.Scene.WoWVisibility = None
 
@@ -1080,14 +1089,9 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_add_water", text = 'Add water', icon = 'MOD_WAVE')
         col.operator("scene.wow_add_scale_reference", text = 'Add scale', icon = 'OUTLINER_OB_ARMATURE')
         col.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Last M2 from WMV', icon = 'LOAD_FACTORY')
+
         col.label(text="Display")
-        col.operator("scene.wow_hide_show_outdoor", text = 'Outdoor', icon = 'BBOX')
-        col.operator("scene.wow_hide_show_indoor", text = 'Indoor', icon = 'ROTATE')
-        col.operator("scene.wow_hide_show_portals", text = 'Portals', icon = 'MOD_PARTICLES')
-        col.operator("scene.wow_hide_show_fog", text = 'Fog', icon = 'FORCE_TURBULENCE')
-        col.operator("scene.wow_hide_show_water", text = 'Water', icon = 'MOD_FLUIDSIM')
-        col.operator("scene.wow_hide_show_light", text = 'Light', icon = 'LAMP_SPOT')
-        col.operator("scene.wow_hide_show_all_objects", text = 'All', icon = 'VISIBLE_IPO_ON')
+        col.prop(context.scene, "WoWVisibility")
 
         col.label(text="Game data")
         state = hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files
@@ -1115,22 +1119,8 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
         col = layout.column()
         
         col.label(text="Flags")
-        flag_0x1 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x01', icon = 'MOD_SOFT')
-        flag_0x1.Flag = '0x1'
-        flag_0x2 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x02', icon = 'MOD_SOFT')
-        flag_0x2.Flag = '0x2'
-        flag_0x4 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x04', icon = 'MOD_SOFT')
-        flag_0x4.Flag = '0x4'
-        flag_0x8 = col.operator("scene.wow_mliq_switch_flag", text = 'Invisible', icon = 'VISIBLE_IPO_ON')
-        flag_0x8.Flag = '0x8'
-        flag_0x10 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x10', icon = 'MOD_SOFT')
-        flag_0x10.Flag = '0x10'
-        flag_0x20 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x20', icon = 'MOD_SOFT')
-        flag_0x20.Flag = '0x20'
-        flag_0x40 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x40', icon = 'MOD_SOFT')
-        flag_0x40.Flag = '0x40'
-        flag_0x80 = col.operator("scene.wow_mliq_switch_flag", text = 'Flag 0x80', icon = 'MOD_SOFT')
-        flag_0x80.Flag = '0x80'
+        col.prop(context.scene, "WoWLiquidFlags", expand=True)
+
         col.label(text="Actions")
         col.operator("scene.wow_mliq_add_flag", text = 'Add flag', icon = 'MOD_SOFT')
         col.operator("scene.wow_mliq_add_all_flags", text = 'Fill all', icon = 'OUTLINER_OB_LATTICE')
@@ -1140,45 +1130,6 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
 ###############################
 ## Water operators
 ###############################  
-    
-class OBJECT_OP_FLAG_SWITCHER(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_switch_flag'
-    bl_label = 'Flag 0x01'
-    bl_description = 'Currently displayed flag layer'
-    bl_options = {'REGISTER', 'UNDO'}
-    
-    Flag = bpy.props.EnumProperty(
-    name = "Flag Layer",
-    description = "Select scale reference type",
-    items = [
-            ('0x1', "flag_0x1", ""), 
-            ('0x2', "flag_0x2", ""),
-            ('0x4', "flag_0x4", ""),
-            ('0x8', "flag_0x8", ""),
-            ('0x10', "flag_0x10", ""),
-            ('0x20', "flag_0x20", ""),
-            ('0x40', "flag_0x40", ""),
-            ('0x80', "flag_0x80", ""),
-            ]
-    )
-
-    def SwitchFlag(self, Flag):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if water.WowLiquid.Enabled:
-            layer = mesh.vertex_colors.get("flag_" + Flag)
-
-            if layer:
-                layer.active = True
-                mesh.use_paint_mask = True
-            else:
-                layer = mesh.vertex_colors.new("flag_" + Flag)
-                layer.active = True
-                # todo: display warning
-        
-    def execute(self, context):
-        self.SwitchFlag(self.Flag)
-        return {'FINISHED'}
 
 class OBJECT_OP_ADD_FLAG(bpy.types.Operator):
     bl_idname = 'scene.wow_mliq_add_flag'
@@ -1702,143 +1653,6 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
         self.ToWoWMaterial(self.Shader, self.BlendingMode, self.TerrainType, self.TwoSided, self.Darkened, self.NightGlow)
         return {'FINISHED'}
     
-###############################
-## Visibility operators
-###############################  
-    
-class OBJECT_OP_Hide_Show_All(bpy.types.Operator):
-    bl_idname = 'scene.wow_hide_show_all_objects'
-    bl_label = 'Hide/Show all'
-    bl_description = 'Hide/Show all WoW WMO objects'
-
-    def execute(self, context):
-        state = True
-        for ob in bpy.context.scene.objects:
-            if ob.WowWMOGroup.Enabled \
-            or ob.WowPortalPlane.Enabled \
-            or ob.WowFog.Enabled \
-            or ob.WowLiquid.Enabled \
-            or ob.data.WowLight.Enabled:
-                if bpy.context.scene.WoWVisibility.All:
-                    ob.hide = True
-                    state = False
-                else:
-                    ob.hide = False
-                    state = True
-        bpy.context.scene.WoWVisibility.All = state
-        return {'FINISHED'}
-    
-
-class OBJECT_OP_Hide_Show_Water(bpy.types.Operator):
-    bl_idname = 'scene.wow_hide_show_water'
-    bl_label = 'Hide/Show all water planes'
-    bl_description = 'Hide/Show all WoW WMO water planes'
-
-    def execute(self, context):
-        state = True
-        for ob in bpy.context.scene.objects:
-            if(ob.WowLiquid.Enabled == True):
-                if(bpy.context.scene.WoWVisibility.Water == True):
-                    ob.hide = True
-                    state = False
-                else:
-                    ob.hide = False
-                    state = True
-        bpy.context.scene.WoWVisibility.Water = state
-        return {'FINISHED'}   
-
-class OBJECT_OP_Hide_Show_Portals(bpy.types.Operator):
-    bl_idname = 'scene.wow_hide_show_portals'
-    bl_label = 'Hide/Show all portals'
-    bl_description = 'Hide/Show all WoW WMO portal objects'
-
-    def execute(self, context):
-        state = True
-        for ob in bpy.context.scene.objects:
-            if(ob.WowPortalPlane.Enabled == True):
-                if(bpy.context.scene.WoWVisibility.Portals == True):
-                    ob.hide = True
-                    state = False
-                else:
-                    ob.hide = False
-                    state = True
-        bpy.context.scene.WoWVisibility.Portals = state
-        return {'FINISHED'}   
-    
-class OBJECT_OP_Hide_Show_Indoor(bpy.types.Operator):
-    bl_idname = 'scene.wow_hide_show_indoor'
-    bl_label = 'Hide/Show all indoor groups'
-    bl_description = 'Hide/Show all WoW WMO indoor groups'
-
-    def execute(self, context):
-        state = True
-        for ob in bpy.context.scene.objects:
-            if((ob.WowWMOGroup.Enabled == True) & (ob.WowWMOGroup.PlaceType == '8192')):
-                if(bpy.context.scene.WoWVisibility.Indoor == True):
-                    ob.hide = True
-                    state = False
-                else:
-                    ob.hide = False
-                    state = True
-        bpy.context.scene.WoWVisibility.Indoor = state
-        return {'FINISHED'}   
-    
-class OBJECT_OP_Hide_Show_Outdoor(bpy.types.Operator):
-    bl_idname = 'scene.wow_hide_show_outdoor'
-    bl_label = 'Hide/Show all outdoor groups'
-    bl_description = 'Hide/Show all WoW WMO outdoor groups'
-
-    def execute(self, context):
-        state = True
-        for ob in bpy.context.scene.objects:
-            if((ob.WowWMOGroup.Enabled == True) & (ob.WowWMOGroup.PlaceType == '8')):
-                if(bpy.context.scene.WoWVisibility.Outdoor == True):
-                    ob.hide = True
-                    state = False
-                else:
-                    ob.hide = False
-                    state = True
-        bpy.context.scene.WoWVisibility.Outdoor = state
-        return {'FINISHED'}
-    
-class OBJECT_OP_Hide_Show_Fog(bpy.types.Operator):
-    bl_idname = 'scene.wow_hide_show_fog'
-    bl_label = 'Hide/Show all WoW fog objects'
-    bl_description = 'Hide/Show all WoW WMO fog objects'
-
-    def execute(self, context):
-        state = True
-        for ob in bpy.context.scene.objects:
-            if(ob.WowFog.Enabled == True):
-                if(bpy.context.scene.WoWVisibility.Fog == True):
-                    ob.hide = True
-                    state = False
-                else:
-                    ob.hide = False
-                    state = True
-        bpy.context.scene.WoWVisibility.Fog = state
-        return {'FINISHED'}
-    
-    
-class OBJECT_OP_Hide_Show_Light(bpy.types.Operator):
-    bl_idname = "scene.wow_hide_show_light"
-    bl_label = "Hide/Show all WoW light objects"
-    bl_description = "Hide/Show all WoW WMO light objects"
-    
-    def execute(self, context):
-        state = True
-        for ob in bpy.context.scene.objects:
-            if(ob.type == 'LAMP' and ob.data.WowLight.Enabled):
-                if(bpy.context.scene.WoWVisibility.Light == True):
-                    ob.hide = True
-                    state = False
-                else:
-                    ob.hide = False
-                    state = True
-        bpy.context.scene.WoWVisibility.Light = state    
-        return {"FINISHED"}
-        
-
 def register():
     RegisterWowRootProperties()
     RegisterWoWDoodadProperties()
