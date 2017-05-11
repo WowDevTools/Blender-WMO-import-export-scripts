@@ -693,29 +693,23 @@ class WMO_group_file:
         material.WowMaterial.Enabled = True
         material.WowMaterial.Color2 = ob.WowLiquid.Color
 
+        types_1 = {3, 7, 11}
+        types_2 = {4, 8, 12}
+
         material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\STORMWIND\GRAY12.BLP"
 
-        if self.mogp.LiquidType == 3 \
-        or self.mogp.LiquidType == 7 \
-        or self.mogp.LiquidType == 11:
+        if self.mogp.LiquidType in types_1:
             material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\METAL\BM_BRSPIRE_CATWALK01.BLP"
 
-        elif self.mogp.LiquidType == 4 \
-        or self.mogp.LiquidType == 8 \
-        or self.mogp.LiquidType == 12:
+        elif self.mogp.LiquidType in types_2:
             material.WowMaterial.Texture1 = "DUNGEONS\TEXTURES\FLOOR\JLO_UNDEADZIGG_SLIMEFLOOR.BLP"
 
         self.mliq.materialID = root.AddMaterial(material) 
 
 
-        if self.mogp.LiquidType == 3 \
-        or self.mogp.LiquidType == 4 \
-        or self.mogp.LiquidType == 7 \
-        or self.mogp.LiquidType == 8 \
-        or self.mogp.LiquidType == 11 \
-        or self.mogp.LiquidType == 12:
+        if self.mogp.LiquidType in types_1 or self.mogp.LiquidType in types_2:
                             
-            if mesh.uv_layers.active is not None:
+            if mesh.uv_layers.active:
 
                 uvMap = {}
 
@@ -1298,9 +1292,10 @@ class WMO_group_file:
             if vg_blendmap == None:
                 self.mocv2 = None
 
-        except:
+        except Exception as e:
             
             Log(0, False, "Failed saving group: <<" + str(obj.name) + ">>")
+            raise e
 
         else:
 
@@ -1312,7 +1307,6 @@ class WMO_group_file:
 
             bpy.context.scene.objects.active = obj
 
-        return
          
     def Write(self):
         """ Write a saved WoW WMO group to a file """
@@ -1360,12 +1354,14 @@ class WMO_group_file:
             f.seek(0xC)
             self.mogp.Write(f)
             
-        except:
+        except Exception as e:
             
             LogError(2, 
                      "Something went wrong while writing file: <<" 
                      + os.path.basename(self.filename) 
                      + ">>. See the error above for details."
                      )
+
+            raise e
             
         Log(0, False, "Done writing file: <<" + os.path.basename(self.filename) + ">>")
