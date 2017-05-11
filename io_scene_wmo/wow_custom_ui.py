@@ -1185,7 +1185,7 @@ class DOODAD_SET_ADD(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     Action = bpy.props.EnumProperty(
-        name="",
+        name="Operator action",
         description="Choose operator action",
         items=[
             ("ADD", "Add to existing set", "", 'PLUGIN', 0),
@@ -1201,22 +1201,23 @@ class DOODAD_SET_ADD(bpy.types.Operator):
         update=switch_doodad_set
         )
 
-    Name = bpy.props.StringProperty()
+    Name = bpy.props.StringProperty(
+        name=""
+        )
 
     def draw(self, context):
         layout = self.layout
         col = layout.column()
 
         col.label(text="Action")
-        col.prop(self, "Action", expand=False)
+        col.prop(self, "Action", expand=True)
 
-        text = None
         if self.Action == "ADD":
             text = "Select set:"
+            col.label(text=text)
         elif self.Action == "CUSTOM":
             text = "Enter set name:"
-
-        col.label(text=text)
+            col.label(text=text)
 
         if self.Action == "ADD":
             col.prop(self, "Set")
