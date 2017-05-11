@@ -1247,6 +1247,9 @@ class DOODAD_SET_ADD(bpy.types.Operator):
                 obj.name = self.Name
                 obj.hide = True
                 obj.hide_select = True
+                obj.lock_location = (True, True, True)
+                obj.lock_rotation = (True, True, True)
+                obj.lock_scale = (True, True, True)
 
                 for object in selected_objs:
                     object.parent = obj
@@ -1263,6 +1266,9 @@ class DOODAD_SET_ADD(bpy.types.Operator):
                 obj.name = "Set_$DefaultGlobal"
                 obj.hide = True
                 obj.hide_select = True
+                obj.lock_location = (True, True, True)
+                obj.lock_rotation = (True, True, True)
+                obj.lock_scale = (True, True, True)
 
                 for object in selected_objs:
                     object.parent = obj
