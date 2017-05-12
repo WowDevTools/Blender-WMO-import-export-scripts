@@ -1219,7 +1219,13 @@ def LoadDoodadsFromPreserved(dir, game_data):
             obj = obj_map.get(doodad_path)
 
             if not obj:
-                obj = m2.M2ToBlenderMesh(dir, doodad_path, game_data)
+                try:
+                    obj = m2.M2ToBlenderMesh(dir, doodad_path, game_data)
+                except:
+                    bpy.ops.mesh.primitive_cube_add()
+                    obj = bpy.context.scene.objects.active
+                    LogDebug(1, False, "Failed to import model: <<" + doodad_path + ">>. Placeholder is imported instead.")
+
                 obj.WoWDoodad.Enabled = True
                 obj.WoWDoodad.Path = doodad_path
 
