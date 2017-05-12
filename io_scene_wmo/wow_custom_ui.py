@@ -1267,8 +1267,7 @@ class DOODAD_SET_CLEAR_PRESERVED(bpy.types.Operator):
     Action = bpy.props.EnumProperty(
         items=[
             ('0', "Load doodad sets", "Load doodad sets from game data", 'LOAD_FACTORY', 0),
-            ('1', "Clear preserved sets", "Clear preserved doodad set data to unlock editing", 'CANCEL', 1)
-            ],       
+            ('1', "Clear preserved sets", "Clear preserved doodad set data to unlock editing", 'CANCEL', 1)],       
         default='0'
         )
 
