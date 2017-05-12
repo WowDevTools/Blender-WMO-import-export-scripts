@@ -446,7 +446,7 @@ class WMO_root_file:
             fog.WowFog.StartFactor2 = f.StartFactor2
             fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)       
 
-    def LoadDoodads(dir=None, game_data=None):
+    def LoadDoodads(self, dir=None, game_data=None):
         """ Load doodad sets to scene. Two modes are supported: data storing and actual import."""
         scene = bpy.context.scene
         if game_data and dir:
