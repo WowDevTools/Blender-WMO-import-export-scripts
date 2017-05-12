@@ -12,6 +12,9 @@ class WoWFileData():
         self.files = self.open_game_resources(self.wow_path)
         self.converter = BLPConverter(blp_path) if blp_path else None
 
+    def __del__(self):
+        print("\nUnloading game data...")
+
     def read_file(self, filepath, force_decompress=False):
         """ Read the latest version of the file from loaded archives and directories. """
         file = None
