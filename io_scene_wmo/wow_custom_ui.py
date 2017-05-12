@@ -193,10 +193,12 @@ class WoWDoodadPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        self.layout.prop(context.object.WoWDoodad, "Path")
-        self.layout.prop(context.object.WoWDoodad, "Color")
-        self.layout.prop(context.object.WoWDoodad, "Flags")
+        layout.prop(context.object.WoWDoodad, "Path")
+        layout.prop(context.object.WoWDoodad, "Color")
+
+        col = layout.column()
+        col.label("Flags:")
+        col.prop(context.object.WoWDoodad, "Flags")
         layout.enabled = context.object.WoWDoodad.Enabled
 
     @classmethod
@@ -204,7 +206,7 @@ class WoWDoodadPanel(bpy.types.Panel):
         return (context.object is not None
                 and context.object.WoWDoodad.Enabled
                 and isinstance(context.object.data, bpy.types.Mesh))
-
+        
 class WoWDoodadPropertyGroup(bpy.types.PropertyGroup):
 
     Path = bpy.props.StringProperty()
@@ -573,18 +575,17 @@ class WowWMOGroupPanel(bpy.types.Panel):
         self.layout.prop(context.object.WowWMOGroup, "Enabled")
 
     def draw(self, context):
-        layout = self.layout
-        row = layout.row()
         self.layout.prop(context.object.WowWMOGroup, "GroupName")
         self.layout.prop(context.object.WowWMOGroup, "GroupDesc")
         self.layout.prop(context.object.WowWMOGroup, "PlaceType")
-        self.layout.prop(context.object.WowWMOGroup, "GroupID")
+        self.layout.prop(context.object.WowWMOGroup, "GroupDBCid")
         self.layout.prop(context.object.WowWMOGroup, "LiquidType")
-        self.layout.prop(context.object.WowWMOGroup, "VertShad")
-        self.layout.prop(context.object.WowWMOGroup, "NoLocalLighting")
-        self.layout.prop(context.object.WowWMOGroup, "AlwaysDraw")
-        self.layout.prop(context.object.WowWMOGroup, "IsMountAllowed")
-        self.layout.prop(context.object.WowWMOGroup, "SkyBox")
+        col = self.layout.column()
+        col.prop(context.object.WowWMOGroup, "VertShad")
+        col.prop(context.object.WowWMOGroup, "NoLocalLighting")
+        col.prop(context.object.WowWMOGroup, "AlwaysDraw")
+        col.prop(context.object.WowWMOGroup, "IsMountAllowed")
+        col.prop(context.object.WowWMOGroup, "SkyBox")
         
         column = layout.column()
         idproperty.layout_id_prop(column, context.object.WowWMOGroup, "Fog1")
@@ -629,6 +630,11 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
         )
 
     GroupID = bpy.props.IntProperty(
+        name="",
+        description="Group identifier used for export"
+        )
+
+    GroupDBCid = bpy.props.IntProperty(
         name="DBC Group ID",
         description="WMO Group ID in DBC file"
         )
@@ -1331,7 +1337,7 @@ class DOODAD_SET_ADD(bpy.types.Operator):
     bl_idname = 'scene.wow_doodad_set_add'
     bl_label = 'Add doodad set'
     bl_description = 'Add models to doodadset'
-    bl_options = {'REGISTER', 'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     Action = bpy.props.EnumProperty(
         name="Operator action",
@@ -1390,6 +1396,7 @@ class DOODAD_SET_ADD(bpy.types.Operator):
             else:
                 self.report({'WARNING'}, "Select a doodad set to link objects to first")
 
+
         elif self.Action == "CUSTOM":
             if self.Name:
                 bpy.ops.object.empty_add(type='SPHERE', location=(0, 0, 0))
@@ -1431,6 +1438,7 @@ class DOODAD_SET_ADD(bpy.types.Operator):
         switch_doodad_set(bpy.context.scene, None)
 
         return {'FINISHED'}
+
 
 ###############################
 ## Water operators
@@ -1768,6 +1776,7 @@ class OBJECT_OP_Texface_to_material(bpy.types.Operator):
 
         self.report({'INFO'}, "Successfully generated materials from face textures")
         return {'FINISHED'}   
+
         
 class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
     bl_idname = 'scene.wow_selected_objects_to_portals'

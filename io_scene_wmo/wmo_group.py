@@ -498,7 +498,7 @@ class WMO_group_file:
         nobj.WowWMOGroup.Enabled = True
         nobj.WowWMOGroup.GroupName = root.mogn.GetString(self.mogp.GroupNameOfs)
         nobj.WowWMOGroup.GroupDesc = root.mogn.GetString(self.mogp.DescGroupNameOfs)
-        nobj.WowWMOGroup.GroupID = int(self.mogp.GroupID)
+        nobj.WowWMOGroup.GroupDBCid = int(self.mogp.GroupDBCid)
         
         nobj.WowWMOGroup.Fog1 = base_name + "_Fog_" + str(self.mogp.FogIndices[0]).zfill(2)
         nobj.WowWMOGroup.Fog2 = base_name + "_Fog_" + str(self.mogp.FogIndices[1]).zfill(2)
@@ -1252,7 +1252,7 @@ class WMO_group_file:
             self.mogp.nBatchesB = nBatchesB
             self.mogp.nBatchesC = nBatchesC
             self.mogp.nBatchesD = 0
-            self.mogp.GroupID = int(new_obj.WowWMOGroup.GroupID)
+            self.mogp.GroupID = int(new_obj.WowWMOGroup.GroupDBCid)
             self.mogp.Unknown1 = 0
             self.mogp.Unknown2 = 0
             
