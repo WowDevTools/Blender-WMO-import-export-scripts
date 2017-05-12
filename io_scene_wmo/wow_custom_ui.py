@@ -1162,10 +1162,10 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
         col.prop(context.scene, "WoWLiquidFlags", expand=True)
 
         col.label(text="Actions")
-        col.operator("scene.wow_mliq_add_flag", text = 'Add flag', icon = 'MOD_SOFT')
-        col.operator("scene.wow_mliq_add_all_flags", text = 'Fill all', icon = 'OUTLINER_OB_LATTICE')
-        col.operator("scene.wow_mliq_clear_flag", text = 'Clear flag', icon = 'LATTICE_DATA')
-        col.operator("scene.wow_mliq_clear_all_flags", text = 'Clear all', icon = 'MOD_LATTICE')
+        col.operator("scene.wow_mliq_change_flags", text = 'Add flag', icon = 'MOD_SOFT').Action = "ADD"
+        col.operator("scene.wow_mliq_change_flags", text = 'Fill all', icon = 'OUTLINER_OB_LATTICE').Action = "ADD_ALL"
+        col.operator("scene.wow_mliq_change_flags", text = 'Clear flag', icon = 'LATTICE_DATA').Action = "CLEAR"
+        col.operator("scene.wow_mliq_change_flags", text = 'Clear all', icon = 'MOD_LATTICE').Action = "CLEAR_ALL"
 
 ###############################
 ## Doodad operators
@@ -1276,82 +1276,53 @@ class DOODAD_SET_ADD(bpy.types.Operator):
 
         return {'FINISHED'}
 
-
-
 ###############################
 ## Water operators
-###############################  
+###############################
 
 class OBJECT_OP_ADD_FLAG(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_add_flag'
-    bl_label = 'Add flag'
-    bl_description = 'Add flag to currently selected faces'
-    
-    def AddFlag(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            for polygon in mesh.polygons:
-                if polygon.select:
-                    for loop_index in polygon.loop_indices:
-                            mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (0, 0, 255)
-        
-    def execute(self, context):
-        self.AddFlag()
-        return {'FINISHED'}
-    
+    bl_idname = 'scene.wow_mliq_change_flags'
+    bl_label = 'Change liquid flags'
+    bl_description = 'Change WoW liquid flags'
 
-class OBJECT_OP_CLEAR_FLAG(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_clear_flag'
-    bl_label = 'Clear flag'
-    bl_description = 'Remove flag from currently selected faces'
-    
-    def ClearFlag(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            for polygon in mesh.polygons:
-                if polygon.select:
-                    for loop_index in polygon.loop_indices:
-                            mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (255, 255, 255)
-        
+    Action = bpy.props.EnumProperty(
+        name="",
+        description="Select flag action",
+        items=[("ADD", "", ""),
+               ("ADD_ALL", "", ""),
+               ("CLEAR", "", ""),
+               ("CLEAR_ALL", "", "")
+            ]
+        )
+       
     def execute(self, context):
-        self.ClearFlag()
-        return {'FINISHED'}
-    
-class OBJECT_OP_CLEAR_ALL_FLAGS(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_clear_all_flags'
-    bl_label = 'Clear all flags'
-    bl_description = 'Clear all flags on currently selected layer'
-    
-    def ClearAllFlags(self):
         water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            for polygon in mesh.polygons:
-                    for loop_index in polygon.loop_indices:
-                            mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (255, 255, 255)
+        if water.WowLiquid.Enabled:
+            mesh = water.data
+
+            if self.Action == "ADD":
+                for polygon in mesh.polygons:
+                    if polygon.select:
+                        for loop_index in polygon.loop_indices:
+                                mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (0, 0, 255)
+            elif self.Action == "ADD_ALL":
+                for polygon in mesh.polygons:
+                        for loop_index in polygon.loop_indices:
+                                mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (0, 0, 255)
+            elif self.Action == "CLEAR":
+                for polygon in mesh.polygons:
+                    if polygon.select:
+                        for loop_index in polygon.loop_indices:
+                                mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (255, 255, 255)
+            elif self.Action == "CLEAR_ALL":
+                for polygon in mesh.polygons:
+                        for loop_index in polygon.loop_indices:
+                                mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (255, 255, 255)
+
+        else:
+            self.report({'ERROR'}, "Selected object is not World of Warcraft liquid")
         
-    def execute(self, context):
-        self.ClearAllFlags()
-        return {'FINISHED'}
-    
-class OBJECT_OP_ADD_ALL_FLAGS(bpy.types.Operator):
-    bl_idname = 'scene.wow_mliq_add_all_flags'
-    bl_label = 'Fill all flags'
-    bl_description = 'Fill all with flags on currently selected layer'
-    
-    def AddAllFlags(self):
-        water = bpy.context.scene.objects.active
-        mesh = water.data
-        if(water.WowLiquid.Enabled):
-            for polygon in mesh.polygons:
-                    for loop_index in polygon.loop_indices:
-                            mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color = (0, 0, 255)
-        
-    def execute(self, context):
-        self.AddAllFlags()
-        return {'FINISHED'}
+        return {'FINISHED'}  
     
 ###############################
 ## Object operators
@@ -1598,7 +1569,7 @@ class OBJECT_OP_Quick_Collision(bpy.types.Operator):
                     and (vertex_group.name != ob.WowVertexInfo.SecondUV):
                         ob.vertex_groups.remove(vertex_group)
                         
-            if ob.vertex_groups.get(ob.WowVertexInfo.VertexGroup) != None:
+            if ob.vertex_groups.get(ob.WowVertexInfo.VertexGroup):
                 bpy.ops.object.vertex_group_set_active(group=ob.WowVertexInfo.VertexGroup)
             else:
                 new_vertex_group = ob.vertex_groups.new(name="Collision")
@@ -1623,7 +1594,7 @@ class OBJECT_OP_Texface_to_material(bpy.types.Operator):
     bl_description = 'Generate materials out of texfaces in selected objects'
 
     def execute(self, context):
-        if bpy.context.selected_objects[0] != None:
+        if bpy.context.selected_objects[0]:
             bpy.context.scene.objects.active = bpy.context.selected_objects[0]
         bpy.ops.view3d.material_remove()
         bpy.ops.view3d.texface_to_material()
@@ -1795,9 +1766,6 @@ def register():
     RegisterWowPortalPlaneProperties()
     RegisterWoWVisibilityProperties()
     RegisterWowFogProperties()
-    # RegisterWMOToolsPanelObjectMode()
-    # registered in __init__
-    #bpy.utils.register_class(WowMaterialPanel)
 
 def unregister():
     UnregisterWowRootProperties()
@@ -1810,9 +1778,6 @@ def unregister():
     UnregisterWowPortalPlaneProperties()
     UnregisterWoWVisibilityProperties()
     UnregisterWowFogProperties()
-    # UnregisterWMOToolsPanelObjectMode()
-    # unregistered in __init__
-    #bpy.utils.unregister_class(WowMaterialPanel)
 
  
 
