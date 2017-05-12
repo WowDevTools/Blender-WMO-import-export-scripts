@@ -563,7 +563,7 @@ class WMO_group_file:
         cur_relation = result_map.get(portal_obj)
 
         # check if this portal was already processed
-        if not cur_relation:
+        if cur_relation is None:
                         
             # store the previous active object
             active_obj = bpy.context.scene.objects.active
@@ -650,9 +650,20 @@ class WMO_group_file:
                      "WARNING: Failed to calculate portal direction. Calculation from another side may be attempted."
                      )
             return 0
+
+        elif not cur_relation:
+            predefined_direction = 1 if portal_obj.WowPortalPlane.IsInverted else -1
+            result_map[portal_obj] = predefined_direction
+
+            LogDebug(0, 
+                     False, 
+                     """WARNING: Failed to calculate portal direction from both sides. Predefined direction is used. 
+                     Invert this portal if it appears not working in game"""
+                     )
+
+            return predefined_direction
                     
-        else:
-                
+        else:     
             return -cur_relation
 
     def SaveLiquid(self, ob, root):

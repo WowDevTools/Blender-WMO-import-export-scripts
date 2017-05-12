@@ -759,6 +759,12 @@ class WowPortalPlanePropertyGroup(bpy.types.PropertyGroup):
         description="Portal ID"
         )
 
+    IsInverted = bpy.props.BoolProperty(
+        name="",
+        description="Used to calculate direction if automatic calculation failed",
+        default = False
+        )
+
 def RegisterWowPortalPlaneProperties():
     bpy.types.Object.WowPortalPlane = bpy.props.PointerProperty(type=WowPortalPlanePropertyGroup)
 
@@ -1469,44 +1475,49 @@ class OBJECT_OP_Add_Fog(bpy.types.Operator):
         fog.WowFog.Enabled = True
         return {'FINISHED'}
     
-        
+     
 class OBJECT_OP_Invert_Portals(bpy.types.Operator):
     bl_idname = 'scene.wow_invert_portals'
     bl_label = 'Inevert portals'
-    bl_description = 'Invert direction of all selected WoW portals'
-    
-    
-    def InvertPortal(self):
-        for ob in bpy.context.selected_objects:
-            if(ob.WowPortalPlane.Enabled == True):
-                
-                first = ob.WowPortalPlane.First
-                second = ob.WowPortalPlane.Second
-                
-                ob.WowPortalPlane.First = second
-                ob.WowPortalPlane.Second = first
-                    
+    bl_description = 'Invert predefined direction of all selected WoW portals.'
+   
     def execute(self, context):
-        
-        self.InvertPortal()
-        return {'FINISHED'}
-        
+        success = False
+        for ob in bpy.context.selected_objects:
+            if ob.WowPortalPlane.Enabled: 
+                ob.WowPortalPlane.IsInverted = not ob.WowPortalPlane.IsInverted
+                success = True
+
+        if success:
+            self.report({'INFO'}, "Successfully inverted selected portals")
+            return {'FINISHED'}
+        else:
+            self.report({'ERROR'}, "No portals found among selected objects")
+            return {'CANCELLED'}
+
+
 class OBJECT_OP_Fill_Group_Name(bpy.types.Operator):
     bl_idname = 'scene.wow_fill_group_name'
     bl_label = 'Fill group name'
     bl_description = 'Fills the specified group name for selected objects'
     bl_options = {'REGISTER', 'UNDO'}
     
-    name = bpy.props.StringProperty()
-    
-    def FillGroupName(self, name):
-        for ob in bpy.context.selected_objects:
-            if(ob.WowWMOGroup.Enabled == True):
-                ob.WowWMOGroup.GroupName = name        
-
+    Name = bpy.props.StringProperty()
+      
     def execute(self, context):
-        self.FillGroupName(self.name)
-        return {'FINISHED'}           
+        success = False
+        for ob in bpy.context.selected_objects:
+            if ob.WowWMOGroup.Enabled:
+                ob.WowWMOGroup.GroupName = self.Name
+                success = True
+
+        if success:
+            self.report({'INFO'}, "Successfully set names for selected groups")
+            return {'FINISHED'}
+        else:
+            self.report({'ERROR'}, "No WMO group objects found among selected objects")
+            return {'CANCELLED'}
+            
         
 class OBJECT_OP_Fill_Textures(bpy.types.Operator):
     bl_idname = 'scene.wow_fill_textures'
@@ -1515,8 +1526,7 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
                       Is able to account or not account relative texture path.'
     bl_options = {'REGISTER', 'UNDO'}
                
-    
-    def FillTextures(self):
+    def execute(self, context):
         for ob in bpy.context.selected_objects:
             mesh = ob.data
             for i in range(len(mesh.materials)):
@@ -1535,12 +1545,11 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
                     else:
                         mesh.materials[i].WowMaterial.Texture1 = os.path.splitext(
                             mesh.materials[i].active_texture.image.filepath
-                            )[0] + ".blp"            
+                            )[0] + ".blp"
 
-    def execute(self, context):
-        
-        self.FillTextures()
-        return {'FINISHED'}               
+        self.report({'INFO'}, "Done filling WoW material paths")                
+        return {'FINISHED'}
+                 
 
 class OBJECT_OP_Quick_Collision(bpy.types.Operator):
     bl_idname = 'scene.wow_quick_collision'
@@ -1562,39 +1571,46 @@ class OBJECT_OP_Quick_Collision(bpy.types.Operator):
         default = False
         )
     
-    def QuickCollision(self, NodeSize, CleanUp):
-        for ob in bpy.context.selected_objects:
-            ob.WowVertexInfo.Enabled = True
-            bpy.context.scene.objects.active = ob
-            
-            if CleanUp:
-                for vertex_group in ob.vertex_groups:
-                    if (vertex_group.name != ob.WowVertexInfo.VertexGroup) \
-                    and (vertex_group.name != ob.WowVertexInfo.BatchTypeA) \
-                    and (vertex_group.name != ob.WowVertexInfo.BatchTypeB) \
-                    and (vertex_group.name != ob.WowVertexInfo.Lightmap) \
-                    and (vertex_group.name != ob.WowVertexInfo.Blendmap) \
-                    and (vertex_group.name != ob.WowVertexInfo.SecondUV):
-                        ob.vertex_groups.remove(vertex_group)
-                        
-            if ob.vertex_groups.get(ob.WowVertexInfo.VertexGroup):
-                bpy.ops.object.vertex_group_set_active(group=ob.WowVertexInfo.VertexGroup)
-            else:
-                new_vertex_group = ob.vertex_groups.new(name="Collision")
-                bpy.ops.object.vertex_group_set_active(group=new_vertex_group.name)
-                ob.WowVertexInfo.VertexGroup = new_vertex_group.name
-            
-            bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.object.vertex_group_assign()
-            bpy.ops.mesh.select_all(action='DESELECT')
-            bpy.ops.object.mode_set(mode='OBJECT')
-            ob.WowVertexInfo.NodeSize = NodeSize
-
     def execute(self, context):
-        
-        self.QuickCollision(self.NodeSize, self.CleanUp)
-        return {'FINISHED'}        
+     
+        success = False
+        for ob in bpy.context.selected_objects:
+            if ob.WowWMOGroup.Enabled:
+                bpy.context.scene.objects.active = ob
+            
+                if self.CleanUp:
+                    for vertex_group in ob.vertex_groups:
+                        if vertex_group.name != ob.WowVertexInfo.VertexGroup \
+                        and vertex_group.name != ob.WowVertexInfo.BatchTypeA \
+                        and vertex_group.name != ob.WowVertexInfo.BatchTypeB \
+                        and vertex_group.name != ob.WowVertexInfo.Lightmap \
+                        and vertex_group.name != ob.WowVertexInfo.Blendmap \
+                        and vertex_group.name != ob.WowVertexInfo.SecondUV:
+                            ob.vertex_groups.remove(vertex_group)
+                        
+                if ob.vertex_groups.get(ob.WowVertexInfo.VertexGroup):
+                    bpy.ops.object.vertex_group_set_active(group=ob.WowVertexInfo.VertexGroup)
+                else:
+                    new_vertex_group = ob.vertex_groups.new(name="Collision")
+                    bpy.ops.object.vertex_group_set_active(group=new_vertex_group.name)
+                    ob.WowVertexInfo.VertexGroup = new_vertex_group.name
+            
+                bpy.ops.object.mode_set(mode='EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.object.vertex_group_assign()
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bpy.ops.object.mode_set(mode='OBJECT')
+                ob.WowVertexInfo.NodeSize = self.NodeSize
+
+                success = True
+
+        if success:
+            self.report({'INFO'}, "Successfully generated automatic collision for selected WMO groups")
+            return {'FINISHED'}
+        else:
+            self.report({'ERROR'}, "No WMO group objects found among selected objects")
+            return {'CANCELLED'}
+               
         
 class OBJECT_OP_Texface_to_material(bpy.types.Operator):
     bl_idname = 'scene.wow_texface_to_material'
@@ -1606,6 +1622,8 @@ class OBJECT_OP_Texface_to_material(bpy.types.Operator):
             bpy.context.scene.objects.active = bpy.context.selected_objects[0]
         bpy.ops.view3d.material_remove()
         bpy.ops.view3d.texface_to_material()
+
+        self.report({'INFO'}, "Successfully generated materials from face textures")
         return {'FINISHED'}   
         
 class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
@@ -1636,21 +1654,26 @@ class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
     def portal_validator(ob):
         return ob.type == 'MESH' and ob.WowWMOGroup.Enabled
     
-    def ToPortal(self, First, Second):
+    def execute(self, context):
+        
+        success = False
         for ob in bpy.context.selected_objects:
             if ob.type == 'MESH':
                 ob.WowWMOGroup.Enabled = False
                 ob.WowLiquid.Enabled = False
                 ob.WowFog.Enabled = False
                 ob.WowPortalPlane.Enabled = True
-                ob.WowPortalPlane.First = First
-                ob.WowPortalPlane.Second = Second
+                ob.WowPortalPlane.First = self.First
+                ob.WowPortalPlane.Second = self.Second
+                success = True
 
+        if success:
+            self.report({'INFO'}, "Successfully converted select objects to portals")
+            return {'FINISHED'}
+        else:
+            self.report({'ERROR'}, "No mesh objects found among selected objects")
+            return {'CANCELLED'}
 
-    def execute(self, context):
-        
-        self.ToPortal(self.First, self.Second)
-        return {'FINISHED'}
         
 class OBJECT_OP_To_Group(bpy.types.Operator):
     bl_idname = 'scene.wow_selected_objects_to_group'
@@ -1685,25 +1708,30 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
         default = False
         )        
     
-    def ToGroup(self, PlaceType, GroupName, GroupDesc, GroupID, VertShad, SkyBox):
+    def execute(self, context):
+        
+        success = False
         for ob in bpy.context.selected_objects:
-            
             if ob.type == 'MESH':
                 ob.WowLiquid.Enabled = False
                 ob.WowFog.Enabled = False
                 ob.WowPortalPlane.Enabled = False  
                 ob.WowWMOGroup.Enabled = True
-                ob.WowWMOGroup.PlaceType = PlaceType
-                ob.WowWMOGroup.GroupName = GroupName
-                ob.WowWMOGroup.GroupDesc = GroupDesc
-                ob.WowWMOGroup.GroupID = GroupID
-                ob.WowWMOGroup.VertShad = VertShad
-                ob.WowWMOGroup.SkyBox = SkyBox
+                ob.WowWMOGroup.PlaceType = self.PlaceType
+                ob.WowWMOGroup.GroupName = self.GroupName
+                ob.WowWMOGroup.GroupDesc = self.GroupDesc
+                ob.WowWMOGroup.GroupID = self.GroupID
+                ob.WowWMOGroup.VertShad = self.VertShad
+                ob.WowWMOGroup.SkyBox = self.SkyBox
+                success = True
 
-    def execute(self, context):
-        
-        self.ToGroup(self.PlaceType, self.GroupName, self.GroupDesc, self.GroupID, self.VertShad, self.SkyBox)
-        return {'FINISHED'}
+        if success:
+            self.report({'INFO'}, "Successfully converted select objects to WMO groups")
+            return {'FINISHED'}
+        else:
+            self.report({'ERROR'}, "No mesh objects found among selected objects")
+            return {'CANCELLED'}
+
     
 class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
     bl_idname = 'scene.wow_selected_objects_to_wow_material'
@@ -1742,26 +1770,29 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
     NightGlow = bpy.props.BoolProperty(
         name="Unshaded",
         description="Enable NightGlow"
-        )    
-    
-    def ToWoWMaterial(self, Shader, BlendingMode, TerrainType, TwoSided, Darkened, NightGlow):
-        for ob in bpy.context.selected_objects:
-            if(ob.WowWMOGroup.Enabled == True):
-                for i in range(len(ob.data.materials)):
-                    material = ob.data.materials[i].WowMaterial
-                    material.Enabled = True
-                    material.Shader = Shader
-                    material.BlendingMode = BlendingMode
-                    material.TerrainType = TerrainType
-                    material.TwoSided = TwoSided
-                    material.Darkend = Darkened
-                    material.NightGlow = NightGlow
-                    
+        )       
 
     def execute(self, context):
-        
-        self.ToWoWMaterial(self.Shader, self.BlendingMode, self.TerrainType, self.TwoSided, self.Darkened, self.NightGlow)
-        return {'FINISHED'}
+        success = False
+        for ob in bpy.context.selected_objects:
+            if ob.WowWMOGroup.Enabled:
+                for material in ob.data.materials:
+                    material.WowMaterial.Enabled = True
+                    material.WowMaterial.Shader = self.Shader
+                    material.WowMaterial.BlendingMode = self.BlendingMode
+                    material.WowMaterial.TerrainType = self.TerrainType
+                    material.WowMaterial.TwoSided = self.TwoSided
+                    material.WowMaterial.Darkend = self.Darkened
+                    material.WowMaterial.NightGlow = self.NightGlow
+                success = True
+
+        if success:
+            self.report({'INFO'}, "Successfully enabled all materials in the selected WMO groups as WMO materials")
+            return {'FINISHED'}
+        else:
+            self.report({'ERROR'}, "No WMO group objects found among selected objects")
+            return {'CANCELLED'}
+    
     
 def register():
     RegisterWowRootProperties()
