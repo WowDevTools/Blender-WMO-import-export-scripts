@@ -1141,8 +1141,10 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         box = col.box()
         box.label(text="Unit Types:")
         box.prop(context.scene, "WoWVisibility")
-        box.label(text="Doodad Sets:")
-        box.prop(context.scene, "WoWDoodadVisibility", expand=False)
+
+        if not bpy.context.scene.WoWRoot.MODS_Sets:
+            box.label(text="Doodad Sets:")
+            box.prop(context.scene, "WoWDoodadVisibility", expand=False)
 
         col.label(text="Game data:")
         state = hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files
