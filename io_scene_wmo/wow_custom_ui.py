@@ -12,6 +12,45 @@ from .idproperty import idproperty
 from .idproperty.idproperty import *
 
 ###############################
+## Enums
+###############################
+
+shaderEnum = [
+    ('0', "Diffuse", ""), ('1', "Specular", ""), ('2', "Metal", ""),
+    ('3', "Env", ""), ('4', "Opaque", ""), ('5', "EnvMetal", ""),
+    ('6', "TwoLayerDiffuse", ""), ('7', "TwoLayerEnvMetal", ""), ('8', "TwoLayerTerrain", ""),
+    ('9', "DiffuseEmissive", ""), ('10', "Tangent", ""), ('11', "MaskedEnvMetal", ""),
+    ('12', "EnvMetalEmissive", ""), ('13', "TwoLayerDiffuseOpaque", ""), ('14', "TwoLayerDiffuseEmissive", "")
+    ]
+terrainEnum = [
+    ('0', "Dirt", ""), ('1', "Metallic", ""), ('2', "Stone", ""),
+    ('3', "Snow", ""), ('4', "Wood", ""), ('5', "Grass", ""),
+    ('6', "Leaves", ""), ('7', "Sand", ""), ('8', "Soggy", ""),
+    ('9', "Dusty Grass", ""), ('10', "None", ""), ('11', "Water", "")
+    ]
+blendingEnum = [
+    ('0', "Blend_Opaque", ""), ('1', "Blend_AlphaKey", ""), ('2', "Blend_Alpha", ""), 
+    ('3', "Blend_Add", ""), ('4', "Blend_Mod", ""),('5', "Blend_Mod2x", ""), 
+    ('6', "Blend_ModAdd", ""), ('7', "Blend_InvSrcAlphaAdd", ""),('8', "Blend_InvSrcAlphaOpaque", ""),
+    ('9', "Blend_SrcAlphaOpaque", ""), ('10', "Blend_NoAlphaAdd", ""), ('11', "Blend_ConstantAlpha", "")
+    ]
+
+placeTypeEnum = [('8', "Outdoor", ""), ('8192', "Indoor", "")]
+
+liquidTypeEnum = [
+    ('0', "No liquid", ""), ('1', "Water", ""), ('2', "Ocean", ""),
+    ('3', "Magma", ""), ('4', "Slime", ""), ('5', "Slow Water", ""),
+    ('6', "Slow Ocean", ""), ('7', "Slow Magma", ""), ('8', "Slow Slime", ""),
+    ('9', "Fast Water", ""), ('10', "Fast Ocean", ""), ('11', "Fast Magma", ""),
+    ('12', "Fast Slime", ""), ('13', "WMO Water", ""), ('14', "WMO Ocean", ""),
+    ('15', "Green Lava", ""), ('17', "WMO Water - Interior", ""), ('19', "WMO Magma", ""),
+    ('20', "WMO Slime", ""), ('21', "Naxxramas - Slime", ""), ('41', "Coilfang Raid - Water", ""),
+    ('61', "Hyjal Past - Water", ""), ('81', "Lake Wintergrasp - Water", ""), ('100', "Basic Procedural Water", ""),
+    ('121', "CoA Black - Magma", ""), ('141', "Chamber Magma", ""), ('181', "Orange Slime", "")
+    ]
+    
+
+###############################
 ## Root properties
 ###############################
 
@@ -242,25 +281,6 @@ class WowMaterialPanel(bpy.types.Panel):
 
 
 class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
-    shaderEnum = [
-        ('0', "Diffuse", ""), ('1', "Specular", ""), ('2', "Metal", ""),
-        ('3', "Env", ""), ('4', "Opaque", ""), ('5', "EnvMetal", ""),
-        ('6', "TwoLayerDiffuse", ""), ('7', "TwoLayerEnvMetal", ""), ('8', "TwoLayerTerrain", ""),
-        ('9', "DiffuseEmissive", ""), ('10', "Tangent", ""), ('11', "MaskedEnvMetal", ""),
-        ('12', "EnvMetalEmissive", ""), ('13', "TwoLayerDiffuseOpaque", ""), ('14', "TwoLayerDiffuseEmissive", "")
-        ] #, ('16', "Diffuse", "")]
-    terrainEnum = [
-        ('0', "Dirt", ""), ('1', "Metallic", ""), ('2', "Stone", ""),
-        ('3', "Snow", ""), ('4', "Wood", ""), ('5', "Grass", ""),
-        ('6', "Leaves", ""), ('7', "Sand", ""), ('8', "Soggy", ""),
-        ('9', "Dusty Grass", ""), ('10', "None", ""), ('11', "Water", "")
-        ]
-    blendingEnum = [
-        ('0', "Blend_Opaque", ""), ('1', "Blend_AlphaKey", ""), ('2', "Blend_Alpha", ""), 
-        ('3', "Blend_Add", ""), ('4', "Blend_Mod", ""),('5', "Blend_Mod2x", ""), 
-        ('6', "Blend_ModAdd", ""), ('7', "Blend_InvSrcAlphaAdd", ""),('8', "Blend_InvSrcAlphaOpaque", ""),
-        ('9', "Blend_SrcAlphaOpaque", ""), ('10', "Blend_NoAlphaAdd", ""), ('11', "Blend_ConstantAlpha", "")
-        ]
     
     Enabled = bpy.props.BoolProperty(
         name="", 
@@ -592,22 +612,8 @@ def fog_validator(ob):
 class WowWMOMODRStore(bpy.types.PropertyGroup):
     value = bpy.props.IntProperty(name="Doodads Ref")
     
-    
 class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
-    placeTypeEnum = [('8', "Outdoor", ""), ('8192', "Indoor", "")]
-
-    liquidTypeEnum = [
-    ('0', "No liquid", ""), ('1', "Water", ""), ('2', "Ocean", ""),
-    ('3', "Magma", ""), ('4', "Slime", ""), ('5', "Slow Water", ""),
-    ('6', "Slow Ocean", ""), ('7', "Slow Magma", ""), ('8', "Slow Slime", ""),
-    ('9', "Fast Water", ""), ('10', "Fast Ocean", ""), ('11', "Fast Magma", ""),
-    ('12', "Fast Slime", ""), ('13', "WMO Water", ""), ('14', "WMO Ocean", ""),
-    ('15', "Green Lava", ""), ('17', "WMO Water - Interior", ""), ('19', "WMO Magma", ""),
-    ('20', "WMO Slime", ""), ('21', "Naxxramas - Slime", ""), ('41', "Coilfang Raid - Water", ""),
-    ('61', "Hyjal Past - Water", ""), ('81', "Lake Wintergrasp - Water", ""), ('100', "Basic Procedural Water", ""),
-    ('121', "CoA Black - Magma", ""), ('141', "Chamber Magma", ""), ('181', "Orange Slime", "")
-    ]
-
+  
     Enabled = bpy.props.BoolProperty(
         name="",
         description="Enable wow WMO group properties"
@@ -823,18 +829,6 @@ def liquid_validator(ob):
     return ob.WowWMOGroup.Enabled
 
 class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
-
-    liquidTypeEnum = [
-        ('0', "Unsupported", ""), ('1', "Water", ""), ('2', "Ocean", ""),
-        ('3', "Magma", ""), ('4', "Slime", ""), ('5', "Slow Water", ""),
-        ('6', "Slow Ocean", ""), ('7', "Slow Magma", ""), ('8', "Slow Slime", ""),
-        ('9', "Fast Water", ""), ('10', "Fast Ocean", ""), ('11', "Fast Magma", ""),
-        ('12', "Fast Slime", ""), ('13', "WMO Water", ""), ('14', "WMO Ocean", ""),
-        ('15', "Green Lava", ""), ('17', "WMO Water - Interior", ""), ('19', "WMO Magma", ""),
-        ('20', "WMO Slime", ""), ('21', "Naxxramas - Slime", ""), ('41', "Coilfang Raid - Water", ""),
-        ('61', "Hyjal Past - Water", ""), ('81', "Lake Wintergrasp - Water", ""), ('100', "Basic Procedural Water", ""),
-        ('121', "CoA Black - Magma", ""), ('141', "Chamber Magma", ""), ('181', "Orange Slime", "")
-        ]
 
     Enabled = bpy.props.BoolProperty(
         name="",
@@ -1738,26 +1732,6 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
     bl_label = 'Materials of selected objects to WoW Material'
     bl_description = 'Transfer all materials of selected objects to WoW material'
     bl_options = {'REGISTER', 'UNDO'}
-
-    shaderEnum = [
-        ('0', "Diffuse", ""), ('1', "Specular", ""), ('2', "Metal", ""), 
-        ('3', "Env", ""), ('4', "Opaque", ""), ('5', "EnvMetal", ""), 
-        ('6', "TwoLayerDiffuse", ""), ('7', "TwoLayerEnvMetal", ""), ('8', "TwoLayerTerrain", ""), 
-        ('9', "DiffuseEmissive", ""), ('10', "Tangent", ""), ('11', "MaskedEnvMetal", ""), 
-        ('12', "EnvMetalEmissive", ""), ('13', "TwoLayerDiffuseOpaque", ""), ('14', "TwoLayerDiffuseEmissive", "")
-        ] #, ('16', "Diffuse", "")]
-    terrainEnum = [
-        ('0', "Dirt", ""), ('1', "Metallic", ""), ('2', "Stone", ""), 
-        ('3', "Snow", ""), ('4', "Wood", ""), ('5', "Grass", ""), 
-        ('6', "Leaves", ""), ('7', "Sand", ""), ('8', "Soggy", ""), 
-        ('9', "Dusty Grass", ""), ('10', "None", ""), ('11', "Water", "")]
-    blendingEnum = [
-        ('0', "Blend_Opaque", ""), ('1', "Blend_AlphaKey", ""), 
-        ('2', "Blend_Alpha", ""), ('3', "Blend_Add", ""), ('4', "Blend_Mod", ""), 
-        ('5', "Blend_Mod2x", ""), ('6', "Blend_ModAdd", ""), ('7', "Blend_InvSrcAlphaAdd", ""), 
-        ('8', "Blend_InvSrcAlphaOpaque", ""), ('9', "Blend_SrcAlphaOpaque", ""), ('10', "Blend_NoAlphaAdd", ""),
-        ('11', "Blend_ConstantAlpha", "")
-        ]
     
     Shader = bpy.props.EnumProperty(
         items=shaderEnum,
