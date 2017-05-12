@@ -7,6 +7,7 @@ from . import wmo_format
 from .wmo_format import *
 from . import debug_utils
 from .debug_utils import *
+from .m2 import import_m2 as m2
 from bpy.utils import register_module, unregister_module
 from .idproperty import idproperty
 from .idproperty.idproperty import *
@@ -1129,8 +1130,12 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         col.operator("scene.wow_add_fog", text = 'Add fog', icon = 'GROUP_VERTEX')
         col.operator("scene.wow_add_water", text = 'Add water', icon = 'MOD_WAVE')
         col.operator("scene.wow_add_scale_reference", text = 'Add scale', icon = 'OUTLINER_OB_ARMATURE')
-        col.operator("scene.wow_doodad_set_add", text = 'Add to doodadset', icon = 'ZOOMIN')
-        col.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Last M2 from WMV', icon = 'LOAD_FACTORY')
+
+        if bpy.context.scene.WoWRoot.MODS_Sets:
+            col.operator("scene.wow_clear_preserved_doodad_sets", text = 'Clear doodad sets', icon = 'CANCEL')
+        else:
+            col.operator("scene.wow_doodad_set_add", text = 'Add to doodadset', icon = 'ZOOMIN')
+            col.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Last M2 from WMV', icon = 'LOAD_FACTORY')
 
         col.label(text="Display:")
         box = col.box()
@@ -1183,13 +1188,143 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
 
 ###############################
 ## Doodad operators
-############################### 
+###############################
+
+def LoadDoodadsFromPreserved(dir, game_data):
+    """ Load doodad sets to scene from preserved doodadset data"""
+
+    def get_string(ofs):
+        for string in bpy.context.scene.WoWRoot.MODN_StringTable:
+            if string.Ofs == ofs:
+                return string.String
+
+    scene = bpy.context.scene
+    obj_map = {}
+
+    for doodad_set in scene.WoWRoot.MODS_Sets:
+
+        bpy.ops.object.empty_add(type='SPHERE', location=(0, 0, 0))
+        anchor = bpy.context.scene.objects.active
+        anchor.name = doodad_set.Name
+        anchor.hide = True
+        anchor.hide_select = True
+
+        for i in range(doodad_set.StartDoodad, doodad_set.StartDoodad + doodad_set.nDoodads):
+            doodad = scene.WoWRoot.MODD_Definitions[i]
+            doodad_path = os.path.splitext(get_string(doodad.NameOfs))[0] + ".m2"
+
+            nobj = None
+            obj = obj_map.get(doodad_path)
+
+            if not obj:
+                obj = m2.M2ToBlenderMesh(dir, doodad_path, game_data)
+                obj.WoWDoodad.Enabled = True
+                obj.WoWDoodad.Path = doodad_path
+
+                obj_map[doodad_path] = obj
+                nobj = obj
+            else:
+                nobj = obj.copy()
+
+                nobj.WoWDoodad.Color = (doodad.Color[0] / 255,
+                                        doodad.Color[1] / 255,
+                                        doodad.Color[2] / 255,
+                                        doodad.ColorAlpha / 255)
+
+                flags = []
+                bit = 1
+                while bit <= 0x8:
+                    if doodad.Flags & bit:
+                        flags.append(str(bit))
+                    bit <<= 1
+
+                nobj.WoWDoodad.Flags = set(flags)
+
+                scene.objects.link(nobj)
+
+            # place the object correctly on the scene
+            nobj.location = doodad.Position
+            nobj.scale = (doodad.Scale, doodad.Scale, doodad.Scale)
+
+            nobj.rotation_mode = 'QUATERNION'
+            nobj.rotation_quaternion = (doodad.Tilt,
+                                        doodad.Rotation[0],
+                                        doodad.Rotation[1],
+                                        doodad.Rotation[2])
+            nobj.parent = anchor
+            nobj.hide = True
+            nobj.lock_location = (True, True, True)
+            nobj.lock_rotation = (True, True, True)
+            nobj.lock_scale = (True, True, True)
+
+
+class DOODAD_SET_CLEAR_PRESERVED(bpy.types.Operator):
+    bl_idname = 'scene.wow_clear_preserved_doodad_sets'
+    bl_label = 'Clear preserved doodad sets'
+    bl_description = 'Clear preserved doodad set data or optionally load real doodad sets'
+    bl_options = {'REGISTER', 'INTERNAL'}
+
+    Action = bpy.props.EnumProperty(
+        items=[
+            ('0', "Load doodad sets", "Load doodad sets from game data", 'LOAD_FACTORY', 0),
+            ('1', "Clear preserved sets", "Clear preserved doodad set data to unlock editing", 'CANCEL', 1)
+            ],       
+        default='0'
+        )
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def draw(self, context):
+        col = self.layout
+        col.prop(self, "Action", expand=True)
+
+    def execute(self, context):
+        if self.Action == '0':
+            if not getattr(bpy, "wow_game_data"):
+                Log(2, True, "Loading game data")
+                bpy.ops.scene.load_wow_filesystem()
+
+            relpath = bpy.context.scene.WoWRoot.TextureRelPath
+            dir = relpath if relpath else bpy.path.abspath("//") if bpy.data.is_saved else None
+
+            if dir:
+                try:
+                    LoadDoodadsFromPreserved(dir, bpy.wow_game_data)
+                except:
+                    self.report({'ERROR'}, "An error occured while importing doodads.")
+                    return {'CANCELLED'}
+            else:
+                self.report({'ERROR'}, """Failed to import model.
+                Save your blendfile or enter texture relative path first.""")
+                return {'CANCELLED'}
+
+            bpy.context.scene.WoWRoot.MODS_Sets.clear()
+            bpy.context.scene.WoWRoot.MODN_StringTable.clear()
+            bpy.context.scene.WoWRoot.MODD_Definitions.clear()
+
+            update_wow_visibility(bpy.context.scene, None)
+            self.report({'INFO'}, "Successfully imported doodad sets")
+            return {'FINISHED'}
+
+        else:
+            bpy.context.scene.WoWRoot.MODS_Sets.clear()
+            bpy.context.scene.WoWRoot.MODN_StringTable.clear()
+            bpy.context.scene.WoWRoot.MODD_Definitions.clear()
+            self.report({'INFO'}, "Successfully cleared preserved doodad sets. Editing is now available")
+            return {'FINISHED'}
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+
  
 class DOODAD_SET_ADD(bpy.types.Operator):
     bl_idname = 'scene.wow_doodad_set_add'
     bl_label = 'Add doodad set'
     bl_description = 'Add models to doodadset'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'INTERNAL'}
 
     Action = bpy.props.EnumProperty(
         name="Operator action",

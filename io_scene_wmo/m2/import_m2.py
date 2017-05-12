@@ -7,6 +7,7 @@ from . import skin as skin_
 
 
 def M2ToBlenderMesh(dir, filepath, filedata):
+    """Import World of Warcraft M2 model to scene."""
 
     print("\nImporting model: <<" + filepath + ">>")
 
@@ -106,6 +107,8 @@ def M2ToBlenderMesh(dir, filepath, filedata):
 
 
 def wmv_get_last_m2():
+    """Get the path of last M2 model from WoWModelViewer or similar log."""
+
     preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
 
     if preferences.wmv_path:
