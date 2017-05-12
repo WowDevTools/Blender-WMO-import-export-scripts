@@ -49,7 +49,6 @@ liquidTypeEnum = [
     ('121', "CoA Black - Magma", ""), ('141', "Chamber Magma", ""), ('181', "Orange Slime", "")
     ]
     
-
 ###############################
 ## Root properties
 ###############################
@@ -1005,11 +1004,11 @@ def update_wow_visibility(self, context):
             elif obj.WowPortalPlane.Enabled:
                 obj.hide = False if '2' in values else True
             elif obj.WowFog.Enabled:
-                obj.hide = False if '4' in values else True
+                obj.hide = False if '3' in values else True
             elif obj.WowLiquid.Enabled:
-                obj.hide = False if '5' in values else True
+                obj.hide = False if '4' in values else True
         elif obj.type == "LAMP" and obj.data.WowLight.Enabled:
-            obj.hide = False if '6' in values else True
+            obj.hide = False if '5' in values else True
 
 def update_liquid_flags(self, context):
     value = self.WoWLiquidFlags
