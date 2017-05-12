@@ -1150,7 +1150,7 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_context = 'vertexpaint'
-    bl_category = 'WoW'
+    bl_category = 'WMO'
 
     def draw(self, context):
         
@@ -1166,6 +1166,14 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
         col.operator("scene.wow_mliq_change_flags", text = 'Fill all', icon = 'OUTLINER_OB_LATTICE').Action = "ADD_ALL"
         col.operator("scene.wow_mliq_change_flags", text = 'Clear flag', icon = 'LATTICE_DATA').Action = "CLEAR"
         col.operator("scene.wow_mliq_change_flags", text = 'Clear all', icon = 'MOD_LATTICE').Action = "CLEAR_ALL"
+
+    @classmethod
+    def poll(cls, context):
+        return (context.object is not None 
+                and context.object.data is not None
+                and isinstance(context.object.data,bpy.types.Mesh)
+                and context.object.WowLiquid.Enabled
+                )
 
 ###############################
 ## Doodad operators
