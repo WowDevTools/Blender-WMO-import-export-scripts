@@ -542,7 +542,7 @@ class WMO_group_file:
             nobj.WowWMOGroup.IsMountAllowed = True
 
         if self.mogp.Flags & MOGP_FLAG.HasLight:
-            for lamp_id in self.molr:
+            for lamp_id in self.molr.LightRefs:
                 lamp = root.lightsLookup.get(lamp_id)
                 if lamp:
                     lamp.parent = nobj
