@@ -1000,7 +1000,7 @@ def UnregisterWowFogProperties():
 
 def update_wow_visibility(self, context):
     values = self.WoWVisibility
-    for obj in bpy.context.scene.objects:
+    for obj in self.objects:
         if obj.type == "MESH":
             if obj.WowWMOGroup.Enabled:
                 if obj.WowWMOGroup.PlaceType == '8':
@@ -1358,37 +1358,33 @@ class OBJECT_OP_Add_Scale(bpy.types.Operator):
                  ],
         default = 'HUMAN'
         )
-
-    def AddScale(self, ScaleType):
-        
-        if ScaleType == 'HUMAN':
+ 
+    def execute(self, context):
+        if self.ScaleType == 'HUMAN':
             bpy.ops.object.add(type='LATTICE')
             scale_obj = bpy.context.object
             scale_obj.name = "Human Scale"
             scale_obj.dimensions = (0.582, 0.892, 1.989)
 
-        elif ScaleType == 'TAUREN':
+        elif self.ScaleType == 'TAUREN':
             bpy.ops.object.add(type='LATTICE')
             scale_obj = bpy.context.object
             scale_obj.name = "Tauren Scale"
             scale_obj.dimensions = (1.663, 1.539, 2.246)
 
-        elif ScaleType == 'TROLL':
+        elif self.ScaleType == 'TROLL':
             bpy.ops.object.add(type='LATTICE')
             scale_obj = bpy.context.object
             scale_obj.name = "Troll Scale"
             scale_obj.dimensions = (1.116, 1.291, 2.367)
 
-        elif ScaleType == 'GNOME':
+        elif self.ScaleType == 'GNOME':
             bpy.ops.object.add(type='LATTICE')
             scale_obj = bpy.context.object
             scale_obj.name = "Gnome Scale"
             scale_obj.dimensions = (0.362, 0.758, 0.991)
 
-        self.report({'INFO'}, "Added " + ScaleType + " scale")
-        
-    def execute(self, context):
-        self.AddScale(self.ScaleType)
+        self.report({'INFO'}, "Successfully added " + self.ScaleType + " scale")
         return {'FINISHED'} 
     
     
@@ -1411,14 +1407,14 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
         default=10,
         min=1
         )
-    
-    def AddWater(self, xPlanes, yPlanes):
-        bpy.ops.mesh.primitive_grid_add(x_subdivisions = xPlanes + 1,
-                                        y_subdivisions = yPlanes + 1,
+        
+    def execute(self, context):
+        bpy.ops.mesh.primitive_grid_add(x_subdivisions = self.xPlanes + 1,
+                                        y_subdivisions = self.yPlanes + 1,
                                         radius=4.1666625 / 2
                                         )
         water = bpy.context.scene.objects.active
-        bpy.ops.transform.resize( value=(xPlanes, yPlanes, 1.0) )
+        bpy.ops.transform.resize( value=(self.xPlanes, self.yPlanes, 1.0) )
         
         water.name = water.name + "_Liquid"
         
@@ -1431,10 +1427,11 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
                                      
         water.WowLiquid.Enabled = True
 
-        
-    def execute(self, context):
-        self.AddWater(self.xPlanes, self.yPlanes)
+        update_wow_visibility(bpy.context.scene, None)
+
+        self.report({'INFO'}, "Successfully сreated WoW liquid: " + water.name)
         return {'FINISHED'}
+
     
 class OBJECT_OP_Add_Fog(bpy.types.Operator):
     bl_idname = 'scene.wow_add_fog'
@@ -1473,6 +1470,10 @@ class OBJECT_OP_Add_Fog(bpy.types.Operator):
         mesh.materials[0].alpha = 0.35
         
         fog.WowFog.Enabled = True
+
+        update_wow_visibility(bpy.context.scene, None)
+
+        self.report({'INFO'}, "Successfully сreated WoW fog: " + fog.name)
         return {'FINISHED'}
     
      
@@ -1668,6 +1669,7 @@ class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
                 success = True
 
         if success:
+            update_wow_visibility(bpy.context.scene, None)
             self.report({'INFO'}, "Successfully converted select objects to portals")
             return {'FINISHED'}
         else:
@@ -1726,6 +1728,7 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
                 success = True
 
         if success:
+            update_wow_visibility(bpy.context.scene, None)
             self.report({'INFO'}, "Successfully converted select objects to WMO groups")
             return {'FINISHED'}
         else:
