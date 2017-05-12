@@ -184,7 +184,7 @@ class WMO_group_file:
         return real_liquid_type
                 
     # return array of vertice and array of faces in a tuple
-    def LoadLiquids(self, objName, pos):
+    def LoadLiquids(self, objName, pos, root):
         """ Load liquid plane of the WMO group. Should only be called if MLIQ is present. """
         
         # load vertices
