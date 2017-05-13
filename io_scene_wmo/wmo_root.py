@@ -438,8 +438,6 @@ class WMO_root_file:
                     nobj.parent = anchor
                     nobj.hide = True
 
-
-
         else:
             string_filter = []
 
@@ -651,7 +649,7 @@ class WMO_root_file:
                     light.AttenuationEnd = obj_light.WowLight.AttenuationEnd                
                     self.molt.Lights.append(light)
                     
-            if ob.type == "MESH":
+            elif ob.type == "MESH":
                 obj_mesh = ob.data
                 
                 if ob.WowWMOGroup.Enabled:
@@ -659,7 +657,7 @@ class WMO_root_file:
                     if ob.WowWMOGroup.PlaceType == '8':
                         global_outdoor_object_count += 1
                     
-                if ob.WowPortalPlane.Enabled:
+                elif ob.WowPortalPlane.Enabled:
                     Log(1, False, "Exporting portal: <<" + ob.name + ">>")
                     portal_info = PortalInfo()
                     portal_info.StartVertex = global_vertices_count
@@ -698,7 +696,7 @@ class WMO_root_file:
                     Log(0, False, "Done exporting portal: <<" + ob.name + ">>")
                     
                     
-                if ob.WowFog.Enabled:
+                elif ob.WowFog.Enabled:
                     Log(1, False, "Exporting fog: <<" + ob.name + ">>")
                     fog = Fog()
                     
@@ -737,7 +735,7 @@ class WMO_root_file:
                     
                     Log(0, False, "Done exporting fog: <<" + ob.name + ">>")
 
-                if ob.WoWDoodad.Enabled:
+                elif ob.WoWDoodad.Enabled:
                     source_doodads = False
                     if ob.parent and ob.parent.type == "EMPTY":
                         doodad_map.setdefault(ob.parent.name, []).append(ob)
@@ -787,6 +785,8 @@ class WMO_root_file:
             doodad_sets = {}
             doodad_paths = {}
 
+            has_global = False
+
             for set_name, doodads in doodad_map.items():
                 Log(1, False, "Exporting doodadset: <<" + set_name + ">>")
 
@@ -827,10 +827,18 @@ class WMO_root_file:
                 
                 if set_name == "Set_$DefaultGlobal":
                     self.mods.Sets.insert(0, doodad_set)
+                    has_global = True
                 else:
                     self.mods.Sets.append(doodad_set)
 
                 Log(0, False, "Done exporting doodadset: <<" + set_name + ">>")
+
+            if not has_global:
+                doodad_set = DoodadSet()
+                doodad_set.Name = "Set_$DefaultGlobal"
+                doodad_set.StartDoodad = 0
+                doodad_set.nDoodads = 0
+                self.mods.Sets.insert(0, doodad_set)
 
               
         if global_object_count > 512:
