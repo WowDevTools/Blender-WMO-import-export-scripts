@@ -1094,36 +1094,46 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout.split()
+
+        has_sets = True if bpy.context.scene.WoWRoot.MODS_Sets else False
         
         col = layout.column()
         
         col.label(text="Actions:")
-        col.operator("scene.wow_selected_objects_to_group", text = 'To WMO group', icon = 'OBJECT_DATA')
-        col.operator("scene.wow_selected_objects_to_wow_material", text = 'To WMO material', icon = 'SMOOTH')
-        col.operator("scene.wow_selected_objects_to_portals", text = 'To WMO portal', icon = 'MOD_MIRROR')
-        col.operator("scene.wow_texface_to_material", text = 'Texface to mat.', icon = 'TEXTURE_DATA')
-        col.operator("scene.wow_quick_collision", text = 'Quick collision', icon = 'STYLUS_PRESSURE')
-        col.operator("scene.wow_fill_textures", text = 'Fill textures', icon = 'FILE_IMAGE')
-        col.operator("scene.wow_fill_group_name", text = 'Fill group name', icon = 'FONTPREVIEW')
-        col.operator("scene.wow_invert_portals", text = 'Invert portals', icon = 'FILE_REFRESH')
-        col.operator("scene.wow_add_fog", text = 'Add fog', icon = 'GROUP_VERTEX')
-        col.operator("scene.wow_add_water", text = 'Add water', icon = 'MOD_WAVE')
-        col.operator("scene.wow_add_scale_reference", text = 'Add scale', icon = 'OUTLINER_OB_ARMATURE')
 
-        if bpy.context.scene.WoWRoot.MODS_Sets:
+        if bpy.context.selected_objects:
+            box = col.box()
+            box.label(text="Selected:")
+            box.operator("scene.wow_selected_objects_to_group", text = 'To WMO group', icon = 'OBJECT_DATA')
+            box.operator("scene.wow_selected_objects_to_wow_material", text = 'To WMO material', icon = 'SMOOTH')
+            box.operator("scene.wow_selected_objects_to_portals", text = 'To WMO portal', icon = 'MOD_MIRROR')
+            box.operator("scene.wow_texface_to_material", text = 'Texface to mat.', icon = 'TEXTURE_DATA')
+            box.operator("scene.wow_quick_collision", text = 'Quick collision', icon = 'STYLUS_PRESSURE')
+            box.operator("scene.wow_fill_textures", text = 'Fill textures', icon = 'FILE_IMAGE')
+            box.operator("scene.wow_fill_group_name", text = 'Fill group name', icon = 'FONTPREVIEW')
+            box.operator("scene.wow_invert_portals", text = 'Invert portals', icon = 'FILE_REFRESH')
+            if not has_sets:
+                box.operator("scene.wow_doodad_set_add", text = 'Add to doodadset', icon = 'ZOOMIN')
+
+        box1 = col.box()
+        box1.label(text="Add to scene:")
+        box1.operator("scene.wow_add_fog", text = 'Add fog', icon = 'GROUP_VERTEX')
+        box1.operator("scene.wow_add_water", text = 'Add water', icon = 'MOD_WAVE')
+        box1.operator("scene.wow_add_scale_reference", text = 'Add scale', icon = 'OUTLINER_OB_ARMATURE')
+        if not has_sets:
+            box1.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Add M2 from WMV', icon = 'LOAD_FACTORY')
+
+        if has_sets:
             col.operator("scene.wow_clear_preserved_doodad_sets", text = 'Clear doodad sets', icon = 'CANCEL')
-        else:
-            col.operator("scene.wow_doodad_set_add", text = 'Add to doodadset', icon = 'ZOOMIN')
-            col.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Last M2 from WMV', icon = 'LOAD_FACTORY')
 
         col.label(text="Display:")
-        box = col.box()
-        box.label(text="Unit Types:")
-        box.prop(context.scene, "WoWVisibility")
+        box2 = col.box()
+        box2.label(text="Unit Types:")
+        box2.prop(context.scene, "WoWVisibility")
 
         if not bpy.context.scene.WoWRoot.MODS_Sets:
-            box.label(text="Doodad Sets:")
-            box.prop(context.scene, "WoWDoodadVisibility", expand=False)
+            box2.label(text="Doodad Sets:")
+            box2.prop(context.scene, "WoWDoodadVisibility", expand=False)
 
         col.label(text="Game data:")
         state = hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files
