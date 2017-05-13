@@ -36,7 +36,19 @@ blendingEnum = [
     ('9', "Blend_SrcAlphaOpaque", ""), ('10', "Blend_NoAlphaAdd", ""), ('11', "Blend_ConstantAlpha", "")
     ]
 
+materialFlagEnum = [
+    ("1" , "Unlit" , "Disable lighting", 'PMARKER', 0x1),
+    ("2", "Unfogged", "Disable fog", 'FORCE_TURBULENCE', 0x2),
+    ("4", "Two-sided", "Render from both sides", 'ARROW_LEFTRIGHT', 0x4),
+    ("8", "Exterior light", "Ignore local WMO lighting, use world lighting instead", 'PMARKER_SEL', 0x8),
+    ("16", "Night GLow", "Used for windows to glow at nighttime", 'PMARKER_ACT', 0x10),
+    ("32", "Window", "Unknown, used for windows", 'MOD_WIREFRAME', 0x20),
+    ("64", "Clamp_S", "Force texture to use clamp _s adressing", 'TRIA_RIGHT', 0x40),
+    ("128", "Clamp_T", "Force texture to use clamp _t adressing", 'TRIA_RIGHT', 0x80)
+    ]
+
 placeTypeEnum = [('8', "Outdoor", "", 'CURVE_NCIRCLE', 0), ('8192', "Indoor", "", 'FORCE_FORCE', 1)]
+
 
 liquidTypeEnum = [
     ('0', "No liquid", ""), ('1', "Water", ""), ('2', "Ocean", ""),
@@ -274,6 +286,7 @@ class WowMaterialPanel(bpy.types.Panel):
         layout.prop(context.material.WowMaterial, "EmissiveColor")
         layout.prop(context.material.WowMaterial, "DiffColor")
         layout.enabled = context.material.WowMaterial.Enabled
+
     @classmethod
     def poll(cls, context):
         return (context.material is not None)
@@ -289,15 +302,7 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
     Flags = bpy.props.EnumProperty(
         name = "Material flags",
         description = "WoW material flags",
-        items = [
-                ("1" , "Unlit" , "Disable lighting", 'PMARKER', 0x1),
-                ("2", "Unfogged", "Disable fog", 'FORCE_TURBULENCE', 0x2),
-                ("4", "Two-sided", "Render from both sides", 'ARROW_LEFTRIGHT', 0x4),
-                ("8", "Exterior light", "Ignore local WMO lighting, use world lighting instead", 'PMARKER_SEL', 0x8),
-                ("16", "Night GLow", "Used for windows to glow at nighttime", 'PMARKER_ACT', 0x10),
-                ("32", "Window", "Unknown, used for windows", 'MOD_WIREFRAME', 0x20),
-                ("64", "Clamp_S", "Force texture to use clamp _s adressing", 'TRIA_RIGHT', 0x40),
-                ("128", "Clamp_T", "Force texture to use clamp _t adressing", 'TRIA_RIGHT', 0x80)],
+        items =materialFlagEnum,
         options = {"ENUM_FLAG"}
         )
 
@@ -1830,7 +1835,6 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
         description="Fill this WMO group with selected liquid."
         )
 
-
     def execute(self, context):
         
         success = False
@@ -1864,38 +1868,76 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
     bl_description = 'Transfer all materials of selected objects to WoW material'
     bl_options = {'REGISTER', 'UNDO'}
     
+    Flags = bpy.props.EnumProperty(
+        name = "Material flags",
+        description = "WoW material flags",
+        items =materialFlagEnum,
+        options = {"ENUM_FLAG"}
+        )
+
     Shader = bpy.props.EnumProperty(
-        items=shaderEnum,
-        name="Shader",
+        items=shaderEnum, 
+        name="Shader", 
         description="WoW shader assigned to this material"
         )
 
     BlendingMode = bpy.props.EnumProperty(
-        items=blendingEnum,
-        name="Blending",
+        items=blendingEnum, 
+        name="Blending", 
         description="WoW material blending mode"
-        )    
+        )
+
+    Texture1 = bpy.props.StringProperty(
+        name="Texture 1",
+        description="Diffuse texture"
+        )
+
+    EmissiveColor = bpy.props.FloatVectorProperty(
+        name="Emissive Color", 
+        subtype='COLOR', 
+        default=(1,1,1,1),
+        size=4,
+        min=0.0, 
+        max=1.0
+        )
+
+    Texture2 = bpy.props.StringProperty(
+        name="Texture 2",
+        description="Environment texture"
+        )
+
+    DiffColor = bpy.props.FloatVectorProperty(
+        name="Diffuse Color", 
+        subtype='COLOR', 
+        default=(1,1,1,1),
+        size=4,
+        min=0.0, 
+        max=1.0
+        )
 
     TerrainType = bpy.props.EnumProperty(
         items=terrainEnum,
         name="Terrain Type",
-        description="Terrain type assigned to that material"
+        description="Terrain type assigned to this material. Used for producing correct footstep sounds."
         )
 
-    TwoSided = bpy.props.BoolProperty(
-        name="TwoSided",
-        description="Enable TwoSided"
-        )
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+        col.prop(self, "Shader")
+        col.prop(self, "TerrainType")
+        col.prop(self, "BlendingMode")
 
-    Darkened = bpy.props.BoolProperty(
-        name="Darkened",
-        description="Enable Darkened"
-        )
+        col.separator()
+        col.label("Flags:")
+        col.prop(self, "Flags")
 
-    NightGlow = bpy.props.BoolProperty(
-        name="Unshaded",
-        description="Enable NightGlow"
-        )       
+        col.separator()
+        col.prop(self, "Texture1")
+        col.prop(self, "Texture2")
+
+        layout.prop(self, "EmissiveColor")
+        layout.prop(self, "DiffColor")
 
     def execute(self, context):
         success = False
@@ -1906,9 +1948,9 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
                     material.WowMaterial.Shader = self.Shader
                     material.WowMaterial.BlendingMode = self.BlendingMode
                     material.WowMaterial.TerrainType = self.TerrainType
-                    material.WowMaterial.TwoSided = self.TwoSided
-                    material.WowMaterial.Darkend = self.Darkened
-                    material.WowMaterial.NightGlow = self.NightGlow
+                    material.WowMaterial.Flags = self.Flags
+                    material.WowMaterial.EmissiveColor = self.EmissiveColor
+                    material.WowMaterial.DiffColor = self.DiffColor
                 success = True
 
         if success:
