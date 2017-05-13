@@ -23,12 +23,14 @@ shaderEnum = [
     ('9', "DiffuseEmissive", ""), ('10', "Tangent", ""), ('11', "MaskedEnvMetal", ""),
     ('12', "EnvMetalEmissive", ""), ('13', "TwoLayerDiffuseOpaque", ""), ('14', "TwoLayerDiffuseEmissive", "")
     ]
+
 terrainEnum = [
     ('0', "Dirt", ""), ('1', "Metallic", ""), ('2', "Stone", ""),
     ('3', "Snow", ""), ('4', "Wood", ""), ('5', "Grass", ""),
     ('6', "Leaves", ""), ('7', "Sand", ""), ('8', "Soggy", ""),
     ('9', "Dusty Grass", ""), ('10', "None", ""), ('11', "Water", "")
     ]
+
 blendingEnum = [
     ('0', "Blend_Opaque", ""), ('1', "Blend_AlphaKey", ""), ('2', "Blend_Alpha", ""), 
     ('3', "Blend_Add", ""), ('4', "Blend_Mod", ""),('5', "Blend_Mod2x", ""), 
@@ -45,6 +47,14 @@ materialFlagEnum = [
     ("32", "Window", "Unknown, used for windows", 'MOD_WIREFRAME', 0x20),
     ("64", "Clamp_S", "Force texture to use clamp _s adressing", 'TRIA_RIGHT', 0x40),
     ("128", "Clamp_T", "Force texture to use clamp _t adressing", 'TRIA_RIGHT', 0x80)
+    ]
+
+groupFlagEnum = [
+    ('0', "Vertex color", "Check if you need vertex color in this group", 'COLOR', 0x1),
+    ('1', "No local lighting", "Use world-defined lighting in a group", 'PMARKER_SEL', 0x2),
+    ('2', "Always draw", "Always draw the model. Disable portal-based geometry culling", 'MOD_PARTICLES', 0x4),
+    ('3', "Mounts allowed", "Allow mounts in this indoor group", 'RESTRICT_VIEW_OFF', 0x8),
+    ('4', "Use Skybox", "Display WMO skybox in this indoor group", 'WIRE', 0x10)
     ]
 
 placeTypeEnum = [('8', "Outdoor", "", 'CURVE_NCIRCLE', 0), ('8192', "Indoor", "", 'FORCE_FORCE', 1)]
@@ -590,19 +600,6 @@ class WowWMOGroupPanel(bpy.types.Panel):
 def fog_validator(ob):
     return ob.WowFog.Enabled
 
-def get_group_flags(self, context):
-    flags = [('0', "Vertex color", "Check if you need vertex color in this group", 'COLOR', 0x1)]
-
-    if self.PlaceType == "8192":
-        flags.extend([
-                    ('1', "No local lighting", "Use world-defined lighting in a group", 'PMARKER_SEL', 0x2),
-                    ('2', "Always draw", "Always draw the model. Disable portal-based geometry culling", 'MOD_PARTICLES', 0x4),
-                    ('3', "Mounts allowed", "Allow mounts in this indoor group", 'RESTRICT_VIEW_OFF', 0x8),
-                    ('4', "Use Skybox", "Display WMO skybox in this indoor group", 'WIRE', 0x10)])
-
-    return flags
-
-
 class WowWMOMODRStore(bpy.types.PropertyGroup):
     value = bpy.props.IntProperty(name="Doodads Ref")
 
@@ -634,7 +631,7 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
         )
 
     Flags = bpy.props.EnumProperty(
-        items=get_group_flags,
+        items=groupFlagEnum,
         options={'ENUM_FLAG'}
         )
 
@@ -1820,7 +1817,7 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
         )
 
     Flags = bpy.props.EnumProperty(
-        items=get_group_flags,
+        items=groupFlagEnum,
         options={'ENUM_FLAG'}
         )
 
