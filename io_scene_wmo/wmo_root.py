@@ -383,6 +383,9 @@ class WMO_root_file:
                 anchor.name = doodad_set.Name
                 anchor.hide = True
                 anchor.hide_select = True
+                anchor.lock_location = (True, True, True)
+                anchor.lock_rotation = (True, True, True)
+                anchor.lock_scale = (True, True, True)
 
                 for i in range(doodad_set.StartDoodad, doodad_set.StartDoodad + doodad_set.nDoodads):
                     doodad = self.modd.Definitions[i]
@@ -434,9 +437,7 @@ class WMO_root_file:
                                                 doodad.Rotation[2])
                     nobj.parent = anchor
                     nobj.hide = True
-                    nobj.lock_location = (True, True, True)
-                    nobj.lock_rotation = (True, True, True)
-                    nobj.lock_scale = (True, True, True)
+
 
 
         else:
