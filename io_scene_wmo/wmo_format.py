@@ -145,67 +145,49 @@ class MOTX_chunk:
 
 class WMO_Material:
     def __init__(self):
-        self.Flags1 = 0
+        self.Flags = 0
         self.Shader = 0
         self.BlendMode = 0
         self.Texture1Ofs = 0
-        self.Color1 = (0, 0, 0, 0)
-        self.TextureFlags1 = 0
+        self.EmissiveColor = (0, 0, 0, 0)
+        self.SidnEmissiveColor = (0, 0, 0, 0)
         self.Texture2Ofs = 0
-        self.Color2 = (0, 0, 0, 0)
+        self.DiffColor = (0, 0, 0, 0)
         self.TerrainType = 0
         self.Texture3Ofs = 0
         self.Color3 = (0, 0, 0, 0)
-        self.DiffColor = (0, 0, 0)
-        self.RunTimeData = (0, 0)
+        self.Tex3Flags = 0
+        self.RunTimeData = (0, 0, 0, 0)
 
     def Read(self, f):
-        self.Flags1 = struct.unpack("I", f.read(4))[0]
+        self.Flags = struct.unpack("I", f.read(4))[0]
         self.Shader = struct.unpack("I", f.read(4))[0]
         self.BlendMode = struct.unpack("I", f.read(4))[0]
         self.Texture1Ofs = struct.unpack("I", f.read(4))[0]
-        self.Color1 = struct.unpack("BBBB", f.read(4))
-        self.TextureFlags1 = struct.unpack("I", f.read(4))[0]
+        self.EmissiveColor = struct.unpack("BBBB", f.read(4))
+        self.SidnEmissiveColor = struct.unpack("BBBB", f.read(4))
         self.Texture2Ofs = struct.unpack("I", f.read(4))[0]
-        self.Color2 = struct.unpack("BBBB", f.read(4))
+        self.DiffColor = struct.unpack("BBBB", f.read(4))
         self.TerrainType = struct.unpack("I", f.read(4))[0]
         self.Texture3Ofs = struct.unpack("I", f.read(4))[0]
         self.Color3 = struct.unpack("BBBB", f.read(4))
-        self.DiffColor = struct.unpack("fff", f.read(12))
-        self.RunTimeData = struct.unpack("II", f.read(8))
+        self.Tex3Flags = struct.unpack("I", f.read(4))[0]
+        self.RunTimeData = struct.unpack("IIII", f.read(16))[0]
 
     def Write(self, f):
-        f.write(struct.pack('I', self.Flags1))
+        f.write(struct.pack('I', self.Flags))
         f.write(struct.pack('I', self.Shader))
         f.write(struct.pack('I', self.BlendMode))
         f.write(struct.pack('I', self.Texture1Ofs))
-        f.write(struct.pack('BBBB', 
-                            round(self.Color1[2] * 255), 
-                            round(self.Color1[1] * 255), 
-                            round(self.Color1[0] * 255), 
-                            round(self.Color1[3] * 255)
-                            )
-                )
-        f.write(struct.pack('I', self.TextureFlags1))
+        f.write(struct.pack('BBBB', *self.EmissiveColor))
+        f.write(struct.pack('BBBB', *self.SidnEmissiveColor))
         f.write(struct.pack('I', self.Texture2Ofs))
-        f.write(struct.pack('BBBB', 
-                            round(self.Color2[2] * 255), 
-                            round(self.Color2[1] * 255), 
-                            round(self.Color2[0] * 255), 
-                            round(self.Color2[3] * 255)
-                            )
-                )
+        f.write(struct.pack('BBBB', *self.DiffColor))
         f.write(struct.pack('I', self.TerrainType))
         f.write(struct.pack('I', self.Texture3Ofs))
-        f.write(struct.pack('BBBB', 
-                            round(self.Color3[2] * 255), 
-                            round(self.Color3[1] * 255), 
-                            round(self.Color3[0] * 255), 
-                            round(self.Color3[3] * 255)
-                            )
-                )
-        f.write(struct.pack('fff', *self.DiffColor))
-        f.write(struct.pack('II', *self.RunTimeData))
+        f.write(struct.pack('BBBB', *self.Color3))
+        f.write(struct.pack('I', self.Tex3Flags))
+        f.write(struct.pack('IIII', *self.RunTimeData))
 
 # Materials
 class MOMT_chunk:

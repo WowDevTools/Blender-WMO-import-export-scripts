@@ -271,7 +271,7 @@ class WMO_group_file:
         # getting Liquid Type ID
         real_liquid_type = 0
         
-        if(root.mohd.Flags & 0x4):
+        if root.mohd.Flags & 0x4:
             real_liquid_type = self.mogp.LiquidType
         else:
             real_liquid_type = self.FromWMOLiquidType(self.mogp.LiquidType)
@@ -357,7 +357,9 @@ class WMO_group_file:
             
         # set vertex color
         if self.mogp.Flags & MOGP_FLAG.HasVertexColor:
-            nobj.WowWMOGroup.VertShad = True
+            flag_set = nobj.WowWMOGroup.Flags
+            flag_set.add('0')
+            nobj.WowWMOGroup.Flags = flag_set
             vertColor_layer1 = mesh.vertex_colors.new("Col")
 
             lightmap = nobj.vertex_groups.new("Lightmap")
@@ -531,15 +533,22 @@ class WMO_group_file:
             nobj.WowWMOGroup.PlaceType = str(0x2000)
         else:
             nobj.WowWMOGroup.PlaceType = str(0x8)
+
+        flag_set = nobj.WowWMOGroup.Flags
             
         if self.mogp.Flags & MOGP_FLAG.DoNotUseLocalLighting:
-            nobj.WowWMOGroup.NoLocalLighting = True
+            flag_set.add('1')
             
         if self.mogp.Flags & MOGP_FLAG.AlwaysDraw:
-            nobj.WowWMOGroup.AlwaysDraw = True
+            flag_set.add('2')
             
         if self.mogp.Flags & MOGP_FLAG.IsMountAllowed:
-            nobj.WowWMOGroup.IsMountAllowed = True
+            flag_set.add('3')
+
+        if self.mogp.Flags & MOGP_FLAG.HasSkybox:
+            flag_set.add('4')
+
+        nobj.WowWMOGroup.Flags = flag_set  
 
         if self.mogp.Flags & MOGP_FLAG.HasLight:
             for lamp_id in self.molr.LightRefs:
@@ -1081,12 +1090,12 @@ class WMO_group_file:
                             self.motv.TexCoords[new_index] = (mesh.uv_layers.active.data[loop_index].uv[0],
                                                                 1.0 - mesh.uv_layers.active.data[loop_index].uv[1])
 
-                        if uv_second_uv != None:
+                        if uv_second_uv:
                             self.motv2.TexCoords[new_index] = (mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[0],
                                                                 1.0 - mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[1])
 
 
-                        if (new_obj.WowWMOGroup.VertShad or new_obj.WowWMOGroup.PlaceType == '8192'):
+                        if '0' in new_obj.WowWMOGroup.Flags or new_obj.WowWMOGroup.PlaceType == '8192':
                             if len(mesh.vertex_colors) > 0:
                                 vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
                                 vertex_color2 = [0x7F, 0x7F, 0x7F, 0x00]
@@ -1094,7 +1103,7 @@ class WMO_group_file:
                                 for i in range(0, 3):
                                     vertex_color[i] = round(mesh.vertex_colors.active.data[loop_index].color[3 - i - 1] * 255)
                                 
-                                if vg_lightmap != None:
+                                if vg_lightmap:
                                     for vertex_group_element in vertex.groups:
                                         if vertex_group_element.group == vg_lightmap.index:
                                             weight = round(vertex_group_element.weight * 255)
@@ -1183,15 +1192,15 @@ class WMO_group_file:
                 
 
             self.mogp.Flags |= MOGP_FLAG.HasCollision # /!\ MUST HAVE 0x1 FLAG ELSE THE GAME CRASH !
-            if new_obj.WowWMOGroup.VertShad:
+            if '0' in new_obj.WowWMOGroup.Flags:
                 self.mogp.Flags |= MOGP_FLAG.HasVertexColor
-            if new_obj.WowWMOGroup.SkyBox:
+            if '4' in new_obj.WowWMOGroup.Flags:
                 self.mogp.Flags |= MOGP_FLAG.HasSkybox
-            if new_obj.WowWMOGroup.NoLocalLighting:
+            if '1' in new_obj.WowWMOGroup.Flags:
                 self.mogp.Flags |= MOGP_FLAG.DoNotUseLocalLighting
-            if new_obj.WowWMOGroup.AlwaysDraw:
+            if '2' in new_obj.WowWMOGroup.Flags:
                 self.mogp.Flags |= MOGP_FLAG.AlwaysDraw
-            if new_obj.WowWMOGroup.IsMountAllowed:
+            if '3' in new_obj.WowWMOGroup.Flags:
                 self.mogp.Flags |= MOGP_FLAG.IsMountAllowed
                 
             self.mogp.Flags |= int(new_obj.WowWMOGroup.PlaceType)
@@ -1279,8 +1288,8 @@ class WMO_group_file:
             self.mobn.Nodes = bsp_tree.Nodes
             self.mobr.Faces = bsp_tree.Faces
             
-            if not new_obj.WowWMOGroup.VertShad:
-                if new_obj.WowWMOGroup.PlaceType == '8192' and not new_obj.WowWMOGroup.NoLocalLighting:
+            if '0' not in new_obj.WowWMOGroup.Flags:
+                if new_obj.WowWMOGroup.PlaceType == '8192' and '1' in new_obj.WowWMOGroup.Flags:
                     self.mogp.Flags |= MOGP_FLAG.HasVertexColor
                 else:
                     self.mocv = None

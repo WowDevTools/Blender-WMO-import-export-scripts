@@ -36,7 +36,7 @@ blendingEnum = [
     ('9', "Blend_SrcAlphaOpaque", ""), ('10', "Blend_NoAlphaAdd", ""), ('11', "Blend_ConstantAlpha", "")
     ]
 
-placeTypeEnum = [('8', "Outdoor", ""), ('8192', "Indoor", "")]
+placeTypeEnum = [('8', "Outdoor", "", 'CURVE_NCIRCLE', 0), ('8192', "Indoor", "", 'FORCE_FORCE', 1)]
 
 liquidTypeEnum = [
     ('0', "No liquid", ""), ('1', "Water", ""), ('2', "Ocean", ""),
@@ -186,7 +186,6 @@ class WoWDoodadPanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "object"
     bl_label = "WoW Doodad"
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
@@ -221,14 +220,13 @@ class WoWDoodadPropertyGroup(bpy.types.PropertyGroup):
         )
 
     Flags = bpy.props.EnumProperty(
-        name = "My enum",
-        description = "My enum description",
+        name = "Doodad flags",
+        description = "WoW doodad instance flags",
         items = [
-            ("1" , "Accept Projected Tex." , ""),
-            ("2", "Adjust lighting", ""),
-            ("4", "Unknown", ""),
-            ("8", "Unknown", "")
-        ],
+                ("1" , "Accept Projected Tex." , ""),
+                ("2", "Adjust lighting", ""),
+                ("4", "Unknown", ""),
+                ("8", "Unknown", "")],
         options = {"ENUM_FLAG"}
         )
 
@@ -253,7 +251,6 @@ class WowMaterialPanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "material"
     bl_label = "WoW Material"
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
@@ -261,21 +258,21 @@ class WowMaterialPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        self.layout.prop(context.material.WowMaterial, "Shader")
-        self.layout.prop(context.material.WowMaterial, "TerrainType")
-        self.layout.prop(context.material.WowMaterial, "BlendingMode")
-        self.layout.prop(context.material.WowMaterial, "TwoSided")
-        self.layout.prop(context.material.WowMaterial, "Darkened")
-        self.layout.prop(context.material.WowMaterial, "NightGlow")
-        self.layout.prop(context.material.WowMaterial, "Texture1")
-        self.layout.prop(context.material.WowMaterial, "Color1")
-        self.layout.prop(context.material.WowMaterial, "Flags1")
-        self.layout.prop(context.material.WowMaterial, "Texture2")
-        self.layout.prop(context.material.WowMaterial, "Color2")
-        self.layout.prop(context.material.WowMaterial, "Texture3")
-        self.layout.prop(context.material.WowMaterial, "Color3")
-        self.layout.prop(context.material.WowMaterial, "Flags3")
+        col = layout.column()
+        col.prop(context.material.WowMaterial, "Shader")
+        col.prop(context.material.WowMaterial, "TerrainType")
+        col.prop(context.material.WowMaterial, "BlendingMode")
+
+        col.separator()
+        col.label("Flags:")
+        col.prop(context.material.WowMaterial, "Flags")
+
+        col.separator()
+        col.prop(context.material.WowMaterial, "Texture1")
+        col.prop(context.material.WowMaterial, "Texture2")
+
+        layout.prop(context.material.WowMaterial, "EmissiveColor")
+        layout.prop(context.material.WowMaterial, "DiffColor")
         layout.enabled = context.material.WowMaterial.Enabled
     @classmethod
     def poll(cls, context):
@@ -289,6 +286,21 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
         description="Enable WoW material properties"
         )
 
+    Flags = bpy.props.EnumProperty(
+        name = "Material flags",
+        description = "WoW material flags",
+        items = [
+                ("1" , "Unlit" , "Disable lighting", 'PMARKER', 0x1),
+                ("2", "Unfogged", "Disable fog", 'FORCE_TURBULENCE', 0x2),
+                ("4", "Two-sided", "Render from both sides", 'ARROW_LEFTRIGHT', 0x4),
+                ("8", "Exterior light", "Ignore local WMO lighting, use world lighting instead", 'PMARKER_SEL', 0x8),
+                ("16", "Night GLow", "Used for windows to glow at nighttime", 'PMARKER_ACT', 0x10),
+                ("32", "Window", "Unknown, used for windows", 'MOD_WIREFRAME', 0x20),
+                ("64", "Clamp_S", "Force texture to use clamp _s adressing", 'TRIA_RIGHT', 0x40),
+                ("128", "Clamp_T", "Force texture to use clamp _t adressing", 'TRIA_RIGHT', 0x80)],
+        options = {"ENUM_FLAG"}
+        )
+
     Shader = bpy.props.EnumProperty(
         items=shaderEnum, 
         name="Shader", 
@@ -297,80 +309,42 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
 
     BlendingMode = bpy.props.EnumProperty(
         items=blendingEnum, 
-        name="Blending Mode", 
+        name="Blending", 
         description="WoW material blending mode"
         )
 
     Texture1 = bpy.props.StringProperty(
         name="Texture 1",
-        description="Texture assigned to first slot in shader"
+        description="Diffuse texture"
         )
 
-    Color1 = bpy.props.FloatVectorProperty(
+    EmissiveColor = bpy.props.FloatVectorProperty(
         name="Emissive Color", 
         subtype='COLOR', 
-        default=(1,1,1), 
+        default=(1,1,1,1),
+        size=4,
         min=0.0, 
         max=1.0
         )
 
-    Flags1 = bpy.props.EnumProperty(
-        items=[('0', "Clamp", ""), ('1', "Repeat", "")], 
-        name="Extension 2", 
-        description="Extension mode for texture 1"
-        )
-
     Texture2 = bpy.props.StringProperty(
         name="Texture 2",
-        description="Texture assigned to second slot in shader"
+        description="Environment texture"
         )
 
-    Color2 = bpy.props.FloatVectorProperty(
-        name="Emissive Color 2",
-        subtype='COLOR',
-        default=(1,1,1),
-        min=0.0,
+    DiffColor = bpy.props.FloatVectorProperty(
+        name="Diffuse Color", 
+        subtype='COLOR', 
+        default=(1,1,1,1),
+        size=4,
+        min=0.0, 
         max=1.0
         )
 
     TerrainType = bpy.props.EnumProperty(
         items=terrainEnum,
         name="Terrain Type",
-        description="Terrain type assigned to this material. Used for footstep sounds and similar things."
-        )
-
-    Texture3 = bpy.props.StringProperty(
-        name="Texture 3",
-        description="Texture assigned to third slot in shader"
-        )
-
-    Color3 = bpy.props.FloatVectorProperty(
-        name="Emissive Color 3",
-        subtype='COLOR',
-        default=(1,1,1),
-        min=0.0, 
-        max=1.0
-        )
-
-    Flags3 = bpy.props.EnumProperty(
-        items=[('0', "Clamp", ""), ('1', "Repeat", "")],
-        name="Extension 3",
-        description="Extension mode for texture 3"
-        )
-
-    TwoSided = bpy.props.BoolProperty(
-        name="TwoSided",
-        description="Enable TwoSided"
-        )
-
-    Darkened = bpy.props.BoolProperty(
-        name="Darkened",
-        description="Enable Darkened"
-        )
-
-    NightGlow = bpy.props.BoolProperty(
-        name="Unshaded",
-        description="Enable NightGlow"
+        description="Terrain type assigned to this material. Used for producing correct footstep sounds."
         )
 
 
@@ -568,33 +542,34 @@ class WowWMOGroupPanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "object"
     bl_label = "WoW WMO Group"
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
         self.layout.prop(context.object.WowWMOGroup, "Enabled")
 
     def draw(self, context):
-        self.layout.prop(context.object.WowWMOGroup, "GroupName")
-        self.layout.prop(context.object.WowWMOGroup, "GroupDesc")
-        self.layout.prop(context.object.WowWMOGroup, "PlaceType")
-        self.layout.prop(context.object.WowWMOGroup, "GroupDBCid")
-        self.layout.prop(context.object.WowWMOGroup, "LiquidType")
         col = self.layout.column()
-        col.prop(context.object.WowWMOGroup, "VertShad")
-        col.prop(context.object.WowWMOGroup, "NoLocalLighting")
-        col.prop(context.object.WowWMOGroup, "AlwaysDraw")
-        col.prop(context.object.WowWMOGroup, "IsMountAllowed")
-        col.prop(context.object.WowWMOGroup, "SkyBox")
+        col.prop(context.object.WowWMOGroup, "GroupName")
+        col.prop(context.object.WowWMOGroup, "GroupDesc")
         
-        column = layout.column()
-        idproperty.layout_id_prop(column, context.object.WowWMOGroup, "Fog1")
-        idproperty.layout_id_prop(column, context.object.WowWMOGroup, "Fog2")
-        idproperty.layout_id_prop(column, context.object.WowWMOGroup, "Fog3")
-        idproperty.layout_id_prop(column, context.object.WowWMOGroup, "Fog4")
+        col.separator()
+        col.label("Flags:")
+        col.prop(context.object.WowWMOGroup, "PlaceType")
+        col.prop(context.object.WowWMOGroup, "Flags")
+
+        col.separator()
+        col.label("Fogs:")
+        idproperty.layout_id_prop(col, context.object.WowWMOGroup, "Fog1")
+        idproperty.layout_id_prop(col, context.object.WowWMOGroup, "Fog2")
+        idproperty.layout_id_prop(col, context.object.WowWMOGroup, "Fog3")
+        idproperty.layout_id_prop(col, context.object.WowWMOGroup, "Fog4")
+
+        col.separator()
+        col.prop(context.object.WowWMOGroup, "GroupDBCid")
+        col.prop(context.object.WowWMOGroup, "LiquidType")
         
         idproperty.enabled = context.object.WowLiquid.Enabled
-        layout.enabled = context.object.WowWMOGroup.Enabled
+        self.layout.enabled = context.object.WowWMOGroup.Enabled
 
     @classmethod
     def poll(cls, context):
@@ -609,6 +584,19 @@ class WowWMOGroupPanel(bpy.types.Panel):
 
 def fog_validator(ob):
     return ob.WowFog.Enabled
+
+def get_group_flags(self, context):
+    flags = [('0', "Vertex color", "Check if you need vertex color in this group", 'COLOR', 0x1)]
+
+    if self.PlaceType == "8192":
+        flags.extend([
+                    ('1', "No local lighting", "Use world-defined lighting in a group", 'PMARKER_SEL', 0x2),
+                    ('2', "Always draw", "Always draw the model. Disable portal-based geometry culling", 'MOD_PARTICLES', 0x4),
+                    ('3', "Mounts allowed", "Allow mounts in this indoor group", 'RESTRICT_VIEW_OFF', 0x8),
+                    ('4', "Use Skybox", "Display WMO skybox in this indoor group", 'WIRE', 0x10)])
+
+    return flags
+
 
 class WowWMOMODRStore(bpy.types.PropertyGroup):
     value = bpy.props.IntProperty(name="Doodads Ref")
@@ -631,14 +619,19 @@ class WowWMOGroupRelations(bpy.types.PropertyGroup):
 
     
 class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
-  
+
+    GroupName = bpy.props.StringProperty(name="Name")
+    GroupDesc = bpy.props.StringProperty(name="Description")
+
     Enabled = bpy.props.BoolProperty(
         name="",
-        description="Enable wow WMO group properties"
+        description="Enable wow WMO group properties"   
         )
 
-    GroupName = bpy.props.StringProperty()
-    GroupDesc = bpy.props.StringProperty()
+    Flags = bpy.props.EnumProperty(
+        items=get_group_flags,
+        options={'ENUM_FLAG'}
+        )
 
     PlaceType = bpy.props.EnumProperty(
         items=placeTypeEnum,
@@ -656,61 +649,20 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
         description="WMO Group ID in DBC file"
         )
 
-    VertShad = bpy.props.BoolProperty(
-        name="Vertex color",
-        description="Save group vertex shading",
-        default = False
-        )
-
-    NoLocalLighting = bpy.props.BoolProperty(
-        name="No local lighting",
-        description="Do not use local diffuse lightning",
-        default = False
-        )
-
-    AlwaysDraw = bpy.props.BoolProperty(
-        name="Always draw",
-        description="Always draw the group",
-        default = False
-        )
-
-    IsMountAllowed = bpy.props.BoolProperty(
-        name="Mounts allowed",
-        description="Allows or prohibits mounts in the group. Works only with generated navmesh delivered to server.",
-        default = False
-        )
-
-    SkyBox = bpy.props.BoolProperty(
-        name="Use Skybox",
-        description="Use skybox in group",
-        default = False
-        )
-
-    Fog1 = idproperty.ObjectIDProperty(
-        name="Fog 1",
-        validator=fog_validator
-        )
-
-    Fog2 = idproperty.ObjectIDProperty(
-        name="Fog 2",
-        validator=fog_validator
-        )
-
-    Fog3 = idproperty.ObjectIDProperty(
-        name="Fog 3",
-        validator=fog_validator
-        )
-
-    Fog4 = idproperty.ObjectIDProperty(
-        name="Fog 4",
-        validator=fog_validator
-        )
-
     LiquidType = bpy.props.EnumProperty(
         items=liquidTypeEnum,
-        name="Fill with liquid",
+        name="LiquidType",
         description="Fill this WMO group with selected liquid."
         )
+
+    Fog1 = idproperty.ObjectIDProperty(name="Fog #1", validator=fog_validator)
+
+    Fog2 = idproperty.ObjectIDProperty(name="Fog #2", validator=fog_validator)
+
+    Fog3 = idproperty.ObjectIDProperty(name="Fog #3", validator=fog_validator)
+
+    Fog4 = idproperty.ObjectIDProperty(name="Fog #4", validator=fog_validator)
+
 
     MODR = bpy.props.CollectionProperty(type=WowWMOMODRStore)
 
@@ -1853,33 +1805,32 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
     bl_description = 'Transfer all selected objects to WoW WMO groups'
     bl_options = {'REGISTER', 'UNDO'}
         
-    GroupName = bpy.props.StringProperty()
-    GroupDesc = bpy.props.StringProperty()
+    GroupName = bpy.props.StringProperty(name="Name")
+    GroupDesc = bpy.props.StringProperty(name="Description")
 
     PlaceType = bpy.props.EnumProperty(
-        name = "Place Type",
-        description = "Set WMO group place type",
-        items = [('8', "Outdoor", ""), ('8192', "Indoor", "")],
-        default = '8'
+        items=placeTypeEnum,
+        name="Place Type",
+        description="Group is indoor or outdoor"
         )
 
-    GroupID = bpy.props.IntProperty(
+    Flags = bpy.props.EnumProperty(
+        items=get_group_flags,
+        options={'ENUM_FLAG'}
+        )
+
+    GroupDBCid = bpy.props.IntProperty(
         name="DBC Group ID",
         description="WMO Group ID in DBC file"
         )
 
-    VertShad = bpy.props.BoolProperty(
-        name="Vertex shading",
-        description="Save gropu vertex shading",
-        default = False
+    LiquidType = bpy.props.EnumProperty(
+        items=liquidTypeEnum,
+        name="LiquidType",
+        description="Fill this WMO group with selected liquid."
         )
 
-    SkyBox = bpy.props.BoolProperty(
-        name="Use Skybox",
-        description="Use skybox in group",
-        default = False
-        )        
-    
+
     def execute(self, context):
         
         success = False
@@ -1892,9 +1843,10 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
                 ob.WowWMOGroup.PlaceType = self.PlaceType
                 ob.WowWMOGroup.GroupName = self.GroupName
                 ob.WowWMOGroup.GroupDesc = self.GroupDesc
-                ob.WowWMOGroup.GroupID = self.GroupID
-                ob.WowWMOGroup.VertShad = self.VertShad
-                ob.WowWMOGroup.SkyBox = self.SkyBox
+                ob.WowWMOGroup.Flags = self.Flags
+                ob.WowWMOGroup.GroupDBCid = self.GroupDBCid
+                ob.WowWMOGroup.LiquidType = self.LiquidType
+
                 success = True
 
         if success:

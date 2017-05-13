@@ -68,36 +68,15 @@ class WMO_root_file:
 
         get_attributes = operator.attrgetter(
         'Shader', 'TerrainType', 'BlendingMode',
-        'TwoSided', 'Darkened', 'NightGlow',
-        'Texture1', 'Color1', 'Flags1',
-        'Texture2', 'Color2', 'Texture3',
-        'Color3', 'Flags3' )
+        'Texture1', 'EmissiveColor', 'Flags',
+        'Texture2', 'DiffColor')
 
         mat1 = get_attributes(material.WowMaterial)
-
 
         for material2, index in self.materialLookup.items():
 
             if mat1 == get_attributes(material2.WowMaterial):
                 return index
-
-            """
-            if material.WowMaterial.Shader == material2.WowMaterial.Shader \
-            and material.WowMaterial.TerrainType == material2.WowMaterial.TerrainType \
-            and material.WowMaterial.BlendingMode == material2.WowMaterial.BlendingMode \
-            and material.WowMaterial.TwoSided == material2.WowMaterial.TwoSided \
-            and material.WowMaterial.Darkened == material2.WowMaterial.Darkened \
-            and material.WowMaterial.NightGlow == material2.WowMaterial.NightGlow \
-            and material.WowMaterial.Texture1 == material2.WowMaterial.Texture1 \
-            and material.WowMaterial.Color1 == material.WowMaterial.Color1 \
-            and material.WowMaterial.Flags1 == material2.WowMaterial.Flags1 \
-            and material.WowMaterial.Texture2 == material2.WowMaterial.Texture2 \
-            and material.WowMaterial.Color2 == material.WowMaterial.Color2 \
-            and material.WowMaterial.Texture3 == material2.WowMaterial.Texture3 \
-            and material.WowMaterial.Color3 == material.WowMaterial.Color3 \
-            and material.WowMaterial.Flags3 == material2.WowMaterial.Flags3:
-                return index
-            """
             
         return None     
 
@@ -131,10 +110,10 @@ class WMO_root_file:
                     self.textureLookup[mat.WowMaterial.Texture1] = self.motx.AddString(mat.WowMaterial.Texture1)
                     WowMat.Texture1Ofs = self.textureLookup[mat.WowMaterial.Texture1]
 
-                WowMat.Color1 = (mat.WowMaterial.Color1[0],
-                                 mat.WowMaterial.Color1[1], 
-                                 mat.WowMaterial.Color1[2], 
-                                 1)
+                WowMat.EmissiveColor = (int(mat.WowMaterial.EmissiveColor[3] * 255),
+                                        int(mat.WowMaterial.EmissiveColor[2] * 255), 
+                                        int(mat.WowMaterial.EmissiveColor[1] * 255), 
+                                        int(mat.WowMaterial.EmissiveColor[0] * 255))
 
                 WowMat.TextureFlags1 = 0
 
@@ -144,35 +123,14 @@ class WMO_root_file:
                     self.textureLookup[mat.WowMaterial.Texture2] = self.motx.AddString(mat.WowMaterial.Texture2)
                     WowMat.Texture2Ofs = self.textureLookup[mat.WowMaterial.Texture2]
 
-                WowMat.Color2 = (mat.WowMaterial.Color2[0], 
-                                 mat.WowMaterial.Color2[1], 
-                                 mat.WowMaterial.Color2[2], 
-                                 1)
+                WowMat.DiffColor = (int(mat.WowMaterial.DiffColor[3] * 255), 
+                                    int(mat.WowMaterial.DiffColor[2] * 255), 
+                                    int(mat.WowMaterial.DiffColor[1] * 255), 
+                                    int(mat.WowMaterial.DiffColor[0] * 255))
 
-                if mat.WowMaterial.Texture3 in self.textureLookup:
-                    WowMat.Texture3Ofs = self.textureLookup[mat.WowMaterial.Texture3]
-                else:
-                    self.textureLookup[mat.WowMaterial.Texture3] = self.motx.AddString(mat.WowMaterial.Texture3)
-                    WowMat.Texture3Ofs = self.textureLookup[mat.WowMaterial.Texture3]
-
-                WowMat.Color3 = (mat.WowMaterial.Color3[0], 
-                                 mat.WowMaterial.Color3[1],
-                                 mat.WowMaterial.Color3[2], 
-                                 1)
-
-                WowMat.DiffColor = (0, 0, 0)
-                WowMat.RunTimeData = (0, 0)
-
-                if mat.WowMaterial.TwoSided:
-                    WowMat.Flags1 |= 0x4
+                for flag in mat.WowMaterial.Flags:
+                    WowMat.Flags |= int(flag)
                     
-                if mat.WowMaterial.Darkened:
-                    WowMat.Flags1 |= 0x8          
-                
-                if mat.WowMaterial.NightGlow:
-                    WowMat.Flags1 |= 0x10
-                    WowMat.Shader = 1
-
                 self.momt.Materials.append(WowMat)
 
                 return self.materialLookup[mat]
@@ -221,21 +179,18 @@ class WMO_root_file:
             mat.WowMaterial.Shader = str(self.momt.Materials[i].Shader)
             mat.WowMaterial.BlendingMode = str(self.momt.Materials[i].BlendMode)
             mat.WowMaterial.Texture1 = self.motx.GetString(self.momt.Materials[i].Texture1Ofs)
-            mat.WowMaterial.Color1 = [x / 255 for x in self.momt.Materials[i].Color1[0:3]]
-            mat.WowMaterial.Flags1 = '1' if self.momt.Materials[i].TextureFlags1 & 0x80 else '0'
+            mat.WowMaterial.EmissiveColor = [x / 255 for x in self.momt.Materials[i].EmissiveColor[0:4]]
             mat.WowMaterial.Texture2 = self.motx.GetString(self.momt.Materials[i].Texture2Ofs)
-            mat.WowMaterial.Color2 = [x / 255 for x in self.momt.Materials[i].Color2[0:3]]
+            mat.WowMaterial.DiffColor = [x / 255 for x in self.momt.Materials[i].DiffColor[0:4]]
             mat.WowMaterial.TerrainType = str(self.momt.Materials[i].TerrainType)
-            mat.WowMaterial.Texture3 = self.motx.GetString(self.momt.Materials[i].Texture3Ofs)
-            mat.WowMaterial.Color3 = [x / 255 for x in self.momt.Materials[i].Color3[0:3]]
-            mat.WowMaterial.Flags3 = '0' #1' if momt.Materials[i].TextureFlags1 & 0x80 else '0'
 
-            if self.momt.Materials[i].Flags1 & 0x4:
-                mat.WowMaterial.TwoSided = True
-            if self.momt.Materials[i].Flags1 & 0x8:
-                mat.WowMaterial.Darkened = True
-            if self.momt.Materials[i].Flags1 & 0x10:
-                mat.WowMaterial.NightGlow = True
+            mat_flags = set()
+            bit = 1
+            while bit <= 0x80:
+                if self.momt.Materials[i].Flags & bit:
+                    mat_flags.add(str(bit))
+                bit <<= 1
+            mat.WowMaterial.Flags = mat_flags
 
             # set texture slot and load texture
             
@@ -299,37 +254,6 @@ class WMO_root_file:
                         tex2.image = tex2_img
                         images.append(tex2_img)
                         imageNames.append(tex2_img_filename)
-                except:
-                    pass
-
-            # set texture slot and load texture
-            if mat.WowMaterial.Texture3:
-                tex3_slot = mat.texture_slots.create(0)
-                tex3_slot.uv_layer = "UVMap"
-                tex3_slot.texture_coords = 'UV'
-                
-                tex3_name = material_name + "_Tex_03"
-                tex3 = bpy.data.textures.new(tex3_name, 'IMAGE')
-                tex3_slot.texture = tex3
-
-                try:
-                    tex3_img_filename = os.path.splitext( mat.WowMaterial.Texture2 )[0] + file_format
-                    
-                    img3_loaded = False
-
-                    # check if image already loaded
-                    for iImg in range(len(images)):
-                        if imageNames[iImg] == tex3_img_filename:
-                            tex3.image = images[iImg]
-                            img3_loaded = True
-                            break
-
-                    # if image is not loaded, do it
-                    if img3_loaded == False:
-                        tex3_img = bpy.data.images.load(texturePath + tex3_img_filename)
-                        tex3.image = tex3_img
-                        images.append(tex3_img)
-                        imageNames.append(tex3_img_filename)
                 except:
                     pass
 
