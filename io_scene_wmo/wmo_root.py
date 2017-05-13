@@ -900,7 +900,10 @@ class WMO_root_file:
 
                 doodad_set.nDoodads = len(self.modd.Definitions) - doodad_set.StartDoodad
                 
-                self.mods.Sets.append(doodad_set)
+                if set_name == "Set_$DefaultGlobal":
+                    self.mods.Sets.insert(0, doodad_set)
+                else:
+                    self.mods.Sets.append(doodad_set)
 
                 Log(0, False, "Done exporting doodadset: <<" + set_name + ">>")
 

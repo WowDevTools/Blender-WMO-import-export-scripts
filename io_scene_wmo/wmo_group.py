@@ -775,7 +775,7 @@ class WMO_group_file:
             first_id = objects[first].WowWMOGroup.GroupID if first else None
             second_id =  objects[second].WowWMOGroup.GroupID if second else None
                         
-            portalRef = [0, "", 1]
+            portalRef = [0, 0, 1]
 
             portalRef[0] = ob.WowPortalPlane.PortalID
  
@@ -795,8 +795,7 @@ class WMO_group_file:
                 + obj.name + ">> (group)"
                 )
 
-
-    def Save(self, obj, root, objNumber, save_doodads, autofill_textures, group_filename, cur_ref):
+    def Save(self, obj, root, objNumber, save_doodads, autofill_textures, group_filename):
         """ Save WoW WMO group data for future export """
         Log(1, False, "Saving group: <<" + obj.name + ">>")
         self.filename = group_filename
@@ -1208,10 +1207,14 @@ class WMO_group_file:
             self.molr = MOLR_chunk()
             self.mliq = MLIQ_chunk()
             
-            fogs = cur_ref[0]
-            liquid = cur_ref[1]
-            portal_relations = cur_ref[2]
-            lamps = cur_ref[3]
+            fogs = (obj.WowWMOGroup.Fog1, 
+                    obj.WowWMOGroup.Fog2, 
+                    obj.WowWMOGroup.Fog3, 
+                    obj.WowWMOGroup.Fog4)
+
+            liquid = obj.WowWMOGroup.Relations.Liquid
+            portal_relations = obj.WowWMOGroup.Relations.Portals
+            lamps = obj.WowWMOGroup.Relations.Lights
 
             objects = bpy.context.scene.objects
 
@@ -1229,11 +1232,12 @@ class WMO_group_file:
             # save lamps
             if lamps:
                 hasLights = True
-                self.molr.LightRefs = lamps
+                for lamp in lamps:
+                    self.molr.LightRefs.append(lamp.id)
 
             # save portal relations
             for relation in portal_relations:
-                self.SavePortalRelations(obj, objects[relation], root)
+                self.SavePortalRelations(obj, objects[relation.id], root)
              
             root.PortalRCount += self.mogp.PortalCount
             self.mogp.nBatchesA = nBatchesA
@@ -1253,11 +1257,19 @@ class WMO_group_file:
             self.mogp.GroupNameOfs = groupInfo[0]
             self.mogp.DescGroupNameOfs = groupInfo[1]
 
-            if save_doodads and len(new_obj.WowWMOGroup.MODR):
-                self.modr = MODR_chunk()
-                for doodad in new_obj.WowWMOGroup.MODR:
-                    self.modr.DoodadRefs.append(doodad.value)
-                self.mogp.Flags |= MOGP_FLAG.HasDoodads
+            if save_doodads:
+                if len(new_obj.WowWMOGroup.MODR):
+                    self.modr = MODR_chunk()
+                    for doodad in new_obj.WowWMOGroup.MODR:
+                        self.modr.DoodadRefs.append(doodad.value)
+                    self.mogp.Flags |= MOGP_FLAG.HasDoodads
+                elif new_obj.WowWMOGroup.Relations.Doodads:
+                    self.modr = MODR_chunk()
+                    for doodad in new_obj.WowWMOGroup.Relations.Doodads:
+                        self.modr.DoodadRefs.append(doodad.id)
+                    self.mogp.Flags |= MOGP_FLAG.HasDoodads
+                else:
+                    self.modr = None
             else:
                 self.modr = None
                 

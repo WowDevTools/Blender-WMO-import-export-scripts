@@ -612,6 +612,23 @@ def fog_validator(ob):
 
 class WowWMOMODRStore(bpy.types.PropertyGroup):
     value = bpy.props.IntProperty(name="Doodads Ref")
+
+class WowWMOPortalRel(bpy.types.PropertyGroup):
+    id = bpy.props.StringProperty()
+
+class WowWMOLightRel(bpy.types.PropertyGroup):
+    id = bpy.props.IntProperty()
+
+class WowWMODoodadRel(bpy.types.PropertyGroup):
+    id = bpy.props.IntProperty()
+
+class WowWMOGroupRelations(bpy.types.PropertyGroup):
+    """Used for export internally"""
+    Portals = bpy.props.CollectionProperty(type=WowWMOPortalRel)
+    Lights = bpy.props.CollectionProperty(type=WowWMOLightRel)
+    Liquid = bpy.props.StringProperty()
+    Doodads = bpy.props.CollectionProperty(type=WowWMODoodadRel)
+
     
 class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
   
@@ -696,6 +713,8 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
         )
 
     MODR = bpy.props.CollectionProperty(type=WowWMOMODRStore)
+
+    Relations = bpy.props.PointerProperty(type=WowWMOGroupRelations)
 
 def RegisterWowWMOGroupProperties():
     bpy.types.Object.WowWMOGroup = bpy.props.PointerProperty(type=WowWMOGroupPropertyGroup)

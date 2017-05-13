@@ -7,9 +7,23 @@ from . import wmo_group
 from .wmo_group import *
 from . import debug_utils
 from .debug_utils import *
+from mathutils import Vector
 
 import os
 import time
+
+def find_nearest_object(object, objects):
+    """Get closest object to another object"""
+    dist = 32767
+    result = None
+    for obj in objects:
+        hit = obj.closest_point_on_mesh(object.location)
+        hit_dist = (object.location - hit[1]).length 
+        if hit_dist < dist:
+            dist = hit_dist
+            result = obj
+
+    return result
 
 def write(filepath, save_doodads, autofill_textures, export_selected):
 
@@ -27,19 +41,46 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
     portal_counter = 0
     fog_counter = 0
     lamp_counter = 0
+    doodad_counter = 0
 
-    reference_map = {}
+    groups = []
+    doodads = []
 
-    objects_to_restore = []
+    scene = bpy.context.scene
 
-    # ref: fogs, liquid, portals, lights
+    # find all groups on the scene
+    for object in scene.objects:
+        if object.hide:
+            continue
+        elif export_selected and not object.select:
+            object.select = False
+            continue
+        else:
+            object.select = False
 
-    for object in bpy.context.scene.objects:
+        if object.WowWMOGroup.Enabled:
+                object.WowWMOGroup.GroupID = group_counter
+                groups.append(object)
 
-        if object.type == "MESH" and object.WoWDoodad.Enabled:
-                objects_to_restore.append(object)
+                group_counter += 1
+
+    # set references
+    for object in scene.objects:
+
+        if object.type == "MESH" \
+        and object.WoWDoodad.Enabled \
+        and object.parent \
+        and object.parent.type == "EMPTY":
+                group = find_nearest_object(object, groups)
+                if group:
+                    rel = group.WowWMOGroup.Relations.Doodads.add()
+                    rel.id = doodad_counter        
+                
+                doodad_counter += 1
+
+                doodads.append(object)
                 object.use_fake_user = True
-                bpy.context.scene.objects.unlink(object)
+                scene.objects.unlink(object)
                 continue
 
         if object.hide:
@@ -50,43 +91,35 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
         else:
             object.select = False
 
-        # find references
         if object.type == "MESH":
 
-            if object.WowWMOGroup.Enabled:
-                object.WowWMOGroup.GroupID = group_counter
-                group_counter += 1
-
-                fogs = (object.WowWMOGroup.Fog1, object.WowWMOGroup.Fog2,
-                        object.WowWMOGroup.Fog3, object.WowWMOGroup.Fog4)
-
-                ref = reference_map.setdefault(object.name, [None, None, [], []])
-                ref[0] = fogs
-
-            elif object.WowLiquid.Enabled:
-                ref = reference_map.setdefault(object.WowLiquid.WMOGroup, [None, None, [], []])
-                ref[1] = object.name
+            if object.WowLiquid.Enabled:
+                group = scene.objects[object.WowLiquid.WMOGroup]
+                group.WowWMOGroup.Relations.Liquid = object.name
 
             elif object.WowPortalPlane.Enabled:
                 object.WowPortalPlane.PortalID = portal_counter
                 portal_counter += 1
 
-                groups = (object.WowPortalPlane.First, object.WowPortalPlane.Second)
+                group_objs = (object.WowPortalPlane.First, object.WowPortalPlane.Second)
 
-                for group in groups:
+                for group in group_objs:
                     if group:
-                        ref = reference_map.setdefault(group, [None, None, [], []])
-                        ref[2].append(object.name)
+                        rel = scene.objects[group].WowWMOGroup.Relations.Portals.add()
+                        rel.id = object.name
 
             elif object.WowFog.Enabled:
                 object.WowFog.FogID = fog_counter
+
                 fog_counter += 1
 
 
         elif object.type == "LAMP" and object.data.WowLight.Enabled:
-            if object.parent:
-                ref = reference_map.setdefault(object.parent, [None, None, [], []])
-                ref[3].append(lamp_counter)
+            group = find_nearest_object(object, groups)
+            if group:
+                rel = scene.objects[group].WowWMOGroup.Relations.Lights.add()
+                rel.id = lamp_counter
+
             lamp_counter += 1
 
         # prepare object for export
@@ -95,31 +128,28 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
         bpy.context.scene.objects.active = None
 
 
+    wmo_root = WMO_root_file()
+    wmo_groups = [None] * len(groups)
+
     try: 
-        wmo_root = WMO_root_file()
-
         Log(2, True, "Saving group files")
-        wmo_groups = []
 
-        group_list = list(reference_map.keys())
-        #group_list.sort()
+        for group in groups:
 
-        for group in group_list:
-
-            obj = bpy.context.scene.objects[group]
+            obj = bpy.context.scene.objects[group.name]
             group_id = obj.WowWMOGroup.GroupID
 
             group_filename = base_name + "_" + str(group_id).zfill(3) + ".wmo"
 
             wmo_group = WMO_group_file()
             wmo_group.Save(obj, wmo_root, group_id, save_doodads, 
-                           autofill_textures, group_filename, reference_map.get(group))
+                           autofill_textures, group_filename)
 
-            wmo_groups.append(wmo_group)
+            wmo_groups[group_id] = wmo_group
 
     finally:
-        for object in objects_to_restore:
-            bpy.context.scene.objects.link(object)
+        for doodad in doodads:
+            bpy.context.scene.objects.link(doodad)
             object.use_fake_user = False
 
     # write group files
