@@ -117,7 +117,7 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
             elif object.type == "LAMP" and object.data.WowLight.Enabled:
                 group = find_nearest_object(object, groups)
                 if group:
-                    rel = scene.objects[group].WowWMOGroup.Relations.Lights.add()
+                    rel = group.WowWMOGroup.Relations.Lights.add()
                     rel.id = lamp_counter
 
                 lamp_counter += 1
