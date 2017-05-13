@@ -498,7 +498,7 @@ class WMO_group_file:
         nobj.WowWMOGroup.Enabled = True
         nobj.WowWMOGroup.GroupName = root.mogn.GetString(self.mogp.GroupNameOfs)
         nobj.WowWMOGroup.GroupDesc = root.mogn.GetString(self.mogp.DescGroupNameOfs)
-        nobj.WowWMOGroup.GroupDBCid = int(self.mogp.GroupDBCid)
+        nobj.WowWMOGroup.GroupDBCid = int(self.mogp.GroupID)
         
         nobj.WowWMOGroup.Fog1 = base_name + "_Fog_" + str(self.mogp.FogIndices[0]).zfill(2)
         nobj.WowWMOGroup.Fog2 = base_name + "_Fog_" + str(self.mogp.FogIndices[1]).zfill(2)
@@ -517,12 +517,12 @@ class WMO_group_file:
                 real_liquid_type = self.mogp.LiquidType
             else:
                 real_liquid_type = self.FromWMOLiquidType(self.mogp.LiquidType)
-                real_liquid_type = 0 if real_liquid_type == 15 else real_liquid_type
+                real_liquid_type = 0 if real_liquid_type == 17 else real_liquid_type
         
             nobj.WowWMOGroup.LiquidType = str(real_liquid_type)
         
         if not editable_doodads and self.mogp.Flags & MOGP_FLAG.HasDoodads:
-            if not self.modr.DoodadRefs:
+            if self.modr.DoodadRefs:
                 for i in range(len(self.modr.DoodadRefs)):
                     doodad = nobj.WowWMOGroup.MODR.add()
                     doodad.value = self.modr.DoodadRefs[i]
@@ -563,7 +563,7 @@ class WMO_group_file:
         cur_relation = result_map.get(portal_obj)
 
         # check if this portal was already processed
-        if cur_relation is None:
+        if not cur_relation:
                         
             # store the previous active object
             active_obj = bpy.context.scene.objects.active
@@ -650,18 +650,6 @@ class WMO_group_file:
                      "WARNING: Failed to calculate portal direction. Calculation from another side may be attempted."
                      )
             return 0
-
-        elif not cur_relation:
-            predefined_direction = 1 if portal_obj.WowPortalPlane.IsInverted else -1
-            result_map[portal_obj] = predefined_direction
-
-            LogDebug(0, 
-                     False, 
-                     """WARNING: Failed to calculate portal direction from both sides. Predefined direction is used. 
-                     Invert this portal if it appears not working in game"""
-                     )
-
-            return predefined_direction
                     
         else:     
             return -cur_relation
@@ -808,7 +796,7 @@ class WMO_group_file:
                 )
 
 
-    def Save(self, obj, root, objNumber, source_doodads, autofill_textures, group_filename, cur_ref):
+    def Save(self, obj, root, objNumber, save_doodads, autofill_textures, group_filename, cur_ref):
         """ Save WoW WMO group data for future export """
         Log(1, False, "Saving group: <<" + obj.name + ">>")
         self.filename = group_filename
@@ -1265,7 +1253,7 @@ class WMO_group_file:
             self.mogp.GroupNameOfs = groupInfo[0]
             self.mogp.DescGroupNameOfs = groupInfo[1]
 
-            if source_doodads and len(new_obj.WowWMOGroup.MODR):
+            if save_doodads and len(new_obj.WowWMOGroup.MODR):
                 self.modr = MODR_chunk()
                 for doodad in new_obj.WowWMOGroup.MODR:
                     self.modr.DoodadRefs.append(doodad.value)

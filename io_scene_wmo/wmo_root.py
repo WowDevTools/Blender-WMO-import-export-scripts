@@ -872,8 +872,13 @@ class WMO_root_file:
                 for doodad in doodads:
                     doodad_definition = DoodadDefinition()
           
-                    path = doodad.WoWDoodad.Path
-                    doodad_definition.NameOfs = doodad_paths.setdefault(path, self.modn.AddString(path))
+                    path = os.path.splitext(doodad.WoWDoodad.Path)[0] + ".MDX"
+
+                    doodad_definition.NameOfs = doodad_paths.get(path)
+                    if not doodad_definition.NameOfs:
+                        doodad_definition.NameOfs = self.modn.AddString(path)
+                        doodad_paths[path] = doodad_definition.NameOfs
+
                     doodad_definition.Position = doodad.location
 
                     doodad_definition.Rotation = (doodad.rotation_quaternion[1],
@@ -899,7 +904,7 @@ class WMO_root_file:
 
                 Log(0, False, "Done exporting doodadset: <<" + set_name + ">>")
 
-                       
+              
         if global_object_count > 512:
             LogError(2, 
                      "Your scene contains more objects that it is supported by WMO file format " 
@@ -933,8 +938,8 @@ class WMO_root_file:
         self.mohd.nMaterials = len(self.momt.Materials)
         self.mohd.nGroups = len(self.mogi.Infos)
         self.mohd.nPortals = len(self.mopt.Infos)
-        self.mohd.nLights = len(self.molt.Lights)
         self.mohd.nModels = self.modn.StringTable.decode("ascii").count('.MDX')
+        self.mohd.nLights = len(self.molt.Lights)
         self.mohd.nDoodads = len(self.modd.Definitions)
         self.mohd.nSets = len(self.mods.Sets)
 
