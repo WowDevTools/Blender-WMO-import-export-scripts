@@ -32,139 +32,138 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
     bpy.ops.scene.wow_wmo_validate_scene
     Log(1, True, "Scene successfuly validated")
 
-    f = open(filepath, "wb")
-    root_filename = filepath
+    with open(filepath, "wb") as f:
+        root_filename = filepath
     
-    base_name = os.path.splitext(filepath)[0]
+        base_name = os.path.splitext(filepath)[0]
 
-    group_counter = 0
-    portal_counter = 0
-    fog_counter = 0
-    lamp_counter = 0
-    doodad_counter = 0
+        group_counter = 0
+        portal_counter = 0
+        fog_counter = 0
+        lamp_counter = 0
+        doodad_counter = 0
 
-    groups = []
-    doodads = []
+        groups = []
+        doodads = []
 
-    scene = bpy.context.scene
+        scene = bpy.context.scene
 
-    # find all groups on the scene
-    for object in scene.objects:
-        if object.hide:
-            continue
-        elif export_selected and not object.select:
-            object.select = False
-            continue
-        else:
-            object.select = False
+        # find all groups on the scene
+        for object in scene.objects:
+            if object.hide:
+                continue
+            elif export_selected and not object.select:
+                object.select = False
+                continue
+            else:
+                object.select = False
 
-        if object.WowWMOGroup.Enabled:
-                object.WowWMOGroup.GroupID = group_counter
-                groups.append(object)
+            if object.WowWMOGroup.Enabled:
+                    object.WowWMOGroup.GroupID = group_counter
+                    groups.append(object)
 
-                group_counter += 1
+                    group_counter += 1
 
-    # set references
-    for object in scene.objects:
+        # set references
+        for object in scene.objects:
 
-        if object.type == "MESH" \
-        and object.WoWDoodad.Enabled \
-        and object.parent \
-        and object.parent.type == "EMPTY":
+            if object.type == "MESH" \
+            and object.WoWDoodad.Enabled \
+            and object.parent \
+            and object.parent.type == "EMPTY":
+                    group = find_nearest_object(object, groups)
+                    if group:
+                        rel = group.WowWMOGroup.Relations.Doodads.add()
+                        rel.id = doodad_counter        
+                
+                    doodad_counter += 1
+
+                    doodads.append(object)
+                    object.use_fake_user = True
+                    scene.objects.unlink(object)
+                    continue
+
+            if object.hide:
+                continue
+            elif export_selected and not object.select:
+                object.select = False
+                continue
+            else:
+                object.select = False
+
+            if object.type == "MESH":
+
+                if object.WowLiquid.Enabled:
+                    group = scene.objects[object.WowLiquid.WMOGroup]
+                    group.WowWMOGroup.Relations.Liquid = object.name
+
+                elif object.WowPortalPlane.Enabled:
+                    object.WowPortalPlane.PortalID = portal_counter
+                    portal_counter += 1
+
+                    group_objs = (object.WowPortalPlane.First, object.WowPortalPlane.Second)
+
+                    for group in group_objs:
+                        if group:
+                            rel = scene.objects[group].WowWMOGroup.Relations.Portals.add()
+                            rel.id = object.name
+
+                elif object.WowFog.Enabled:
+                    object.WowFog.FogID = fog_counter
+
+                    fog_counter += 1
+
+
+            elif object.type == "LAMP" and object.data.WowLight.Enabled:
                 group = find_nearest_object(object, groups)
                 if group:
-                    rel = group.WowWMOGroup.Relations.Doodads.add()
-                    rel.id = doodad_counter        
-                
-                doodad_counter += 1
+                    rel = scene.objects[group].WowWMOGroup.Relations.Lights.add()
+                    rel.id = lamp_counter
 
-                doodads.append(object)
-                object.use_fake_user = True
-                scene.objects.unlink(object)
-                continue
+                lamp_counter += 1
 
-        if object.hide:
-            continue
-        elif export_selected and not object.select:
-            object.select = False
-            continue
-        else:
-            object.select = False
-
-        if object.type == "MESH":
-
-            if object.WowLiquid.Enabled:
-                group = scene.objects[object.WowLiquid.WMOGroup]
-                group.WowWMOGroup.Relations.Liquid = object.name
-
-            elif object.WowPortalPlane.Enabled:
-                object.WowPortalPlane.PortalID = portal_counter
-                portal_counter += 1
-
-                group_objs = (object.WowPortalPlane.First, object.WowPortalPlane.Second)
-
-                for group in group_objs:
-                    if group:
-                        rel = scene.objects[group].WowWMOGroup.Relations.Portals.add()
-                        rel.id = object.name
-
-            elif object.WowFog.Enabled:
-                object.WowFog.FogID = fog_counter
-
-                fog_counter += 1
+            # prepare object for export
+            bpy.context.scene.objects.active = object
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.context.scene.objects.active = None
 
 
-        elif object.type == "LAMP" and object.data.WowLight.Enabled:
-            group = find_nearest_object(object, groups)
-            if group:
-                rel = scene.objects[group].WowWMOGroup.Relations.Lights.add()
-                rel.id = lamp_counter
+        wmo_root = WMO_root_file()
+        wmo_groups = [None] * len(groups)
 
-            lamp_counter += 1
+        try: 
+            Log(2, True, "Saving group files")
 
-        # prepare object for export
-        bpy.context.scene.objects.active = object
-        bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.context.scene.objects.active = None
+            for group in groups:
 
+                obj = bpy.context.scene.objects[group.name]
+                group_id = obj.WowWMOGroup.GroupID
 
-    wmo_root = WMO_root_file()
-    wmo_groups = [None] * len(groups)
+                group_filename = base_name + "_" + str(group_id).zfill(3) + ".wmo"
 
-    try: 
-        Log(2, True, "Saving group files")
+                wmo_group = WMO_group_file()
+                wmo_group.Save(obj, wmo_root, group_id, save_doodads, 
+                               autofill_textures, group_filename)
 
-        for group in groups:
+                wmo_groups[group_id] = wmo_group
 
-            obj = bpy.context.scene.objects[group.name]
-            group_id = obj.WowWMOGroup.GroupID
+        finally:
+            for doodad in doodads:
+                bpy.context.scene.objects.link(doodad)
+                object.use_fake_user = False
 
-            group_filename = base_name + "_" + str(group_id).zfill(3) + ".wmo"
-
-            wmo_group = WMO_group_file()
-            wmo_group.Save(obj, wmo_root, group_id, save_doodads, 
-                           autofill_textures, group_filename)
-
-            wmo_groups[group_id] = wmo_group
-
-    finally:
-        for doodad in doodads:
-            bpy.context.scene.objects.link(doodad)
-            object.use_fake_user = False
-
-    # write group files
-    Log(1, True, "Writing group files")
-    for group in wmo_groups:
-        group.Write()
+        # write group files
+        Log(1, True, "Writing group files")
+        for group in wmo_groups:
+            group.Write()
         
-    # save root file
-    Log(2, True, "Saving root file")
-    wmo_root.Save(save_doodads, autofill_textures, portal_counter)
+        # save root file
+        Log(2, True, "Saving root file")
+        wmo_root.Save(save_doodads, autofill_textures, portal_counter)
     
-    # write root file
-    Log(2, True, "Writing root file")
-    wmo_root.Write(f)
+        # write root file
+        Log(2, True, "Writing root file")
+        wmo_root.Write(f)
 
-    Log(1, False, "Total export time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
+        Log(1, False, "Total export time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
     
-    return
