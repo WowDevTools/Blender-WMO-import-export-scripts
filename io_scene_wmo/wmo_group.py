@@ -549,12 +549,6 @@ class WMO_group_file:
             flag_set.add('4')
 
         nobj.WowWMOGroup.Flags = flag_set  
-
-        if self.mogp.Flags & MOGP_FLAG.HasLight:
-            for lamp_id in self.molr.LightRefs:
-                lamp = root.lightsLookup.get(lamp_id)
-                if lamp:
-                    lamp.parent = nobj
         
         mesh.validate(clean_customdata=False) 
         mesh.update()
