@@ -1096,7 +1096,7 @@ class WMO_group_file:
 
 
                         if '0' in new_obj.WowWMOGroup.Flags or new_obj.WowWMOGroup.PlaceType == '8192':
-                            if len(mesh.vertex_colors) > 0:
+                            if len(mesh.vertex_colors):
                                 vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
 
                                 for i in range(0, 3):
@@ -1114,7 +1114,7 @@ class WMO_group_file:
                                 
                             else:
                                 if batchKey != 1 or batchKey != 2:
-                                    self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0xFF]
+                                    self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0xFF] 
                                 else:
                                     self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0x00]
 
