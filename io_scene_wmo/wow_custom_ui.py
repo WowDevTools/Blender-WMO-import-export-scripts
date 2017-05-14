@@ -378,7 +378,6 @@ class WowLightPanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "data"
     bl_label = "WoW light"
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
@@ -484,7 +483,6 @@ class WowVertexInfoPanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "data"
     bl_label = "WoW Vertex Info"
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
@@ -686,7 +684,6 @@ class WowPortalPlanePanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "object"
     bl_label = "WoW Portal Plane"
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
@@ -781,7 +778,6 @@ class WowLiquidPanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "object"
     bl_label = "WoW Liquid"
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
@@ -854,7 +850,6 @@ class WowFogPanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "object"
     bl_label = "WoW Fog"
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
