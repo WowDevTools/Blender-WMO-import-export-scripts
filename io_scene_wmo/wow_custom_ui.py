@@ -285,7 +285,7 @@ class WowMaterialPanel(bpy.types.Panel):
         col.prop(context.material.WowMaterial, "TerrainType")
         col.prop(context.material.WowMaterial, "BlendingMode")
 
-        сol.separator()
+        col.separator()
         col.prop(context.material.WowMaterial, "Texture1")
         col.prop(context.material.WowMaterial, "Texture2")
 
