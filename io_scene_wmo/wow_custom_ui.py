@@ -1278,7 +1278,7 @@ class DOODAD_SET_CLEAR_PRESERVED(bpy.types.Operator):
 
     def execute(self, context):
         if self.Action == '0':
-            if not getattr(bpy, "wow_game_data"):
+            if not hasattr(bpy, "wow_game_data"):
                 Log(2, True, "Loading game data")
                 bpy.ops.scene.load_wow_filesystem()
 
