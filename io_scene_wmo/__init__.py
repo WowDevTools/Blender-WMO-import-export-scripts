@@ -58,19 +58,56 @@ from bpy_extras.io_utils import ExportHelper
 from . import wow_custom_ui
 from . import debug_utils
 from .idproperty import idproperty
+from . import addon_updater_ops
 #from . import Utility
 
 class WMOPreferences(bpy.types.AddonPreferences):
-    bl_idname = __name__
+    bl_idname = __package__
 
     wow_path = StringProperty(name="WoW Client Path")
     wmv_path = StringProperty(name="WoW Model Viewer Log Path")
     blp_path = StringProperty(name="BLP Converter Path")
 
+    # addon updater preferences
+
+    auto_check_update = bpy.props.BoolProperty(
+        name = "Auto-check for Update",
+        description = "If enabled, auto-check for updates using an interval",
+        default = True,
+        )
+    
+    updater_intrval_months = bpy.props.IntProperty(
+        name='Months',
+        description = "Number of months between checking for updates",
+        default=0,
+        min=0
+        )
+    updater_intrval_days = bpy.props.IntProperty(
+        name='Days',
+        description = "Number of days between checking for updates",
+        default=7,
+        min=0,
+        )
+    updater_intrval_hours = bpy.props.IntProperty(
+        name='Hours',
+        description = "Number of hours between checking for updates",
+        default=0,
+        min=0,
+        max=23
+        )
+    updater_intrval_minutes = bpy.props.IntProperty(
+        name='Minutes',
+        description = "Number of minutes between checking for updates",
+        default=0,
+        min=0,
+        max=59
+        )
+
     def draw(self, context):
         self.layout.prop(self, "wow_path")
         self.layout.prop(self, "wmv_path")
         self.layout.prop(self, "blp_path")
+        addon_updater_ops.update_settings_ui(self, context) 
 
 class WMOImporter(bpy.types.Operator):
     """Load WMO mesh data"""
@@ -169,6 +206,7 @@ def menu_export(self, context):
 
 
 def register():
+    addon_updater_ops.register(bl_info)
     idproperty.register()
     bpy.utils.register_module(__name__)
     wow_custom_ui.register()

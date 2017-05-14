@@ -43,7 +43,7 @@ materialFlagEnum = [
     ("2", "Unfogged", "Disable fog", 'FORCE_TURBULENCE', 0x2),
     ("4", "Two-sided", "Render from both sides", 'ARROW_LEFTRIGHT', 0x4),
     ("8", "Exterior light", "Ignore local WMO lighting, use world lighting instead", 'PMARKER_SEL', 0x8),
-    ("16", "Night GLow", "Used for windows to glow at nighttime", 'PMARKER_ACT', 0x10),
+    ("16", "Night Glow", "Used for windows to glow at nighttime", 'PMARKER_ACT', 0x10),
     ("32", "Window", "Unknown, used for windows", 'MOD_WIREFRAME', 0x20),
     ("64", "Clamp_S", "Force texture to use clamp _s adressing", 'TRIA_RIGHT', 0x40),
     ("128", "Clamp_T", "Force texture to use clamp _t adressing", 'TRIA_RIGHT', 0x80)
