@@ -285,13 +285,13 @@ class WowMaterialPanel(bpy.types.Panel):
         col.prop(context.material.WowMaterial, "TerrainType")
         col.prop(context.material.WowMaterial, "BlendingMode")
 
+        сol.separator()
+        col.prop(context.material.WowMaterial, "Texture1")
+        col.prop(context.material.WowMaterial, "Texture2")
+
         col.separator()
         col.label("Flags:")
         col.prop(context.material.WowMaterial, "Flags")
-
-        col.separator()
-        col.prop(context.material.WowMaterial, "Texture1")
-        col.prop(context.material.WowMaterial, "Texture2")
 
         layout.prop(context.material.WowMaterial, "EmissiveColor")
         layout.prop(context.material.WowMaterial, "DiffColor")
