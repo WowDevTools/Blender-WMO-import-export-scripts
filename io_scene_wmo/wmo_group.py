@@ -1095,7 +1095,8 @@ class WMO_group_file:
                                                                 1.0 - mesh.uv_layers[uv_second_uv.name].data[loop_index].uv[1])
 
 
-                        if '0' in new_obj.WowWMOGroup.Flags or new_obj.WowWMOGroup.PlaceType == '8192':
+                        if '0' in new_obj.WowWMOGroup.Flags \
+                        or (new_obj.WowWMOGroup.PlaceType == '8192' and not '1' in new_obj.WowWMOGroup.Flags):
                             if len(mesh.vertex_colors):
                                 vertex_color = [0x7F, 0x7F, 0x7F, 0x00]
 
@@ -1113,10 +1114,10 @@ class WMO_group_file:
                                 self.mocv.vertColors[new_index] = vertex_color
                                 
                             else:
-                                if batchKey != 1 or batchKey != 2:
-                                    self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0xFF] 
+                                if batchKey == 2:
+                                    self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0x00] 
                                 else:
-                                    self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0x00]
+                                    self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0xFF]
 
                         if vg_blendmap != None:
                             for vertex_group_element in vertex.groups:
@@ -1288,8 +1289,12 @@ class WMO_group_file:
             self.mobr.Faces = bsp_tree.Faces
             
             if '0' not in new_obj.WowWMOGroup.Flags:
-                if new_obj.WowWMOGroup.PlaceType == '8192' and '1' in new_obj.WowWMOGroup.Flags:
-                    self.mogp.Flags |= MOGP_FLAG.HasVertexColor
+                if new_obj.WowWMOGroup.PlaceType == '8192':
+                    if '1' in new_obj.WowWMOGroup.Flags \
+                    and not len(mesh.vertex_colors):
+                        self.mocv = None
+                    else:
+                        self.mogp.Flags |= MOGP_FLAG.HasVertexColor
                 else:
                     self.mocv = None
 
@@ -1344,25 +1349,25 @@ class WMO_group_file:
             self.motv.Write(f)
             self.moba.Write(f)
 
-            if self.molr != None:
+            if self.molr:
                 self.molr.Write(f)
                         
-            if self.modr != None:
+            if self.modr:
                 self.modr.Write(f)
 
             self.mobn.Write(f)
             self.mobr.Write(f)
             
-            if self.mocv != None:
+            if self.mocv:
                 self.mocv.Write(f)
             
-            if self.mliq != None:
+            if self.mliq:
                 self.mliq.Write(f)
                 
-            if self.motv2 != None:
+            if self.motv2:
                 self.motv2.Write(f)
                 
-            if self.mocv2 != None:
+            if self.mocv2:
                 self.mocv2.Write(f)
 
             # get file size
