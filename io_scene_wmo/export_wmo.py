@@ -44,7 +44,8 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
         doodad_counter = 0
 
         groups = []
-        doodads = []
+
+        wmo_root = WMO_root_file()
 
         scene = bpy.context.scene
 
@@ -67,21 +68,25 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
         # set references
         for object in scene.objects:
 
-            if object.type == "MESH" \
-            and object.WoWDoodad.Enabled \
-            and object.parent \
-            and object.parent.type == "EMPTY":
-                    group = find_nearest_object(object, groups)
-                    if group:
-                        rel = group.WowWMOGroup.Relations.Doodads.add()
-                        rel.id = doodad_counter        
-                
-                    doodad_counter += 1
+            if object.type == "EMPTY":
+                doodad_set = (object.name, [])
 
-                    doodads.append(object)
-                    object.use_fake_user = True
-                    scene.objects.unlink(object)
-                    continue
+                for obj in object.children:
+                    if obj.WoWDoodad.Enabled:
+
+                        group = find_nearest_object(obj, groups)
+                        if group:
+                            rel = group.WowWMOGroup.Relations.Doodads.add()
+                            rel.id = doodad_counter  
+                            doodad_set[1].append(obj)
+                            doodad_counter += 1
+
+                        obj.use_fake_user = True
+                        scene.objects.unlink(obj)
+
+                if doodad_set[1]:
+                    wmo_root.doodad_sets.append(doodad_set)
+                continue
 
             if object.hide:
                 continue
@@ -127,8 +132,6 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
             bpy.ops.object.mode_set(mode='OBJECT')
             bpy.context.scene.objects.active = None
 
-
-        wmo_root = WMO_root_file()
         wmo_groups = [None] * len(groups)
 
         try: 
@@ -148,9 +151,10 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
                 wmo_groups[group_id] = wmo_group
 
         finally:
-            for doodad in doodads:
-                bpy.context.scene.objects.link(doodad)
-                object.use_fake_user = False
+            for doodad_set in wmo_root.doodad_sets:
+                for doodad in doodad_set[1]:
+                    bpy.context.scene.objects.link(doodad)
+                    object.use_fake_user = False
 
         # write group files
         Log(1, True, "Writing group files")

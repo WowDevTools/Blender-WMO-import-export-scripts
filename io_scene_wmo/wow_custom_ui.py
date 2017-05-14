@@ -423,7 +423,7 @@ class WowLightPropertyGroup(bpy.types.PropertyGroup):
 
     Type = bpy.props.BoolProperty(
         name="Type",
-        description="True if i dunno"
+        description="Unknown"
         )
 
     UseAttenuation = bpy.props.BoolProperty(
@@ -820,7 +820,8 @@ class WowLiquidPropertyGroup(bpy.types.PropertyGroup):
     Color = bpy.props.FloatVectorProperty(
         name="Color",
         subtype='COLOR',
-        default=(0.08,0.08,0.08),
+        default=(0.08, 0.08, 0.08, 1),
+        size=4,
         min=0.0,
         max=1.0
         )

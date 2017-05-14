@@ -276,7 +276,7 @@ class WMO_group_file:
         else:
             real_liquid_type = self.FromWMOLiquidType(self.mogp.LiquidType)
 
-        
+        obj.WowLiquid.Color = root.materials[self.mliq.LiquidMaterial].WowMaterial.DiffColor
         obj.WowLiquid.LiquidType = str(real_liquid_type)
         obj.WowLiquid.WMOGroup = objName
 

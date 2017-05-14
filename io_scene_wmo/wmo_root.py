@@ -32,12 +32,13 @@ class WMO_root_file:
         self.mfog = MFOG_chunk()
         self.mcvp = MCVP_chunk()
 
+        self.PortalRCount = 0
         self.materialLookup = {}
         self.textureLookup = {}
-        self.PortalRCount = 0
-        self.PortalR = []
         self.portalDirectionMap = {}
         self.groupMap = {}
+        self.PortalR = []
+        self.doodad_sets = []
 
     def Read(self, f):
         """ Read WoW WMO root file """
@@ -613,7 +614,6 @@ class WMO_root_file:
         global_outdoor_object_count = 0
 
         source_doodads = True
-        doodad_map = {}
 
         scn = bpy.context.scene
                     
@@ -733,8 +733,6 @@ class WMO_root_file:
 
                 elif ob.WoWDoodad.Enabled:
                     source_doodads = False
-                    if ob.parent and ob.parent.type == "EMPTY":
-                        doodad_map.setdefault(ob.parent.name, []).append(ob)
 
                     
         if source_doodads and len(bpy.context.scene.WoWRoot.MODS_Sets):
@@ -776,14 +774,14 @@ class WMO_root_file:
 
                 self.modd.Definitions.append(doodad_definition)
 
-        elif len(doodad_map):
+        elif len(self.doodad_sets):
 
             doodad_sets = {}
             doodad_paths = {}
 
             has_global = False
 
-            for set_name, doodads in doodad_map.items():
+            for set_name, doodads in self.doodad_sets:
                 Log(1, False, "Exporting doodadset: <<" + set_name + ">>")
 
                 doodad_set = DoodadSet()
