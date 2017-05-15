@@ -597,7 +597,7 @@ class WMO_group_file:
                 
             mesh = group.data
             portal_mesh = proxy_obj.data
-            normal  = portal_obj.data.polygons[0].normal
+            normal  = proxy_obj.data.polygons[0].normal
                 
             for poly in mesh.polygons:
                     
@@ -621,8 +621,8 @@ class WMO_group_file:
                     direction.normalize()
                         
                     angle = mathutils.Vector(direction).angle(poly.normal, None)
-     
-                    if angle == None or angle >= pi * 0.5:
+                  
+                    if angle is None or angle >= pi * 0.5:
                         continue
                        
                     ray_cast_result = bpy.context.scene.ray_cast(g_center, direction)
@@ -757,7 +757,7 @@ class WMO_group_file:
         Log(0, False, "Done exporting liquid: <<" + ob.name + ">>")
         return True
 
-    def SavePortalRelations(self, obj, ob, root):
+    def SavePortalRelations(self, new_obj, obj, ob, root):
         obj_mesh = ob.data
                     
         # save portal relations and MOGP indexing data
@@ -787,7 +787,7 @@ class WMO_group_file:
             else:
                 portalRef[1] = first_id if first else second_id
 
-            portalRef[2] = self.GetPortalDirection(ob, obj, root.portalDirectionMap, root.PortalR)
+            portalRef[2] = self.GetPortalDirection(ob, new_obj, root.portalDirectionMap, root.PortalR)
          
             root.PortalR.append(portalRef)
             self.mogp.PortalCount += 1
@@ -1240,7 +1240,7 @@ class WMO_group_file:
 
             # save portal relations
             for relation in portal_relations:
-                self.SavePortalRelations(obj, objects[relation.id], root)
+                self.SavePortalRelations(new_obj, obj, objects[relation.id], root)
              
             root.PortalRCount += self.mogp.PortalCount
             self.mogp.nBatchesA = nBatchesA

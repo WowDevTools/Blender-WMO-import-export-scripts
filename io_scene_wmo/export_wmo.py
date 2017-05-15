@@ -14,6 +14,13 @@ import time
 
 def find_nearest_object(object, objects):
     """Get closest object to another object"""
+
+    if not object.hide:
+        active = bpy.context.scene.objects.active
+        bpy.context.scene.objects.active = object
+        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.context.scene.objects.active = active
+
     dist = 32767
     result = None
     for obj in objects:
@@ -65,6 +72,10 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
 
                     group_counter += 1
 
+                    object.WowWMOGroup.Relations.Portals.clear()
+                    object.WowWMOGroup.Relations.Doodads.clear()
+                    object.WowWMOGroup.Relations.Lights.clear()
+
         # set references
         for object in scene.objects:
 
@@ -98,6 +109,12 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
 
             if object.type == "MESH":
 
+                if not object.WoWDoodad.Enabled:
+                    # prepare object for export
+                    bpy.context.scene.objects.active = object
+                    bpy.ops.object.mode_set(mode='OBJECT')
+                    bpy.context.scene.objects.active = None
+
                 if object.WowLiquid.Enabled:
                     group = scene.objects[object.WowLiquid.WMOGroup]
                     group.WowWMOGroup.Relations.Liquid = object.name
@@ -126,11 +143,6 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
                     rel.id = lamp_counter
 
                 lamp_counter += 1
-
-            # prepare object for export
-            bpy.context.scene.objects.active = object
-            bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.context.scene.objects.active = None
 
         wmo_groups = [None] * len(groups)
 
