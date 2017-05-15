@@ -927,7 +927,7 @@ class WowFogPropertyGroup(bpy.types.PropertyGroup):
         description="Fog farclip",
         default=70.0,
         min=0.0,
-        max=250.0
+        max=2048.0
         )
 
     StartFactor = bpy.props.FloatProperty(
