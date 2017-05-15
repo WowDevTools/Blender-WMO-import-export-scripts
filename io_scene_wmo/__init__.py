@@ -22,7 +22,7 @@
 bl_info = {
     "name": "Wow WMO format (.wmo)",
     "author": "Happyhack, Skarn",
-    "version": (1, 1),
+    "version": (2, 0),
     "blender": (2, 78, 0),
     "location": "File > Import-Export > WoW WMO (.wmo) ",
     "description": "Import-Export WoW WMO",
