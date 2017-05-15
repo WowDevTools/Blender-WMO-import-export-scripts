@@ -91,15 +91,6 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
 
                 if doodad_set[1]:
                     wmo_root.doodad_sets.append(doodad_set)
-                continue
-
-            if object.hide:
-                continue
-            elif export_selected and not object.select:
-                object.select = False
-                continue
-            else:
-                object.select = False
 
             if object.type == "MESH":
 
