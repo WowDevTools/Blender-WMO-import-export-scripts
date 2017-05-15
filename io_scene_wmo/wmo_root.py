@@ -406,22 +406,21 @@ class WMO_root_file:
                         nobj = obj
                     else:
                         nobj = obj.copy()
-
-                        nobj.WoWDoodad.Color = (doodad.Color[0] / 255,
-                                               doodad.Color[1] / 255,
-                                               doodad.Color[2] / 255,
-                                               doodad.Color[3] / 255)
-
-                        flags = []
-                        bit = 1
-                        while bit <= 0x8:
-                            if doodad.Flags & bit:
-                                flags.append(str(bit))
-                            bit <<= 1
-
-                        nobj.WoWDoodad.Flags = set(flags)
-
                         scene.objects.link(nobj)
+
+                    nobj.WoWDoodad.Color = (doodad.Color[0] / 255,
+                                            doodad.Color[1] / 255,
+                                            doodad.Color[2] / 255,
+                                            doodad.Color[3] / 255)
+
+                    flags = []
+                    bit = 1
+                    while bit <= 0x8:
+                        if doodad.Flags & bit:
+                            flags.append(str(bit))
+                        bit <<= 1
+
+                    nobj.WoWDoodad.Flags = set(flags)
 
                     # place the object correctly on the scene
                     nobj.location = doodad.Position

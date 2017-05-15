@@ -15,12 +15,6 @@ import time
 def find_nearest_object(object, objects):
     """Get closest object to another object"""
 
-    if not object.hide:
-        active = bpy.context.scene.objects.active
-        bpy.context.scene.objects.active = object
-        bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.context.scene.objects.active = active
-
     dist = 32767
     result = None
     for obj in objects:

@@ -567,93 +567,100 @@ class WMO_group_file:
 
         # check if this portal was already processed
         if not cur_relation:
+
+            if portal_obj.WowPortalPlane.Algorithm == "0":
                         
-            # store the previous active object
-            active_obj = bpy.context.scene.objects.active
+                # store the previous active object
+                active_obj = bpy.context.scene.objects.active
                 
-            # create a portal proxy object to apply transformations
-            proxy_obj = portal_obj.copy()
-            proxy_obj.data = portal_obj.data.copy()
-            bpy.context.scene.objects.link(proxy_obj)
-            bpy.context.scene.objects.active = proxy_obj
+                # create a portal proxy object to apply transformations
+                proxy_obj = portal_obj.copy()
+                proxy_obj.data = portal_obj.data.copy()
+                bpy.context.scene.objects.link(proxy_obj)
+                bpy.context.scene.objects.active = proxy_obj
                 
-            # reveal hidden geometry
-            bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.mesh.reveal()
-            bpy.ops.mesh.select_all(action='DESELECT')
-            bpy.ops.object.mode_set(mode='OBJECT')
+                # reveal hidden geometry
+                bpy.ops.object.mode_set(mode='EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.mesh.reveal()
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bpy.ops.object.mode_set(mode='OBJECT')
                 
-            proxy_obj.select = True
-            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-            proxy_obj.select = False
+                proxy_obj.select = True
+                bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+                proxy_obj.select = False
                 
-            # triangulate the proxy portal
-            bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.mesh.quads_convert_to_tris()
-            bpy.ops.mesh.select_all(action='DESELECT')             
-            bpy.ops.object.mode_set(mode='OBJECT')
+                # triangulate the proxy portal
+                bpy.ops.object.mode_set(mode='EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.mesh.quads_convert_to_tris()
+                bpy.ops.mesh.select_all(action='DESELECT')             
+                bpy.ops.object.mode_set(mode='OBJECT')
                 
-            mesh = group.data
-            portal_mesh = proxy_obj.data
-            normal  = proxy_obj.data.polygons[0].normal
+                mesh = group.data
+                portal_mesh = proxy_obj.data
+                normal  = proxy_obj.data.polygons[0].normal
                 
-            for poly in mesh.polygons:
+                for poly in mesh.polygons:
                     
-                poly_normal = mathutils.Vector(poly.normal)
-                g_center = poly.center + poly_normal * sys.float_info.epsilon
+                    poly_normal = mathutils.Vector(poly.normal)
+                    g_center = poly.center + poly_normal * sys.float_info.epsilon
                     
                     
-                dist = normal[0] * g_center[0] + normal[1] * g_center[1] + \
-                normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0] * \
-                portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0] - \
-                portal_mesh.polygons[0].normal[1] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1] - \
-                portal_mesh.polygons[0].normal[2] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
+                    dist = normal[0] * g_center[0] + normal[1] * g_center[1] + \
+                    normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0] * \
+                    portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0] - \
+                    portal_mesh.polygons[0].normal[1] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1] - \
+                    portal_mesh.polygons[0].normal[2] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
                     
-                if dist == 0:
-                    continue
-                    
-                for portal_poly in portal_mesh.polygons:
-                        
-                    direction = portal_poly.center - g_center
-                    length = mathutils.Vector(direction).length
-                    direction.normalize()
-                        
-                    angle = mathutils.Vector(direction).angle(poly.normal, None)
-                  
-                    if angle is None or angle >= pi * 0.5:
+                    if dist == 0:
                         continue
-                       
-                    ray_cast_result = bpy.context.scene.ray_cast(g_center, direction)
-                        
-                    if not ray_cast_result[0] \
-                    or ray_cast_result[4].name == portal_obj.name \
-                    or ray_cast_result[4].name == proxy_obj.name \
-                    or mathutils.Vector((ray_cast_result[1][0] - g_center[0], ray_cast_result[1][1] - g_center[1], ray_cast_result[1][2] - g_center[2])).length > \
-                    length:
-                        result = 1 if dist > 0 else -1
-                            
-                        for portalRef in portal_relations:
-                            if portalRef[0] == portal_obj.WowPortalPlane.PortalID:
-                                portalRef[2] = -result
-                                break
-                                    
-                        result_map[portal_obj] = result
-                            
-                        bpy.data.objects.remove(proxy_obj, do_unlink = True)
-                        bpy.context.scene.objects.active = active_obj
-                        return result
-                
-            bpy.data.objects.remove(proxy_obj, do_unlink = True)
-            bpy.context.scene.objects.active = active_obj
-            result_map[portal_obj] = 0
-            LogDebug(0, 
-                     False, 
-                     "WARNING: Failed to calculate portal direction. Calculation from another side may be attempted."
-                     )
-            return 0
                     
+                    for portal_poly in portal_mesh.polygons:
+                        
+                        direction = portal_poly.center - g_center
+                        length = mathutils.Vector(direction).length
+                        direction.normalize()
+                        
+                        angle = mathutils.Vector(direction).angle(poly.normal, None)
+                  
+                        if angle is None or angle >= pi * 0.5:
+                            continue
+                       
+                        ray_cast_result = bpy.context.scene.ray_cast(g_center, direction)
+                        
+                        if not ray_cast_result[0] \
+                        or ray_cast_result[4].name == portal_obj.name \
+                        or ray_cast_result[4].name == proxy_obj.name \
+                        or mathutils.Vector((ray_cast_result[1][0] - g_center[0], ray_cast_result[1][1] - g_center[1], ray_cast_result[1][2] - g_center[2])).length > \
+                        length:
+                            result = 1 if dist > 0 else -1
+                            
+                            for portalRef in portal_relations:
+                                if portalRef[0] == portal_obj.WowPortalPlane.PortalID:
+                                    portalRef[2] = -result
+                                    break
+                                    
+                            result_map[portal_obj] = result
+                            
+                            bpy.data.objects.remove(proxy_obj, do_unlink = True)
+                            bpy.context.scene.objects.active = active_obj
+                            return result
+                
+                bpy.data.objects.remove(proxy_obj, do_unlink = True)
+                bpy.context.scene.objects.active = active_obj
+                result_map[portal_obj] = 0
+                LogDebug(0, 
+                         False, 
+                         "WARNING: Failed to calculate portal direction. Calculation from another side may be attempted."
+                         )
+                return 0
+            
+            else:
+                result = 1 if portal_obj.WowPortalPlane.Algorithm == "1" else -1
+                result_map[portal_obj] = result
+                return result
+
         else:     
             return -cur_relation
 

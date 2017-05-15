@@ -696,6 +696,12 @@ class WowPortalPlanePanel(bpy.types.Panel):
         column = layout.column()
         idproperty.layout_id_prop(column, context.object.WowPortalPlane, "First")
         idproperty.layout_id_prop(column, context.object.WowPortalPlane, "Second")
+
+        col = layout.column()
+
+        col.separator()
+        col.label("Relation direction:")
+        col.prop(context.object.WowPortalPlane, "Algorithm", expand=True)
         
         idproperty.enabled = context.object.WowLiquid.Enabled
         layout.enabled = context.object.WowPortalPlane.Enabled
@@ -736,11 +742,13 @@ class WowPortalPlanePropertyGroup(bpy.types.PropertyGroup):
         description="Portal ID"
         )
 
-    IsInverted = bpy.props.BoolProperty(
-        name="",
-        description="Used to calculate direction if automatic calculation failed",
-        default = False
+    Algorithm = bpy.props.EnumProperty(
+        items=[("0", "Auto", "", 'MONKEY', 0),
+               ("1", "Positive", "", 'ZOOMIN', 1),
+               ("2", "Negative", "", 'ZOOMOUT', 2)],
+        default="0"
         )
+
 
 def RegisterWowPortalPlaneProperties():
     bpy.types.Object.WowPortalPlane = bpy.props.PointerProperty(type=WowPortalPlanePropertyGroup)
