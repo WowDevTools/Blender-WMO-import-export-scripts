@@ -70,6 +70,10 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
                     object.WowWMOGroup.Relations.Doodads.clear()
                     object.WowWMOGroup.Relations.Lights.clear()
 
+                    bpy.context.scene.objects.active = object
+                    bpy.ops.object.mode_set(mode='OBJECT')
+                    bpy.context.scene.objects.active = None
+
         # set references
         for object in scene.objects:
 
@@ -94,7 +98,7 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
 
             if object.type == "MESH":
 
-                if not object.WoWDoodad.Enabled:
+                if not object.WoWDoodad.Enabled or not object.WowWMOGroup.Enabled:
                     # prepare object for export
                     bpy.context.scene.objects.active = object
                     bpy.ops.object.mode_set(mode='OBJECT')
