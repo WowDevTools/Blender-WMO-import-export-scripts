@@ -71,6 +71,12 @@ liquidTypeEnum = [
     ('61', "Hyjal Past - Water", ""), ('81', "Lake Wintergrasp - Water", ""), ('100', "Basic Procedural Water", ""),
     ('121', "CoA Black - Magma", ""), ('141', "Chamber Magma", ""), ('181', "Orange Slime", "")
     ]
+
+portalDirAlgEnum = [
+    ("0", "Auto", "", 'MONKEY', 0),
+    ("1", "Positive", "", 'ZOOMIN', 1),
+    ("2", "Negative", "", 'ZOOMOUT', 2)
+    ]
     
 ###############################
 ## Root properties
@@ -743,9 +749,7 @@ class WowPortalPlanePropertyGroup(bpy.types.PropertyGroup):
         )
 
     Algorithm = bpy.props.EnumProperty(
-        items=[("0", "Auto", "", 'MONKEY', 0),
-               ("1", "Positive", "", 'ZOOMIN', 1),
-               ("2", "Negative", "", 'ZOOMOUT', 2)],
+        items=portalDirAlgEnum,
         default="0"
         )
 
@@ -1564,7 +1568,7 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
                                      
         water.WowLiquid.Enabled = True
 
-        update_wow_visibility(bpy.context.scene, None)
+        water.hide = False if "4" in bpy.context.scene.WoWVisibility else True
 
         self.report({'INFO'}, "Successfully сreated WoW liquid: " + water.name)
         return {'FINISHED'}
@@ -1608,7 +1612,7 @@ class OBJECT_OP_Add_Fog(bpy.types.Operator):
         
         fog.WowFog.Enabled = True
 
-        update_wow_visibility(bpy.context.scene, None)
+        fog.hide = False if "3" in bpy.context.scene.WoWVisibility else True
 
         self.report({'INFO'}, "Successfully сreated WoW fog: " + fog.name)
         return {'FINISHED'}
@@ -1616,14 +1620,20 @@ class OBJECT_OP_Add_Fog(bpy.types.Operator):
      
 class OBJECT_OP_Invert_Portals(bpy.types.Operator):
     bl_idname = 'scene.wow_invert_portals'
-    bl_label = 'Inevert portals'
+    bl_label = 'Invert portals'
     bl_description = 'Invert predefined direction of all selected WoW portals.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    Algorithm = bpy.props.EnumProperty(
+        items=portalDirAlgEnum,
+        default="0"
+        )
    
     def execute(self, context):
         success = False
         for ob in bpy.context.selected_objects:
             if ob.WowPortalPlane.Enabled: 
-                ob.WowPortalPlane.IsInverted = not ob.WowPortalPlane.IsInverted
+                ob.WowPortalPlane.Algorithm = self.Algorithm
                 success = True
 
         if success:
@@ -1660,8 +1670,8 @@ class OBJECT_OP_Fill_Group_Name(bpy.types.Operator):
 class OBJECT_OP_Fill_Textures(bpy.types.Operator):
     bl_idname = 'scene.wow_fill_textures'
     bl_label = 'Fill textures'
-    bl_description = 'Fills Texture 1 field of WoW materials with paths from applied image. \
-                      Is able to account or not account relative texture path.'
+    bl_description = """Fills Texture 1 field of WoW materials with paths from applied image. \
+                      Is able to account or not account relative texture path."""
     bl_options = {'REGISTER', 'UNDO'}
                
     def execute(self, context):
@@ -1673,7 +1683,7 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
                 and mesh.materials[i].active_texture.type == 'IMAGE' \
                 and mesh.materials[i].active_texture.image is not None:
 
-                    if(bpy.context.scene.WoWRoot.UseTextureRelPath):
+                    if bpy.context.scene.WoWRoot.UseTextureRelPath:
                         mesh.materials[i].WowMaterial.Texture1 = os.path.splitext(
                             os.path.relpath(
                                 mesh.materials[i].active_texture.image.filepath,
@@ -1804,10 +1814,11 @@ class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
                 ob.WowPortalPlane.Enabled = True
                 ob.WowPortalPlane.First = self.First
                 ob.WowPortalPlane.Second = self.Second
+
+                ob.hide = False if "2" in bpy.context.scene.WoWVisibility else True
                 success = True
 
         if success:
-            update_wow_visibility(bpy.context.scene, None)
             self.report({'INFO'}, "Successfully converted select objects to portals")
             return {'FINISHED'}
         else:
@@ -1847,6 +1858,8 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
         )
 
     def execute(self, context):
+
+        scene = bpy.context.scene
         
         success = False
         for ob in bpy.context.selected_objects:
@@ -1862,10 +1875,14 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
                 ob.WowWMOGroup.GroupDBCid = self.GroupDBCid
                 ob.WowWMOGroup.LiquidType = self.LiquidType
 
+                if self.PlaceType == "8" and "0" in scene.WoWVisibility \
+                or self.PlaceType == "8192" and "1" in scene.WoWVisibility:
+                    ob.hide = False
+                else:
+                    ob.hide = True
                 success = True
 
         if success:
-            update_wow_visibility(bpy.context.scene, None)
             self.report({'INFO'}, "Successfully converted select objects to WMO groups")
             return {'FINISHED'}
         else:
