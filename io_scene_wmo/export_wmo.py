@@ -98,7 +98,7 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
 
             if object.type == "MESH":
 
-                if not object.WoWDoodad.Enabled or not object.WowWMOGroup.Enabled:
+                if not object.hide:
                     # prepare object for export
                     bpy.context.scene.objects.active = object
                     bpy.ops.object.mode_set(mode='OBJECT')
