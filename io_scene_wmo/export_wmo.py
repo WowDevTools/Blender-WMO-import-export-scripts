@@ -170,5 +170,5 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
         Log(2, True, "Writing root file")
         wmo_root.Write(f)
 
-        Log(1, False, "Total export time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
+        Log(1, False, "Total export time: ", time.strftime("%M minutes %S seconds\a", time.gmtime(time.time() - start_time)))
     

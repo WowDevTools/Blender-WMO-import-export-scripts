@@ -108,7 +108,7 @@ def read(filename, file_format, load_textures, import_doodads):
     else:
         root.LoadDoodads()
 
-    Log(1, False, "Total import time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
+    Log(1, False, "Total import time: ", time.strftime("%M minutes %S seconds\a", time.gmtime(time.time() - start_time)))
 
 
 
