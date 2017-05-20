@@ -54,8 +54,12 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
         for object in scene.objects:
             if object.hide:
                 continue
-            elif export_selected and not object.select:
-                object.select = False
+            else:
+                bpy.context.scene.objects.active = object
+                bpy.ops.object.mode_set(mode='OBJECT')
+                bpy.context.scene.objects.active = None
+
+            if export_selected and not object.select:
                 continue
             else:
                 object.select = False
@@ -69,10 +73,6 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
                     object.WowWMOGroup.Relations.Portals.clear()
                     object.WowWMOGroup.Relations.Doodads.clear()
                     object.WowWMOGroup.Relations.Lights.clear()
-
-                    bpy.context.scene.objects.active = object
-                    bpy.ops.object.mode_set(mode='OBJECT')
-                    bpy.context.scene.objects.active = None
 
         # set references
         for object in scene.objects:
@@ -97,12 +97,6 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
                     wmo_root.doodad_sets.append(doodad_set)
 
             if object.type == "MESH":
-
-                if not object.hide:
-                    # prepare object for export
-                    bpy.context.scene.objects.active = object
-                    bpy.ops.object.mode_set(mode='OBJECT')
-                    bpy.context.scene.objects.active = None
 
                 if object.WowLiquid.Enabled:
                     group = scene.objects[object.WowLiquid.WMOGroup]
