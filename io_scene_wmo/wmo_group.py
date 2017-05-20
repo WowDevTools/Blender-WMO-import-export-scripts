@@ -829,7 +829,7 @@ class WMO_group_file:
             original_mesh = obj.data
         
             # apply all modifiers. Needs to optional.
-            if len(new_obj.modifiers) != 0:
+            if len(new_obj.modifiers):
                 for modifier in new_obj.modifiers:
                     bpy.ops.object.modifier_apply(modifier=modifier.name)
             
