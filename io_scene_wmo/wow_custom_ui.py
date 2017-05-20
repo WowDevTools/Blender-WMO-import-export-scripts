@@ -77,6 +77,12 @@ portalDirAlgEnum = [
     ("1", "Positive", "", 'ZOOMIN', 1),
     ("2", "Negative", "", 'ZOOMOUT', 2)
     ]
+
+rootFlagsEnum = [
+    ("0", "Auto Attenuation", "Attenuate light on vertices based on distance from portal", 'MOD_MIRROR', 0x1),
+    ("1", "Lighten Indoor", "Lighten up all indoor groups automatically", 'LAMP_SUN', 0x2),
+    ("2", "Use Ambient", "Use ambient lighting inside indoor groups", 'PMARKER_ACT', 0x4)       
+     ]
     
 ###############################
 ## Root properties
@@ -94,18 +100,19 @@ class WoWRootPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        self.layout.prop(context.scene.WoWRoot, "PortalDistanceAttenuation")
-        self.layout.prop(context.scene.WoWRoot, "LightenIndoor")
-        self.layout.prop(context.scene.WoWRoot, "UseAmbient")
+        col = layout.column()
+        col.prop(context.scene.WoWRoot, "Flags")
+        col.separator()
 
-        if context.scene.WoWRoot.UseAmbient:
-            self.layout.prop(context.scene.WoWRoot, "AmbientColor")
+        if "2" in context.scene.WoWRoot.Flags:
+            col.prop(context.scene.WoWRoot, "AmbientColor")
 
-        self.layout.prop(context.scene.WoWRoot, "SkyboxPath")
-        self.layout.prop(context.scene.WoWRoot, "WMOid")
-        self.layout.prop(context.scene.WoWRoot, "UseTextureRelPath")
-        self.layout.prop(context.scene.WoWRoot, "TextureRelPath")
+        col.separator()
+
+        col.prop(context.scene.WoWRoot, "SkyboxPath")
+        col.prop(context.scene.WoWRoot, "WMOid")
+        col.prop(context.scene.WoWRoot, "UseTextureRelPath")
+        col.prop(context.scene.WoWRoot, "TextureRelPath")
 
     @classmethod
     def poll(cls, context):
@@ -137,28 +144,11 @@ class WowRootPropertyGroup(bpy.types.PropertyGroup):
     MODN_StringTable = bpy.props.CollectionProperty(type=MODN_String)
     MODD_Definitions = bpy.props.CollectionProperty(type=MODD_Definition)
 
-    GroupID = bpy.props.IntProperty(
-        name="WMO Group ID",
-        description="Used internally for exporting",
-        default= 0,
-        )
-    
-    PortalDistanceAttenuation = bpy.props.BoolProperty(
-        name="Auto Attenuation",
-        description="Attenuate light on vertices based on distance from portal",
-        default=True,
-        )
-    
-    LightenIndoor = bpy.props.BoolProperty(
-        name="Lighten Indoor",
-        description="Lighten up all indoor groups automatically",
-        default= False,
-        )
-
-    UseAmbient = bpy.props.BoolProperty(
-        name="Use Ambient",
-        description="Use ambient lighting inside indoor groups",
-        default= False,
+    Flags = bpy.props.EnumProperty(
+        name = "Root flags",
+        description = "WoW WMO root flags",
+        items=rootFlagsEnum,
+        options = {"ENUM_FLAG"}
         )
 
     AmbientColor = bpy.props.FloatVectorProperty(
@@ -314,7 +304,7 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
     Flags = bpy.props.EnumProperty(
         name = "Material flags",
         description = "WoW material flags",
-        items =materialFlagEnum,
+        items=materialFlagEnum,
         options = {"ENUM_FLAG"}
         )
 

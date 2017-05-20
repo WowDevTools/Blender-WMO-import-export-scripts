@@ -547,12 +547,19 @@ class WMO_root_file:
                                                   float(self.mohd.AmbientColor[1] / 255),
                                                   float(self.mohd.AmbientColor[0]) / 255,
                                                   float(self.mohd.AmbientColor[3]) / 255]
+
+        flags = set()
+        if self.mohd.Flags & 0x1:
+            flags.add("0")
+        if self.mohd.Flags & 0x2:
+            flags.add("2")
+        if self.mohd.Flags & 0x8:
+            flags.add("1")
+
+        properties.Flags = flags
         properties.SkyboxPath = self.mosb.Skybox
-        properties.LightenIndoor = bool(self.mohd.Flags & 0x8)
-        properties.UseAmbient = bool(self.mohd.Flags & 0x2)
         properties.WMOid = self.mohd.ID
         properties.TextureRelPath = filepath
-        properties.PortalDistanceAttenuation = bool(self.mohd.Flags & 0x1)
 
     def GetObjectBoundingBox(self, obj):
         """ Calculate bounding box of an object """
@@ -883,14 +890,14 @@ class WMO_root_file:
         
         self.mosb.Skybox = scn.WoWRoot.SkyboxPath
 
-        if scn.WoWRoot.PortalDistanceAttenuation:
+        flags = scn.WoWRoot.Flags
+        if "0" in flags:
             self.mohd.Flags |= 0x01
-        if scn.WoWRoot.UseAmbient:
+        if "2" in flags:
             self.mohd.Flags |= 0x02 
-        if scn.WoWRoot.LightenIndoor:
+        if "1" in flags:
             self.mohd.Flags |= 0x08
 
-        return
 
     def Write(self, f):
         """ Write a saved WoW WMO root to a file """
