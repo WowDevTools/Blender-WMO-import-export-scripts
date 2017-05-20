@@ -93,7 +93,6 @@ class WoWRootPanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "scene"
     bl_label = "WoW Root"
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         layout = self.layout
@@ -111,6 +110,9 @@ class WoWRootPanel(bpy.types.Panel):
 
         col.prop(context.scene.WoWRoot, "SkyboxPath")
         col.prop(context.scene.WoWRoot, "WMOid")
+
+        col.separator()
+
         col.prop(context.scene.WoWRoot, "UseTextureRelPath")
         col.prop(context.scene.WoWRoot, "TextureRelPath")
 
