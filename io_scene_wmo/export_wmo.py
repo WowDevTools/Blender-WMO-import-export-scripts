@@ -73,6 +73,7 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
                     object.WowWMOGroup.Relations.Portals.clear()
                     object.WowWMOGroup.Relations.Doodads.clear()
                     object.WowWMOGroup.Relations.Lights.clear()
+                    object.WowWMOGroup.Relations.Liquid = ""
 
         # set references
         for object in scene.objects:
