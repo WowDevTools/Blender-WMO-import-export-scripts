@@ -1080,7 +1080,7 @@ class WMO_group_file:
                     tri_mat = TriangleMaterial()
                     tri_mat.MaterialID = batchKey[0]
                     tri_mat.Flags = 0x0 if tri_mat.MaterialID == 0xFF else 0x20
-                    tri_mat.Flags |= 0x40 if collision_counter == len(mesh.polygons[poly].vertices) else 0x4 & 0x8
+                    tri_mat.Flags |= 0x40 if collision_counter == len(mesh.polygons[poly].vertices) else 0x4 | 0x8
 
                     for loop_index in mesh.polygons[poly].loop_indices:
                         
