@@ -841,7 +841,7 @@ class WMO_group_file:
             bpy.ops.mesh.select_all(action='DESELECT')
             
             # perform edge split. 
-            bpy.ops.uv.select_all(action='TOGGLE')
+            bpy.ops.uv.select_all(action='SELECT')
             bpy.ops.uv.seams_from_islands(mark_seams=False, mark_sharp=True)
             bpy.ops.object.mode_set(mode='OBJECT')
             
