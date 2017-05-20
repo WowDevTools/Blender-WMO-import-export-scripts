@@ -110,10 +110,10 @@ class WMO_root_file:
                     self.textureLookup[mat.WowMaterial.Texture1] = self.motx.AddString(mat.WowMaterial.Texture1)
                     WowMat.Texture1Ofs = self.textureLookup[mat.WowMaterial.Texture1]
 
-                WowMat.EmissiveColor = (int(mat.WowMaterial.EmissiveColor[3] * 255),
-                                        int(mat.WowMaterial.EmissiveColor[2] * 255), 
+                WowMat.EmissiveColor = (int(mat.WowMaterial.EmissiveColor[0] * 255),
                                         int(mat.WowMaterial.EmissiveColor[1] * 255), 
-                                        int(mat.WowMaterial.EmissiveColor[0] * 255))
+                                        int(mat.WowMaterial.EmissiveColor[2] * 255), 
+                                        int(mat.WowMaterial.EmissiveColor[3] * 255))
 
                 WowMat.TextureFlags1 = 0
 
@@ -123,10 +123,10 @@ class WMO_root_file:
                     self.textureLookup[mat.WowMaterial.Texture2] = self.motx.AddString(mat.WowMaterial.Texture2)
                     WowMat.Texture2Ofs = self.textureLookup[mat.WowMaterial.Texture2]
 
-                WowMat.DiffColor = (int(mat.WowMaterial.DiffColor[3] * 255), 
-                                    int(mat.WowMaterial.DiffColor[2] * 255), 
+                WowMat.DiffColor = (int(mat.WowMaterial.DiffColor[0] * 255), 
                                     int(mat.WowMaterial.DiffColor[1] * 255), 
-                                    int(mat.WowMaterial.DiffColor[0] * 255))
+                                    int(mat.WowMaterial.DiffColor[2] * 255), 
+                                    int(mat.WowMaterial.DiffColor[3] * 255))
 
                 for flag in mat.WowMaterial.Flags:
                     WowMat.Flags |= int(flag)
@@ -542,17 +542,17 @@ class WMO_root_file:
             
     def LoadProperties(self, name, filepath):
         """ Load global WoW WMO properties """
-        bpy.context.scene.WoWRoot.AmbientColor = [float(self.mohd.AmbientColor[0] / 255),
+        properties = bpy.context.scene.WoWRoot
+        properties.AmbientColor = [float(self.mohd.AmbientColor[2] / 255),
                                                   float(self.mohd.AmbientColor[1] / 255),
-                                                  float(self.mohd.AmbientColor[2]) / 255]
-
-        bpy.context.scene.WoWRoot.AmbientAlpha = self.mohd.AmbientColor[3]
-        bpy.context.scene.WoWRoot.SkyboxPath = self.mosb.Skybox
-        bpy.context.scene.WoWRoot.LightenIndoor = bool(self.mohd.Flags & 0x8)
-        bpy.context.scene.WoWRoot.UseAmbient = bool(self.mohd.Flags & 0x2)
-        bpy.context.scene.WoWRoot.WMOid = self.mohd.ID
-        bpy.context.scene.WoWRoot.TextureRelPath = filepath
-        bpy.context.scene.WoWRoot.PortalDistanceAttenuation = bool(self.mohd.Flags & 0x1)
+                                                  float(self.mohd.AmbientColor[0]) / 255,
+                                                  float(self.mohd.AmbientColor[3]) / 255]
+        properties.SkyboxPath = self.mosb.Skybox
+        properties.LightenIndoor = bool(self.mohd.Flags & 0x8)
+        properties.UseAmbient = bool(self.mohd.Flags & 0x2)
+        properties.WMOid = self.mohd.ID
+        properties.TextureRelPath = filepath
+        properties.PortalDistanceAttenuation = bool(self.mohd.Flags & 0x1)
 
     def GetObjectBoundingBox(self, obj):
         """ Calculate bounding box of an object """
@@ -872,22 +872,22 @@ class WMO_root_file:
         self.mohd.nDoodads = len(self.modd.Definitions)
         self.mohd.nSets = len(self.mods.Sets)
 
-        self.mohd.AmbientColor = [int(bpy.context.scene.WoWRoot.AmbientColor[0]*255),
-                                  int(bpy.context.scene.WoWRoot.AmbientColor[1]*255),
-                                  int(bpy.context.scene.WoWRoot.AmbientColor[2]*255),
-                                  bpy.context.scene.WoWRoot.AmbientAlpha] 
+        self.mohd.AmbientColor = [int(scn.WoWRoot.AmbientColor[2] * 255),
+                                  int(scn.WoWRoot.AmbientColor[1] * 255),
+                                  int(scn.WoWRoot.AmbientColor[0] * 255),
+                                  int(scn.WoWRoot.AmbientColor[3] * 255)] 
 
-        self.mohd.ID =  bpy.context.scene.WoWRoot.WMOid
+        self.mohd.ID =  scn.WoWRoot.WMOid
         self.mohd.BoundingBoxCorner1 = bb[0]
         self.mohd.BoundingBoxCorner2 = bb[1]
         
-        self.mosb.Skybox = bpy.context.scene.WoWRoot.SkyboxPath
+        self.mosb.Skybox = scn.WoWRoot.SkyboxPath
 
-        if bpy.context.scene.WoWRoot.PortalDistanceAttenuation:
+        if scn.WoWRoot.PortalDistanceAttenuation:
             self.mohd.Flags |= 0x01
-        if bpy.context.scene.WoWRoot.UseAmbient:
+        if scn.WoWRoot.UseAmbient:
             self.mohd.Flags |= 0x02 
-        if bpy.context.scene.WoWRoot.LightenIndoor:
+        if scn.WoWRoot.LightenIndoor:
             self.mohd.Flags |= 0x08
 
         return

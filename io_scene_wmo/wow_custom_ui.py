@@ -98,8 +98,10 @@ class WoWRootPanel(bpy.types.Panel):
         self.layout.prop(context.scene.WoWRoot, "PortalDistanceAttenuation")
         self.layout.prop(context.scene.WoWRoot, "LightenIndoor")
         self.layout.prop(context.scene.WoWRoot, "UseAmbient")
-        self.layout.prop(context.scene.WoWRoot, "AmbientColor")
-        self.layout.prop(context.scene.WoWRoot, "AmbientAlpha")
+
+        if context.scene.WoWRoot.UseAmbient:
+            self.layout.prop(context.scene.WoWRoot, "AmbientColor")
+
         self.layout.prop(context.scene.WoWRoot, "SkyboxPath")
         self.layout.prop(context.scene.WoWRoot, "WMOid")
         self.layout.prop(context.scene.WoWRoot, "UseTextureRelPath")
@@ -162,16 +164,10 @@ class WowRootPropertyGroup(bpy.types.PropertyGroup):
     AmbientColor = bpy.props.FloatVectorProperty(
         name="Ambient Color",
         subtype='COLOR',
-        default=(1,1,1),
+        default=(1, 1, 1, 1),
+        size=4,
         min=0.0,
         max=1.0
-        )
-
-    AmbientAlpha =  bpy.props.IntProperty(
-        name="Ambient Intensity",
-        description="Ambient. 255 = blizzlike",
-        min=0, max=255,
-        default= 127,
         )
 
     SkyboxPath =  bpy.props.StringProperty(
