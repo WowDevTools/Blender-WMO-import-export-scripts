@@ -170,12 +170,6 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
         description="Makes the exporter export only selected objects on the scene",
         default=False,
         )
-        
-    source_doodads = BoolProperty(
-        name="Save source doodads",
-        description="Save source doodads",
-        default=True,
-        )
     
     autofill_textures = BoolProperty(
         name="Fill texture paths",
@@ -183,16 +177,10 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
         default=True,
         )           
 
-    """apply_modifiers = BoolProperty(
-            name="Apply Modifiers",
-            description="Use transformed mesh data from each object",
-            default=True,
-            )
-    """
     
     def execute(self, context):
         from . import export_wmo
-        export_wmo.write(self.filepath, self.source_doodads, self.autofill_textures, self.export_selected)
+        export_wmo.write(self.filepath, self.autofill_textures, self.export_selected)
 
         return {'FINISHED'}
 

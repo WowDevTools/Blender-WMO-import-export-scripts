@@ -607,7 +607,7 @@ class WMO_root_file:
 
         return (corner1, corner2)
 
-    def Save(self, export_doodads, autofill_textures, nPortals):
+    def Save(self, autofill_textures, nPortals):
         """ Save WoW WMO root file for future export """        
         # set version header
         self.mver.Version = 17

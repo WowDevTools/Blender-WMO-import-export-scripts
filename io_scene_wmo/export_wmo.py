@@ -26,7 +26,7 @@ def find_nearest_object(object, objects):
 
     return result
 
-def write(filepath, save_doodads, autofill_textures, export_selected):
+def write(filepath, autofill_textures, export_selected):
 
     start_time = time.time()
     
@@ -141,8 +141,7 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
                 group_filename = base_name + "_" + str(group_id).zfill(3) + ".wmo"
 
                 wmo_group = WMO_group_file()
-                wmo_group.Save(obj, wmo_root, group_id, save_doodads, 
-                               autofill_textures, group_filename)
+                wmo_group.Save(obj, wmo_root, group_id, autofill_textures, group_filename)
 
                 wmo_groups[group_id] = wmo_group
 
@@ -159,7 +158,7 @@ def write(filepath, save_doodads, autofill_textures, export_selected):
         
         # save root file
         Log(2, True, "Saving root file")
-        wmo_root.Save(save_doodads, autofill_textures, portal_counter)
+        wmo_root.Save(autofill_textures, portal_counter)
     
         # write root file
         Log(2, True, "Writing root file")

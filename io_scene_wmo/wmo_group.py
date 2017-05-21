@@ -285,14 +285,14 @@ class WMO_group_file:
         """ Get indices of a WMO BSP tree nodes """
         # last node in branch
         nodeIndices = []
-        if(nodes[iNode].PlaneType & BSP_PLANE_TYPE.Leaf):
+        if nodes[iNode].PlaneType & BSP_PLANE_TYPE.Leaf:
             for i in range(nodes[iNode].FirstFace, nodes[iNode].FirstFace + nodes[iNode].NumFaces):
                 nodeIndices.append(faces[i])
 
-        if(nodes[iNode].Childrens[0] != -1):
+        if nodes[iNode].Childrens[0] != -1:
             nodeIndices.extend(self.GetBSPNodeIndices(nodes[iNode].Childrens[0], nodes, faces, indices))
 
-        if(nodes[iNode].Childrens[1] != -1):
+        if nodes[iNode].Childrens[1] != -1:
             nodeIndices.extend(self.GetBSPNodeIndices(nodes[iNode].Childrens[1], nodes, faces, indices))
 
         return nodeIndices
@@ -302,7 +302,7 @@ class WMO_group_file:
         nodeIndices = self.GetBSPNodeIndices(0, self.mobn.Nodes, self.mobr.Faces, self.movi.Indices)
         indices = []
         for i in nodeIndices:
-            if(not (self.mopy.TriangleMaterials[i].Flags & 0x04)):
+            if not self.mopy.TriangleMaterials[i].Flags & 0x04:
                 indices.append(self.movi.Indices[i * 3])
                 indices.append(self.movi.Indices[i * 3 + 1])
                 indices.append(self.movi.Indices[i * 3 + 2])
@@ -805,7 +805,7 @@ class WMO_group_file:
                 + obj.name + ">> (group)"
                 )
 
-    def Save(self, obj, root, objNumber, save_doodads, autofill_textures, group_filename):
+    def Save(self, obj, root, objNumber, autofill_textures, group_filename):
         """ Save WoW WMO group data for future export """
         Log(1, False, "Saving group: <<" + obj.name + ">>")
         self.filename = group_filename
@@ -1235,19 +1235,16 @@ class WMO_group_file:
             self.mogp.GroupNameOfs = groupInfo[0]
             self.mogp.DescGroupNameOfs = groupInfo[1]
 
-            if save_doodads:
-                if len(new_obj.WowWMOGroup.MODR):
-                    self.modr = MODR_chunk()
-                    for doodad in new_obj.WowWMOGroup.MODR:
-                        self.modr.DoodadRefs.append(doodad.value)
-                    self.mogp.Flags |= MOGP_FLAG.HasDoodads
-                elif new_obj.WowWMOGroup.Relations.Doodads:
-                    self.modr = MODR_chunk()
-                    for doodad in new_obj.WowWMOGroup.Relations.Doodads:
-                        self.modr.DoodadRefs.append(doodad.id)
-                    self.mogp.Flags |= MOGP_FLAG.HasDoodads
-                else:
-                    self.modr = None
+            if len(new_obj.WowWMOGroup.MODR):
+                self.modr = MODR_chunk()
+                for doodad in new_obj.WowWMOGroup.MODR:
+                    self.modr.DoodadRefs.append(doodad.value)
+                self.mogp.Flags |= MOGP_FLAG.HasDoodads
+            elif new_obj.WowWMOGroup.Relations.Doodads:
+                self.modr = MODR_chunk()
+                for doodad in new_obj.WowWMOGroup.Relations.Doodads:
+                    self.modr.DoodadRefs.append(doodad.id)
+                self.mogp.Flags |= MOGP_FLAG.HasDoodads
             else:
                 self.modr = None
                 
