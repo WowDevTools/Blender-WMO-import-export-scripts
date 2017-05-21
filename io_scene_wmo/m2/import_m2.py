@@ -137,8 +137,7 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
             self.report({'ERROR'}, "Failed to import model. Connect to game client first.")
             return {'CANCELLED'}
 
-        relpath = bpy.context.scene.WoWRoot.TextureRelPath
-        dir = relpath if relpath else bpy.path.abspath("//") if bpy.data.is_saved else None
+        dir = bpy.path.abspath("//") if bpy.data.is_saved else None
         m2_path = wmv_get_last_m2()
 
         if not m2_path:

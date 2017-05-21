@@ -559,7 +559,6 @@ class WMO_root_file:
         properties.Flags = flags
         properties.SkyboxPath = self.mosb.Skybox
         properties.WMOid = self.mohd.ID
-        properties.TextureRelPath = filepath
 
     def GetObjectBoundingBox(self, obj):
         """ Calculate bounding box of an object """
