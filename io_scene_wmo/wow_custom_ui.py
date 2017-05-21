@@ -3,6 +3,7 @@ import bpy
 import bpy.utils
 import bpy.types
 import os
+import sys
 from . import wmo_format
 from .wmo_format import *
 from . import debug_utils
@@ -1658,11 +1659,17 @@ class OBJECT_OP_Fill_Group_Name(bpy.types.Operator):
 class OBJECT_OP_Fill_Textures(bpy.types.Operator):
     bl_idname = 'scene.wow_fill_textures'
     bl_label = 'Fill textures'
-    bl_description = """Fills Texture 1 field of WoW materials with paths from applied image. \
-                      Is able to account or not account relative texture path."""
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = """Fills Texture 1 field of WoW materials with paths from applied image. """
+    bl_options = {'REGISTER'}
                
     def execute(self, context):
+
+        if not hasattr(bpy, "wow_game_data"):
+                Log(2, True, "Loading game data")
+                bpy.ops.scene.load_wow_filesystem()
+
+        game_data = bpy.wow_game_data
+
         for ob in bpy.context.selected_objects:
             mesh = ob.data
             for i in range(len(mesh.materials)):
@@ -1670,20 +1677,28 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
                 and not mesh.materials[i].WowMaterial.Texture1 \
                 and mesh.materials[i].active_texture.type == 'IMAGE' \
                 and mesh.materials[i].active_texture.image is not None:
+                    path = (os.path.splitext(mesh.materials[i].active_texture.image.filepath)[0] + ".blp", "")
+                    rest_path = ""
 
-                    if bpy.context.scene.WoWRoot.UseTextureRelPath:
-                        mesh.materials[i].WowMaterial.Texture1 = os.path.splitext(
-                            os.path.relpath(
-                                mesh.materials[i].active_texture.image.filepath,
-                                bpy.context.scene.WoWRoot.TextureRelPath 
-                                )
-                            )[0] + ".blp"
-                    else:
-                        mesh.materials[i].WowMaterial.Texture1 = os.path.splitext(
-                            mesh.materials[i].active_texture.image.filepath
-                            )[0] + ".blp"
+                    while True:
+                        path = os.path.split(path[0])
+                        if not path[1]:
+                            LogDebug(1, False, "Texture " + mesh.materials[i].active_texture.image.filepath + " not found.")
+                            break
+                        
+                        rest_path = os.path.join(path[1], rest_path)
+                        rest_path = rest_path[:-1] if rest_path.endswith("\\") else rest_path
 
-        self.report({'INFO'}, "Done filling WoW material paths")                
+                        sys.stdout = open(os.devnull, 'w')
+
+                        if game_data.read_file(rest_path):
+                            mesh.materials[i].WowMaterial.Texture1 = rest_path
+                            break   
+
+                        sys.stdout = sys.__stdout__
+
+            self.report({'INFO'}, "Done filling texture paths")
+       
         return {'FINISHED'}
                  
 

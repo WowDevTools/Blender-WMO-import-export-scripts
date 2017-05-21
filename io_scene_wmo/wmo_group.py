@@ -928,47 +928,15 @@ class WMO_group_file:
 
             self.mogp = MOGP_chunk()
             
-            material_indices = {} 
+            material_indices = {}
+
+            if autofill_textures:
+                new_obj.select = True
+                bpy.ops.scene.wow_fill_textures()
+                new_obj.select = False
             
             for i in range(len(mesh.materials)):
                 material_indices[i] = root.AddMaterial(mesh.materials[i]) # adding materials to root object. Returns the index of material if the passed one already exists.
-                
-                if autofill_textures:
-                    if mesh.materials[i].active_texture is not None \
-                    and not mesh.materials[i].WowMaterial.Texture1 \
-                    and mesh.materials[i].active_texture.type == 'IMAGE' \
-                    and mesh.materials[i].active_texture.image is not None:
-                            if bpy.context.scene.WoWRoot.UseTextureRelPath:
-                                mesh.materials[i].WowMaterial.Texture1 = \
-                                os.path.splitext(
-                                    os.path.relpath(
-                                        mesh.materials[i].active_texture.image.filepath,
-                                        bpy.context.scene.WoWRoot.TextureRelPath
-                                        )
-                                    )[0] + ".blp"
-
-                                LogDebug(1, 
-                                            False,
-                                            os.path.splitext(
-                                                os.path.relpath(
-                                                    mesh.materials[i].active_texture.image.filepath,
-                                                    bpy.context.scene.WoWRoot.TextureRelPath
-                                                    )
-                                                )[0] + ".blp"
-                                            )
-                            else:
-                                mesh.materials[i].WowMaterial.Texture1 = \
-                                os.path.splitext( mesh.materials[i].active_texture.image.filepath )[0] + ".blp"
-
-                                LogDebug(1, 
-                                            False, 
-                                            os.path.splitext(
-                                                os.path.relpath(
-                                                    mesh.materials[i].active_texture.image.filepath, 
-                                                    bpy.context.scene.WoWRoot.TextureRelPath 
-                                                    )
-                                                )[0] + ".blp"
-                                            )
 
             polyBatchMap = {}
 
