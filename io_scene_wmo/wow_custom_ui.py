@@ -112,11 +112,6 @@ class WoWRootPanel(bpy.types.Panel):
         col.prop(context.scene.WoWRoot, "SkyboxPath")
         col.prop(context.scene.WoWRoot, "WMOid")
 
-        col.separator()
-
-        col.prop(context.scene.WoWRoot, "UseTextureRelPath")
-        col.prop(context.scene.WoWRoot, "TextureRelPath")
-
     @classmethod
     def poll(cls, context):
         return (context.scene is not None)
@@ -173,19 +168,6 @@ class WowRootPropertyGroup(bpy.types.PropertyGroup):
         name="WMO DBC ID",
         description="Used in WMOAreaTable (optional)",
         default= 0,
-        )
-
-    UseTextureRelPath = bpy.props.BoolProperty(
-        name="Use Texture Relative Path",
-        description="Turn this setting off if you want texture auto-filling if your textures are already referenced through relative paths",
-        default= True,
-        )
-
-    TextureRelPath =  bpy.props.StringProperty(
-        name="TextureRelPath",
-        description="A relative path to your texture folder. WARNING: changing that property is recommended only on brand new scenes. Do not change on scenes with imported WMOs.",
-        default= '',
-        
         )
 
 def RegisterWowRootProperties():
@@ -1279,8 +1261,7 @@ class DOODAD_SET_CLEAR_PRESERVED(bpy.types.Operator):
                 Log(2, True, "Loading game data")
                 bpy.ops.scene.load_wow_filesystem()
 
-            relpath = bpy.context.scene.WoWRoot.TextureRelPath
-            dir = relpath if relpath else bpy.path.abspath("//") if bpy.data.is_saved else None
+            dir = bpy.path.abspath("//") if bpy.data.is_saved else None
 
             if dir:
                 try:
@@ -1289,8 +1270,7 @@ class DOODAD_SET_CLEAR_PRESERVED(bpy.types.Operator):
                     self.report({'ERROR'}, "An error occured while importing doodads.")
                     return {'CANCELLED'}
             else:
-                self.report({'ERROR'}, """Failed to import model.
-                Save your blendfile or enter texture relative path first.""")
+                self.report({'ERROR'}, """Failed to import model. Save your blendfile first.""")
                 return {'CANCELLED'}
 
             bpy.context.scene.WoWRoot.MODS_Sets.clear()
