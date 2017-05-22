@@ -607,11 +607,11 @@ class WMO_group_file:
                     g_center = poly.center + poly_normal * sys.float_info.epsilon
                     
                     
-                    dist = normal[0] * g_center[0] + normal[1] * g_center[1] + \
-                    normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0] * \
-                    portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0] - \
-                    portal_mesh.polygons[0].normal[1] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1] - \
-                    portal_mesh.polygons[0].normal[2] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
+                    dist = normal[0] * g_center[0] + normal[1] * g_center[1]
+                    + normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0]
+                    * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0]
+                    - portal_mesh.polygons[0].normal[1] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1]
+                    - portal_mesh.polygons[0].normal[2] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
                     
                     if dist == 0:
                         continue
