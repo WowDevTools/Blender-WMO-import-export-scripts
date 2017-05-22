@@ -608,7 +608,7 @@ class WMO_group_file:
                     
                     
                     dist = normal[0] * g_center[0] + normal[1] * g_center[1]
-                    + normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0]
+                    + normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0] \
                     * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0]
                     - portal_mesh.polygons[0].normal[1] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1]
                     - portal_mesh.polygons[0].normal[2] * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
