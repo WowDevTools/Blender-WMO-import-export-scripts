@@ -1076,7 +1076,7 @@ class WMO_group_file:
                                     for vertex_group_element in vertex.groups:
                                         if vertex_group_element.group == vg_lightmap.index:
                                             weight = round(vertex_group_element.weight * 255)
-                                            vertex_color[3] = weight if weight < 0 else 0x00
+                                            vertex_color[3] = weight if weight > 0 else 0x00
                                             if weight > 0:
                                                 tri_mat.Flags |= 0x1
                                     
