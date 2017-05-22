@@ -92,7 +92,7 @@ def LogError(spacing, *message):
         for i in range(0, spacing):
             print("")
     
-    raise Exception(string)
+    print(string)
 
 
 

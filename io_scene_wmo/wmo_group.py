@@ -1076,8 +1076,8 @@ class WMO_group_file:
                                     for vertex_group_element in vertex.groups:
                                         if vertex_group_element.group == vg_lightmap.index:
                                             weight = round(vertex_group_element.weight * 255)
-                                            vertex_color[3] = weight
-                                            if weight != 0:
+                                            vertex_color[3] = weight if weight < 0 else 0x00
+                                            if weight > 0:
                                                 tri_mat.Flags |= 0x1
                                     
                                 self.mocv.vertColors[new_index] = vertex_color
@@ -1091,10 +1091,11 @@ class WMO_group_file:
                         if vg_blendmap != None:
                             for vertex_group_element in vertex.groups:
                                         if vertex_group_element.group == vg_blendmap.index:
+                                            weight = round(vertex.groups[vg_blendmap.index].weight * 255)
                                             self.mocv2.vertColors[new_index] = (0,
                                                                                 0, 
                                                                                 0, 
-                                                                                round(vertex.groups[vg_blendmap.index].weight * 255))
+                                                                                weight if weight > 0 else 0x00)
                         
                         normalMap.setdefault(new_index, []).append(mesh.loops[loop_index].normal)
                      
@@ -1302,56 +1303,46 @@ class WMO_group_file:
         """ Write a saved WoW WMO group to a file """
         Log(1, False, "Writing file: <<" +  os.path.basename(self.filename) + ">>")
         
-        try:
-            f = open(self.filename, "wb")
+        f = open(self.filename, "wb")
             
-            self.mver.Write(f)
+        self.mver.Write(f)
 
-            f.seek(0x58)
-            self.mopy.Write(f)
-            self.movi.Write(f)
-            self.movt.Write(f)
-            self.monr.Write(f)
-            self.motv.Write(f)
-            self.moba.Write(f)
+        f.seek(0x58)
+        self.mopy.Write(f)
+        self.movi.Write(f)
+        self.movt.Write(f)
+        self.monr.Write(f)
+        self.motv.Write(f)
+        self.moba.Write(f)
 
-            if self.molr:
-                self.molr.Write(f)
+        if self.molr:
+            self.molr.Write(f)
                         
-            if self.modr:
-                self.modr.Write(f)
+        if self.modr:
+            self.modr.Write(f)
 
-            self.mobn.Write(f)
-            self.mobr.Write(f)
+        self.mobn.Write(f)
+        self.mobr.Write(f)
             
-            if self.mocv:
-                self.mocv.Write(f)
+        if self.mocv:
+            self.mocv.Write(f)
             
-            if self.mliq:
-                self.mliq.Write(f)
+        if self.mliq:
+            self.mliq.Write(f)
                 
-            if self.motv2:
-                self.motv2.Write(f)
+        if self.motv2:
+            self.motv2.Write(f)
                 
-            if self.mocv2:
-                self.mocv2.Write(f)
+        if self.mocv2:
+            self.mocv2.Write(f)
 
-            # get file size
-            f.seek(0, 2)
-            self.mogp.Header.Size = f.tell() - 20
+        # get file size
+        f.seek(0, 2)
+        self.mogp.Header.Size = f.tell() - 20
 
-            # write header
-            f.seek(0xC)
-            self.mogp.Write(f)
+        # write header
+        f.seek(0xC)
+        self.mogp.Write(f)
             
-        except Exception as e:
-            
-            LogError(2, 
-                     "Something went wrong while writing file: <<" 
-                     + os.path.basename(self.filename) 
-                     + ">>. See the error above for details."
-                     )
-
-            raise e
             
         Log(0, False, "Done writing file: <<" + os.path.basename(self.filename) + ">>")
