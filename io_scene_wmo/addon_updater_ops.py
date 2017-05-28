@@ -896,7 +896,7 @@ def register(bl_info):
 	#updater.addon = # define at top of module, MUST be done first
 
 	# Website for manual addon download, optional but reocmmended to set
-	updater.website = "http://www.model-changing.net/files/file/56-wmo-importexport-blender-scripts/"
+	updater.website = "http://www.model-changing.net/files/file/56-wmo-importexport-blender-addon/"
 	
 	# used to check/compare versions
 	updater.current_version = bl_info["version"] 
