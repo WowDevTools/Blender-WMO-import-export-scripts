@@ -142,7 +142,7 @@ class BLPConverter:
             self.toolPath = toolPath
             print("\nFound BLP Converter executable: " + toolPath)
         else:
-            print("\nNo BLPConverter found at given path: " + toolPath)
+            raise Exception("\nNo BLPConverter found at given path: " + toolPath)
 
     def convert(self, filepaths, alwaysReplace = False):
         init_length = len(self.toolPath) + 4
