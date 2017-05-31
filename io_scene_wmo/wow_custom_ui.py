@@ -1466,7 +1466,7 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
                     if self.Action == 'REPLACE':
 
                         location = obj.location
-                        rotation = obj.rotation_euler
+                        rotation = obj.rotation_quaternion
                         scale = obj.scale
 
                         bpy.data.objects.remove(obj, do_unlink = True)
@@ -1475,7 +1475,8 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
 
                         obj = bpy.context.scene.objects.active
                         obj.location = location
-                        obj.rotation_euler = rotation
+                        obj.rotation_mode = 'QUATERNION'
+                        obj.rotation_quaternion = rotation
                         obj.scale = scale
                         objects_to_select.append(obj)
 
