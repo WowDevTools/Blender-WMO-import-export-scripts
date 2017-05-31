@@ -1092,7 +1092,9 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
             box.operator("scene.wow_fill_group_name", text = 'Fill group name', icon = 'FONTPREVIEW')
             box.operator("scene.wow_invert_portals", text = 'Invert portals', icon = 'FILE_REFRESH')
             if not has_sets:
+                box.label(text="Doodads:")
                 box.operator("scene.wow_doodad_set_add", text = 'Add to doodadset', icon = 'ZOOMIN')
+                box.operator("scene.wow_doodad_set_template_action", text = 'Template action', icon = 'FORCE_MAGNETIC')
 
         box1 = col.box()
         box1.label(text="Add to scene:")
@@ -1330,15 +1332,12 @@ class DOODAD_SET_ADD(bpy.types.Operator):
         if self.Action == "ADD":
             text = "Select set:"
             col.label(text=text)
+            col.prop(self, "Set")
         elif self.Action == "CUSTOM":
             text = "Enter set name:"
             col.label(text=text)
-
-        if self.Action == "ADD":
-            col.prop(self, "Set")
-        elif self.Action == "CUSTOM":
             col.prop(self, "Name")
-   
+ 
     def execute(self, context):
 
         selected_objs = []
@@ -1398,6 +1397,110 @@ class DOODAD_SET_ADD(bpy.types.Operator):
         switch_doodad_set(bpy.context.scene, None)
 
         return {'FINISHED'}
+
+
+class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
+    bl_idname = 'scene.wow_doodad_set_template_action'
+    bl_label = 'Template action'
+    bl_description = 'Apply an action to all instances of selected object on the scene'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    Action = bpy.props.EnumProperty(
+        items=[
+            ('REPLACE', "Replace", "Replace all instances of selected doodads with last M2 from WMV", 'FILE_REFRESH', 0),
+            ('RESIZE', "Resize", "Resize all instances of selected doodads", 'FULLSCREEN_ENTER', 1),
+            ('DELETE', "Delete", "Delete all instances of selected doodads", 'CANCEL', 2)],       
+        default='REPLACE'
+        )
+
+    Scale = bpy.props.FloatProperty(
+        name="Scale",
+        description="Scale applied to doodads",
+        max=20,
+        default=1
+        )
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def draw(self, context):
+        col = self.layout.column()
+
+        col.prop(self, "Action", expand=True)
+
+        if self.Action == 'RESIZE':
+            col.prop(self, "Scale")
+
+    def execute(self, context):
+
+        target = None
+        active = bpy.context.scene.objects.active
+
+        if active and active.WoWDoodad:
+           target = active.WoWDoodad.Path
+        else:
+            self.report({'ERROR'}, "Template functions require an active object.")
+            return {'CANCELLED'}
+
+        selected_only = False
+        if len(bpy.context.selected_objects) > 1:
+            selected_only = True
+
+        selected_objects = bpy.context.selected_objects.copy()
+        objects_to_select = []
+
+        success = False
+
+        if self.Action == 'REPLACE' and not hasattr(bpy, "wow_game_data"):
+            self.report({'ERROR'}, "Connect to game data first.")
+            return {'FINISHED'}
+
+        if target:
+
+            for obj in bpy.context.scene.objects:
+                is_selected = obj in selected_objects if selected_only else True
+
+                if obj.WoWDoodad.Path == target and is_selected:
+
+                    if self.Action == 'REPLACE':
+
+                        location = obj.location
+                        rotation = obj.rotation_euler
+                        scale = obj.scale
+
+                        bpy.data.objects.remove(obj, do_unlink = True)
+
+                        bpy.ops.scene.wow_wmo_import_doodad_from_wmv()
+
+                        obj = bpy.context.scene.objects.active
+                        obj.location = location
+                        obj.rotation_euler = rotation
+                        obj.scale = scale
+                        objects_to_select.append(obj)
+
+                    elif self.Action == 'RESIZE':
+
+                        obj.scale *= self.Scale
+                        obj.select = True
+
+                    elif self.Action == 'DELETE':
+
+                        bpy.data.objects.remove(obj, do_unlink = True)
+
+                    success = True
+
+                for ob in objects_to_select:
+                    ob.select = True
+
+            if success:
+                self.report({'INFO'}, "Template action applied.")
+
+            return {'FINISHED'}
+
+        else:
+            self.report({'ERROR'}, "No doodad is selected.")
+            return {'FINISHED'}
 
 
 ###############################
