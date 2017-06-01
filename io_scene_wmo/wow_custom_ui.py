@@ -1407,17 +1407,26 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
 
     Action = bpy.props.EnumProperty(
         items=[
-            ('REPLACE', "Replace", "Replace all instances of selected doodads with last M2 from WMV", 'FILE_REFRESH', 0),
-            ('RESIZE', "Resize", "Resize all instances of selected doodads", 'FULLSCREEN_ENTER', 1),
-            ('DELETE', "Delete", "Delete all instances of selected doodads", 'CANCEL', 2)],       
-        default='REPLACE'
+            ('SELECT', "Select", "Rotate all instances of selected doodads", 'PMARKER_ACT', 0),
+            ('REPLACE', "Replace", "Replace all instances of selected doodads with last M2 from WMV", 'FILE_REFRESH', 1),
+            ('RESIZE', "Resize", "Resize all instances of selected doodads", 'FULLSCREEN_ENTER', 2),
+            ('DELETE', "Delete", "Delete all instances of selected doodads", 'CANCEL', 3),
+            ('ROTATE', "Rotate", "Rotate all instances of selected doodads", 'LOOP_FORWARDS', 4)],     
+        default='SELECT'
         )
 
     Scale = bpy.props.FloatProperty(
         name="Scale",
         description="Scale applied to doodads",
+        min=0.01,
         max=20,
         default=1
+        )
+
+    Rotation = bpy.props.FloatVectorProperty(
+        name="Rotation",  
+        default=(0, 0, 0, 0),
+        size=4
         )
 
     @classmethod
@@ -1431,6 +1440,8 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
 
         if self.Action == 'RESIZE':
             col.prop(self, "Scale")
+        elif self.Action == 'ROTATE':
+            col.prop(self, "Rotation")
 
     def execute(self, context):
 
@@ -1488,6 +1499,14 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
                     elif self.Action == 'DELETE':
 
                         bpy.data.objects.remove(obj, do_unlink = True)
+
+                    elif self.Action == 'ROTATE':
+                        obj.rotation_mode = 'QUATERNION'
+                        for i, _ in enumerate(self.Rotation):
+                            obj.rotation_quaternion[i] += self.Rotation[i]
+
+                    elif self.Action == 'SELECT':
+                        obj.select = True
 
                     success = True
 
