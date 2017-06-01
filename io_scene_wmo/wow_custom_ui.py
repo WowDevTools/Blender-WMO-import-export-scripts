@@ -1082,11 +1082,12 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
 
         if bpy.context.selected_objects:
             box = col.box()
-            box.label(text="Selected:")
+            box.label(text="Convert:")
             box.operator("scene.wow_selected_objects_to_group", text = 'To WMO group', icon = 'OBJECT_DATA')
             box.operator("scene.wow_selected_objects_to_wow_material", text = 'To WMO material', icon = 'SMOOTH')
             box.operator("scene.wow_selected_objects_to_portals", text = 'To WMO portal', icon = 'MOD_MIRROR')
             box.operator("scene.wow_texface_to_material", text = 'Texface to mat.', icon = 'TEXTURE_DATA')
+            box.label(text="Apply:")
             box.operator("scene.wow_quick_collision", text = 'Quick collision', icon = 'STYLUS_PRESSURE')
             box.operator("scene.wow_fill_textures", text = 'Fill textures', icon = 'FILE_IMAGE')
             box.operator("scene.wow_fill_group_name", text = 'Fill group name', icon = 'FONTPREVIEW')
