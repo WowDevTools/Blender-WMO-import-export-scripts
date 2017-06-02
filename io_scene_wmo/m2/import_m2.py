@@ -120,8 +120,6 @@ def wmv_get_last_m2():
             if result:
                 return result.string[result.regs[0][0]:result.regs[0][1]]
 
-        return 
-
 
 class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
     bl_idname = 'scene.wow_wmo_import_doodad_from_wmv'
@@ -142,7 +140,7 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
 
         if not m2_path:
             self.report({'ERROR'}, """WoW Model Viewer log contains no model entries. 
-            \nMake sure to use compatible WMV version""")
+            Make sure to use compatible WMV version or open an .m2 there.""")
             return {'CANCELLED'}
 
         obj = None
@@ -169,7 +167,7 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
 
         else:
             self.report({'ERROR'}, """Failed to import model.
-            Save your blendfile or enter texture relative path first.""")
+            Save your blendfile first.""")
             return {'CANCELLED'}
 
         self.report({'INFO'}, "Imported model: " + m2_path)

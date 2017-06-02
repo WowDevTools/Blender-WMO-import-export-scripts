@@ -4,6 +4,7 @@ import bpy.utils
 import bpy.types
 import os
 import sys
+import re
 from . import wmo_format
 from .wmo_format import *
 from . import debug_utils
@@ -1075,6 +1076,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         layout = self.layout.split()
 
         has_sets = True if bpy.context.scene.WoWRoot.MODS_Sets else False
+        game_data_loaded = hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files
         
         col = layout.column()
         
@@ -1102,8 +1104,12 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         box1.operator("scene.wow_add_fog", text = 'Add fog', icon = 'GROUP_VERTEX')
         box1.operator("scene.wow_add_water", text = 'Add water', icon = 'MOD_WAVE')
         box1.operator("scene.wow_add_scale_reference", text = 'Add scale', icon = 'OUTLINER_OB_ARMATURE')
-        if not has_sets:
-            box1.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Add M2 from WMV', icon = 'LOAD_FACTORY')
+
+        if game_data_loaded:
+            if not has_sets:
+                box1.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Add M2 from WMV', icon = 'LOAD_FACTORY')
+
+            box1.operator("scene.wow_import_last_wmo_from_wmv", text = 'Add WMO from WMV', icon = 'APPEND_BLEND')
 
         if has_sets:
             col.operator("scene.wow_clear_preserved_doodad_sets", text = 'Clear doodad sets', icon = 'CANCEL')
@@ -1118,9 +1124,8 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
             box2.prop(context.scene, "WoWDoodadVisibility", expand=False)
 
         col.label(text="Game data:")
-        state = hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files
-        icon = 'COLOR_GREEN' if state else 'COLOR_RED'
-        text = "Unload game data" if state else "Load game data"
+        icon = 'COLOR_GREEN' if game_data_loaded else 'COLOR_RED'
+        text = "Unload game data" if game_data_loaded else "Load game data"
         load_data = col.operator("scene.load_wow_filesystem", text = text, icon = icon)
 
     def RegisterWMOToolsPanelObjectMode():
@@ -1158,6 +1163,79 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
                 and isinstance(context.object.data,bpy.types.Mesh)
                 and context.object.WowLiquid.Enabled
                 )
+
+###############################
+## WMO operators
+###############################
+
+class IMPORT_LAST_WMO_FROM_WMV(bpy.types.Operator):
+    bl_idname = "scene.wow_import_last_wmo_from_wmv"
+    bl_label = "Load last WMO from WMV"
+    bl_description = "Load last WMO from WMV" 
+    bl_options = {'UNDO', 'REGISTER'}
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def wmv_get_last_wmo(self):
+        """Get the path of last M2 model from WoWModelViewer or similar log."""
+
+        preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
+
+        if preferences.wmv_path:
+
+            lines = open(preferences.wmv_path).readlines()
+
+            for line in reversed(lines):
+                result = re.search("[^ ]*\\.*\.wmo", line)
+                if result:
+                    return result.string[result.regs[0][0]:result.regs[0][1]]
+
+    def execute(self, context):
+
+        game_data = getattr(bpy, "wow_game_data", None)
+
+        if not game_data or not game_data.files:
+            self.report({'ERROR'}, "Failed to import model. Connect to game client first.")
+            return {'CANCELLED'}
+
+        dir = bpy.path.abspath("//") if bpy.data.is_saved else None
+        wmo_path = self.wmv_get_last_wmo()
+
+        if not wmo_path:
+            self.report({'ERROR'}, """WoW Model Viewer log contains no WMO entries. 
+            Make sure to use compatible WMV version or open a .wmo there.""")
+            return {'CANCELLED'}
+
+        if dir:
+
+            game_data.extract_files(dir, (wmo_path, ))
+
+            i = 0
+            while True:
+                result = game_data.extract_files(dir, (wmo_path[:-4] + "_" + str(i).zfill(3) + ".wmo", ))
+                if not result:  
+                    break
+                i += 1
+
+            try:
+                from . import import_wmo
+                import_wmo.read(os.path.join(dir, wmo_path), '.png' , True, True)
+            except:
+                self.report({'ERROR'}, "Failed to import model.")
+                return {'CANCELLED'}
+
+            self.report({'INFO'}, "Done importing WMO object to scene.")
+            return {'FINISHED'}
+
+        else:
+            self.report({'ERROR'}, """Failed to import WMO.
+            Save your blendfile first.""")
+            return {'CANCELLED'}
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_confirm(self, event)
 
 ###############################
 ## Doodad operators
@@ -1593,7 +1671,7 @@ class OBJECT_OP_ADD_FLAG(bpy.types.Operator):
 class OBJECT_OP_Add_Scale(bpy.types.Operator):
     bl_idname = 'scene.wow_add_scale_reference'
     bl_label = 'Add scale'
-    bl_description = 'Adds a WoW scale prop'
+    bl_description = 'Add a WoW scale prop'
     bl_options = {'REGISTER', 'UNDO'}
 
     ScaleType = bpy.props.EnumProperty(
@@ -1639,7 +1717,7 @@ class OBJECT_OP_Add_Scale(bpy.types.Operator):
 class OBJECT_OP_Add_Water(bpy.types.Operator):
     bl_idname = 'scene.wow_add_water'
     bl_label = 'Add water'
-    bl_description = 'Adds a WoW water plane'
+    bl_description = 'Add a WoW water plane'
     bl_options = {'REGISTER', 'UNDO'}
     
     xPlanes = bpy.props.IntProperty(
@@ -1684,7 +1762,7 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
 class OBJECT_OP_Add_Fog(bpy.types.Operator):
     bl_idname = 'scene.wow_add_fog'
     bl_label = 'Add fog'
-    bl_description = 'Adds a WoW fog object to the scene'
+    bl_description = 'Add a WoW fog object to the scene'
                         
     def execute(self, context):
         
@@ -1754,7 +1832,7 @@ class OBJECT_OP_Invert_Portals(bpy.types.Operator):
 class OBJECT_OP_Fill_Group_Name(bpy.types.Operator):
     bl_idname = 'scene.wow_fill_group_name'
     bl_label = 'Fill group name'
-    bl_description = 'Fills the specified group name for selected objects'
+    bl_description = 'Fill the specified group name for selected objects'
     bl_options = {'REGISTER', 'UNDO'}
     
     Name = bpy.props.StringProperty()
@@ -1777,7 +1855,7 @@ class OBJECT_OP_Fill_Group_Name(bpy.types.Operator):
 class OBJECT_OP_Fill_Textures(bpy.types.Operator):
     bl_idname = 'scene.wow_fill_textures'
     bl_label = 'Fill textures'
-    bl_description = """Fills Texture 1 field of WoW materials with paths from applied image. """
+    bl_description = """Fill Texture 1 field of WoW materials with paths from applied image. """
     bl_options = {'REGISTER'}
                
     def execute(self, context):
@@ -1823,7 +1901,7 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
 class OBJECT_OP_Quick_Collision(bpy.types.Operator):
     bl_idname = 'scene.wow_quick_collision'
     bl_label = 'Generate basic collision for selected objects'
-    bl_description = 'Generates WoW collision equal to geometry of the selected objects'
+    bl_description = 'Generate WoW collision equal to geometry of the selected objects'
     bl_options = {'REGISTER', 'UNDO'}
         
     NodeSize = bpy.props.IntProperty(

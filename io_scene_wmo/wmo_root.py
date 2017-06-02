@@ -210,13 +210,13 @@ class WMO_root_file:
 
                     # check if image already loaded
                     for iImg in range(len(images)):
-                        if(imageNames[iImg] == tex1_img_filename):
+                        if imageNames[iImg] == tex1_img_filename:
                             tex1.image = images[iImg]
                             img1_loaded = True
                             break
 
                     # if image is not loaded, do it
-                    if(img1_loaded == False):
+                    if img1_loaded == False:
                         tex1_img = bpy.data.images.load(texturePath + tex1_img_filename)
                         tex1.image = tex1_img
                         images.append(tex1_img)
@@ -243,7 +243,7 @@ class WMO_root_file:
 
                     # check if image already loaded
                     for iImg in range(len(images)):
-                        if(imageNames[iImg] == tex2_img_filename):
+                        if imageNames[iImg] == tex2_img_filename:
                             tex2.image = images[iImg]
                             img2_loaded = True
                             break
@@ -280,7 +280,7 @@ class WMO_root_file:
             light.color = (l.Color[2] / 255, l.Color[1] / 255, l.Color[0] / 255)
             light.energy = l.Intensity
 
-            if(l.LightType == 0 or l.LightType == 1):
+            if l.LightType == 0 or l.LightType == 1:
                 light.falloff_type = 'INVERSE_LINEAR'
                 light.distance = l.Unknown4 / 2
                 light.use_sphere = True

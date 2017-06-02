@@ -36,8 +36,9 @@ class WoWFileData():
 
     def extract_files(self, dir, filenames, force_decompress=False):
         """ Read the latest version of the files from loaded archives and directories and 
-        extract them to current working directory. """
+        extract them to provided working directory. """
 
+        result = False
         for filename in filenames:
             file = self.read_file(filename, force_decompress)
             if not file:
@@ -52,6 +53,10 @@ class WoWFileData():
             f = open(abs_path, 'wb')
             f.write(file or b'')
             f.close()
+
+            result = True
+
+        return result
 
     def extract_textures_as_png(self, dir, filenames, force_decompress=False):
         """ Read the latest version of the texture files from loaded archives and directories and 

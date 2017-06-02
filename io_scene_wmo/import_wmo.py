@@ -17,7 +17,7 @@ def OpenAllWMOGroups(rootName):
     group_list = []
     while True:
         groupName = rootName + "_" + str(i).zfill(3) + ".wmo"
-        if(os.path.isfile(groupName) == False):
+        if not os.path.isfile(groupName):
             break
         group = WMO_group_file()
         group.Read(open(groupName, 'rb'))
