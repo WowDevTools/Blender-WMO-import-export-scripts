@@ -1464,11 +1464,21 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
 
         success = False
 
-        if self.Action == 'REPLACE' and not hasattr(bpy, "wow_game_data"):
-            self.report({'ERROR'}, "Connect to game data first.")
-            return {'FINISHED'}
-
         if target:
+
+            new_obj = None
+
+            if self.Action == 'REPLACE':
+                if not bpy.data.is_saved:
+                    self.report({'ERROR'}, "Saved your blendfile first.")
+                    return {'FINISHED'}
+
+                if not hasattr(bpy, "wow_game_data"):
+                    self.report({'ERROR'}, "Connect to game data first.")
+                    return {'FINISHED'}
+
+                bpy.ops.scene.wow_wmo_import_doodad_from_wmv()
+                new_obj = bpy.context.scene.objects.active
 
             for obj in bpy.context.scene.objects:
                 is_selected = obj in selected_objects if selected_only else True
@@ -1483,9 +1493,10 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
 
                         bpy.data.objects.remove(obj, do_unlink = True)
 
-                        bpy.ops.scene.wow_wmo_import_doodad_from_wmv()
+                        obj = new_obj.copy()
+                        bpy.context.scene.objects.link(obj)
+                        bpy.context.scene.objects.active = obj
 
-                        obj = bpy.context.scene.objects.active
                         obj.location = location
                         obj.rotation_mode = 'QUATERNION'
                         obj.rotation_quaternion = rotation
@@ -1513,6 +1524,9 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
 
                 for ob in objects_to_select:
                     ob.select = True
+            
+            if new_obj:
+                bpy.data.objects.remove(new_obj, do_unlink = True)
 
             if success:
                 self.report({'INFO'}, "Template action applied.")
