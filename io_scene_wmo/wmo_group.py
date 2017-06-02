@@ -688,7 +688,7 @@ class WMO_group_file:
         self.mliq.yVerts = self.mliq.yTiles + 1
         self.mliq.Position = mesh.vertices[StartVertex].co
 
-        self.mogp.Flags |= 0x1000
+        self.mogp.Flags |= 0x1000 # do we really need that?
         self.mogp.LiquidType = int(ob.WowLiquid.LiquidType)
                         
         # creating liquid material
