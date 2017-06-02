@@ -219,13 +219,8 @@ class WMO_group_file:
         mesh.update(calc_edges=True)
         mesh.validate()
 
-        #create uv map if liquid is lava    
-        if self.mogp.LiquidType == 3 \
-        or self.mogp.LiquidType == 4 \
-        or self.mogp.LiquidType == 7 \
-        or self.mogp.LiquidType == 8 \
-        or self.mogp.LiquidType == 11 \
-        or self.mogp.LiquidType == 12:      
+        #create uv map if liquid is lava
+        if self.mogp.LiquidType in (3, 4, 7, 8, 11, 12): 
             uvMap = {}
 
             for vertex in mesh.vertices:
