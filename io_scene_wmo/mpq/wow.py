@@ -35,7 +35,7 @@ class WoWFileData():
         return None
 
     def extract_files(self, dir, filenames, force_decompress=False):
-        """ Read the latest version of the files from loaded archives and directories and 
+        """ Read the latest version of the files from loaded archives and directories and
         extract them to provided working directory. """
 
         result = False
@@ -59,7 +59,7 @@ class WoWFileData():
         return result
 
     def extract_textures_as_png(self, dir, filenames, force_decompress=False):
-        """ Read the latest version of the texture files from loaded archives and directories and 
+        """ Read the latest version of the texture files from loaded archives and directories and
         extract them to current working directory as PNG images. """
         if self.converter:
             blp_paths = []
@@ -192,7 +192,7 @@ class WOW_FILESYSTEM_LOAD_OP(bpy.types.Operator):
         else:
 
             preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
-        
+
             bpy.wow_game_data = WoWFileData(preferences.wow_path, preferences.blp_path)
 
             if not bpy.wow_game_data.files:

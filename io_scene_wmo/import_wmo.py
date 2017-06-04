@@ -31,15 +31,15 @@ def read(filename, file_format, load_textures, import_doodads):
     start_time = time.time()
 
     f = open(filename, "rb")
-    
+
     # Check if file is WMO root or WMO group, or unknown
     f.seek(12)
     hdr = ChunkHeader()
     hdr.Read(f)
     f.seek(0)
-    
+
     group_list = []
-    
+
     if hdr.Magic == "DHOM":
         # root WMO
         root = WMO_root_file()
@@ -82,7 +82,7 @@ def read(filename, file_format, load_textures, import_doodads):
             Log(1, False, "Failed to load textures because game data was not loaded.")
 
     display_name = bpy.path.display_name_from_filepath(rootName)
-    
+
     # load all materials in root file
     root.LoadMaterials(display_name, os.path.dirname(filename) + "\\", file_format)
 
@@ -109,7 +109,6 @@ def read(filename, file_format, load_textures, import_doodads):
         root.LoadDoodads()
 
     Log(1, False, "Total import time: ", time.strftime("%M minutes %S seconds\a", time.gmtime(time.time() - start_time)))
-
 
 
 

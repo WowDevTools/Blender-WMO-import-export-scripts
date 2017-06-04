@@ -74,20 +74,20 @@ class IDPropertyOpMixin(object):
     @classmethod
     def poll(self, ctx):
         return has_active_3d_view()
-    
+
 
 class ObjectPickerOperator(IDPropertyOpMixin, bpy.types.Operator):
     bl_idname = "view3d.object_picker_operator"
     bl_label = "Object Picker Operator"
 
     def execute(self, ctx):
-  
+
         rayCasting.to_populate_data = self.to_populate_data
         rayCasting.to_populate_field = self.to_populate_field
 
         with in_3dview(ctx) as override:
             test = bpy.ops.view3d.modal_operator_raycast(override, 'INVOKE_DEFAULT')
-        
+
         return {'FINISHED'}
 
 
@@ -100,21 +100,21 @@ class ViewOperatorRayCast(bpy.types.Operator):
         bpy.context.window.cursor_set("EYEDROPPER")
         if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'MOUSEMOVE'}:
             ray_casting.main(context, event)
-            
+
             return {'PASS_THROUGH'}
         elif event.type == 'LEFTMOUSE':
             bpy.context.window.cursor_set("DEFAULT")
             ray_casting.main(context, event)
-            
+
             if hasattr(rayCasting, 'to_populate_data') and hasattr(rayCasting, 'to_populate_field') and hasattr(rayCasting, 'result'):
                 setattr(eval(rayCasting.to_populate_data), rayCasting.to_populate_field, rayCasting.result.name)
-            
+
             return {'FINISHED'}
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
             bpy.context.window.cursor_set("DEFAULT")
             rayCasting.result = None
             return {'CANCELLED'}
-        
+
         return {'RUNNING_MODAL'}
 
     def invoke(self, context, event):
@@ -261,7 +261,7 @@ def create_getter(data_field, value_key):
 
         ob_hash = id_to_hash.get(ob_id, None)
         ob_name = hash_to_name.get(ob_hash, None)
-        exists = ob_name is not None and ob_name in data 
+        exists = ob_name is not None and ob_name in data
 
         if not exists:
             for name, ob in data.items():
@@ -393,4 +393,3 @@ def unregister():
         delattr(bpy.types.Scene, counter_name)
 
     handlers.load_post.remove(load_file)
-

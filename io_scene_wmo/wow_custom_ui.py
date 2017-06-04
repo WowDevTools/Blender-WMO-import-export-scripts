@@ -34,8 +34,8 @@ terrainEnum = [
     ]
 
 blendingEnum = [
-    ('0', "Blend_Opaque", ""), ('1', "Blend_AlphaKey", ""), ('2', "Blend_Alpha", ""), 
-    ('3', "Blend_Add", ""), ('4', "Blend_Mod", ""),('5', "Blend_Mod2x", ""), 
+    ('0', "Blend_Opaque", ""), ('1', "Blend_AlphaKey", ""), ('2', "Blend_Alpha", ""),
+    ('3', "Blend_Add", ""), ('4', "Blend_Mod", ""),('5', "Blend_Mod2x", ""),
     ('6', "Blend_ModAdd", ""), ('7', "Blend_InvSrcAlphaAdd", ""),('8', "Blend_InvSrcAlphaOpaque", ""),
     ('9', "Blend_SrcAlphaOpaque", ""), ('10', "Blend_NoAlphaAdd", ""), ('11', "Blend_ConstantAlpha", "")
     ]
@@ -83,9 +83,9 @@ portalDirAlgEnum = [
 rootFlagsEnum = [
     ("0", "Auto Attenuation", "Attenuate light on vertices based on distance from portal", 'MOD_MIRROR', 0x1),
     ("1", "Lighten Indoor", "Lighten up all indoor groups automatically", 'LAMP_SUN', 0x2),
-    ("2", "Use Ambient", "Use ambient lighting inside indoor groups", 'PMARKER_ACT', 0x4)       
+    ("2", "Use Ambient", "Use ambient lighting inside indoor groups", 'PMARKER_ACT', 0x4)
      ]
-    
+
 ###############################
 ## Root properties
 ###############################
@@ -138,7 +138,7 @@ class MODD_Definition(bpy.types.PropertyGroup):
     ColorAlpha = bpy.props.FloatProperty()
 
 class WowRootPropertyGroup(bpy.types.PropertyGroup):
-     
+
     MODS_Sets = bpy.props.CollectionProperty(type=MODS_Set)
     MODN_StringTable = bpy.props.CollectionProperty(type=MODN_String)
     MODD_Definitions = bpy.props.CollectionProperty(type=MODD_Definition)
@@ -205,7 +205,7 @@ class WoWDoodadPanel(bpy.types.Panel):
         return (context.object is not None
                 and context.object.WoWDoodad.Enabled
                 and isinstance(context.object.data, bpy.types.Mesh))
-        
+
 class WoWDoodadPropertyGroup(bpy.types.PropertyGroup):
 
     Path = bpy.props.StringProperty()
@@ -215,7 +215,7 @@ class WoWDoodadPropertyGroup(bpy.types.PropertyGroup):
         subtype='COLOR',
         size=4,
         default=(1,1,1,1),
-        min=0.0, 
+        min=0.0,
         max=1.0
         )
 
@@ -231,7 +231,7 @@ class WoWDoodadPropertyGroup(bpy.types.PropertyGroup):
         )
 
     Enabled = bpy.props.BoolProperty(
-        name="", 
+        name="",
         description="Enable WoW Doodad properties"
         )
 
@@ -281,9 +281,9 @@ class WowMaterialPanel(bpy.types.Panel):
 
 
 class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
-    
+
     Enabled = bpy.props.BoolProperty(
-        name="", 
+        name="",
         description="Enable WoW material properties"
         )
 
@@ -295,14 +295,14 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
         )
 
     Shader = bpy.props.EnumProperty(
-        items=shaderEnum, 
-        name="Shader", 
+        items=shaderEnum,
+        name="Shader",
         description="WoW shader assigned to this material"
         )
 
     BlendingMode = bpy.props.EnumProperty(
-        items=blendingEnum, 
-        name="Blending", 
+        items=blendingEnum,
+        name="Blending",
         description="WoW material blending mode"
         )
 
@@ -312,11 +312,11 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
         )
 
     EmissiveColor = bpy.props.FloatVectorProperty(
-        name="Emissive Color", 
-        subtype='COLOR', 
+        name="Emissive Color",
+        subtype='COLOR',
         default=(1,1,1,1),
         size=4,
-        min=0.0, 
+        min=0.0,
         max=1.0
         )
 
@@ -326,11 +326,11 @@ class WowMaterialPropertyGroup(bpy.types.PropertyGroup):
         )
 
     DiffColor = bpy.props.FloatVectorProperty(
-        name="Diffuse Color", 
-        subtype='COLOR', 
+        name="Diffuse Color",
+        subtype='COLOR',
         default=(1,1,1,1),
         size=4,
-        min=0.0, 
+        min=0.0,
         max=1.0
         )
 
@@ -384,7 +384,7 @@ class WowLightPanel(bpy.types.Panel):
 
 class WowLightPropertyGroup(bpy.types.PropertyGroup):
     lightTypeEnum = [
-        ('0', "Omni", ""), ('1', "Spot", ""), 
+        ('0', "Omni", ""), ('1', "Spot", ""),
         ('2', "Direct", ""), ('3', "Ambient", "")
         ]
 
@@ -468,7 +468,7 @@ class WowVertexInfoPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-        self.layout.prop_search(context.object.WowVertexInfo, "VertexGroup", 
+        self.layout.prop_search(context.object.WowVertexInfo, "VertexGroup",
                                 context.object, "vertex_groups", text="Collision vertex group"
                                 )
 
@@ -496,7 +496,7 @@ class WowVertexInfoPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return (context.object is not None 
+        return (context.object is not None
                 and context.object.data is not None
                 and isinstance(context.object.data,bpy.types.Mesh)
                 and context.object.WowWMOGroup.Enabled
@@ -542,7 +542,7 @@ class WowWMOGroupPanel(bpy.types.Panel):
         col = self.layout.column()
         col.prop(context.object.WowWMOGroup, "GroupName")
         col.prop(context.object.WowWMOGroup, "GroupDesc")
-        
+
         col.separator()
         col.label("Flags:")
         col.prop(context.object.WowWMOGroup, "PlaceType")
@@ -558,19 +558,19 @@ class WowWMOGroupPanel(bpy.types.Panel):
         col.separator()
         col.prop(context.object.WowWMOGroup, "GroupDBCid")
         col.prop(context.object.WowWMOGroup, "LiquidType")
-        
+
         idproperty.enabled = context.object.WowLiquid.Enabled
         self.layout.enabled = context.object.WowWMOGroup.Enabled
 
     @classmethod
     def poll(cls, context):
-        return (context.object is not None 
+        return (context.object is not None
                 and context.object.data is not None
                 and isinstance(context.object.data,bpy.types.Mesh)
-                and not context.object.WowPortalPlane.Enabled 
-                and not context.object.WowLiquid.Enabled 
+                and not context.object.WowPortalPlane.Enabled
+                and not context.object.WowLiquid.Enabled
                 and not context.object.WowFog.Enabled
-                and not context.object.WoWDoodad.Enabled 
+                and not context.object.WoWDoodad.Enabled
                 )
 
 def fog_validator(ob):
@@ -595,7 +595,7 @@ class WowWMOGroupRelations(bpy.types.PropertyGroup):
     Liquid = bpy.props.StringProperty()
     Doodads = bpy.props.CollectionProperty(type=WowWMODoodadRel)
 
-    
+
 class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
 
     GroupName = bpy.props.StringProperty(name="Name")
@@ -603,7 +603,7 @@ class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
 
     Enabled = bpy.props.BoolProperty(
         name="",
-        description="Enable wow WMO group properties"   
+        description="Enable wow WMO group properties"
         )
 
     Flags = bpy.props.EnumProperty(
@@ -670,7 +670,7 @@ class WowPortalPlanePanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-         
+
         column = layout.column()
         idproperty.layout_id_prop(column, context.object.WowPortalPlane, "First")
         idproperty.layout_id_prop(column, context.object.WowPortalPlane, "Second")
@@ -680,7 +680,7 @@ class WowPortalPlanePanel(bpy.types.Panel):
         col.separator()
         col.label("Relation direction:")
         col.prop(context.object.WowPortalPlane, "Algorithm", expand=True)
-        
+
         idproperty.enabled = context.object.WowLiquid.Enabled
         layout.enabled = context.object.WowPortalPlane.Enabled
 
@@ -694,10 +694,10 @@ class WowPortalPlanePanel(bpy.types.Panel):
                 and not context.object.WowFog.Enabled
                 and not context.object.WoWDoodad.Enabled
                 )
-    
+
 def portal_validator(ob):
     return ob.type == 'MESH' and ob.WowWMOGroup.Enabled
-    
+
 class WowPortalPlanePropertyGroup(bpy.types.PropertyGroup):
 
     Enabled = bpy.props.BoolProperty(
@@ -731,7 +731,7 @@ def RegisterWowPortalPlaneProperties():
 
 def UnregisterWowPortalPlaneProperties():
     bpy.types.Object.WowPortalPlane = None
-    
+
 ###############################
 ## Liquid
 ###############################
@@ -756,7 +756,7 @@ def UnregisterWowPortalPlaneProperties():
 #XTextures\slime\slime.1.blp
 #XTextures\ocean\ocean_h.1.blp
 #XTextures\LavaGreen\lavagreen.1.blp
-    
+
 class WowLiquidPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -766,26 +766,26 @@ class WowLiquidPanel(bpy.types.Panel):
     def draw_header(self, context):
         layout = self.layout
 
-    def draw(self, context): 
+    def draw(self, context):
         layout = self.layout
         row = layout.row()
         self.layout.prop(context.object.WowLiquid, "LiquidType")
         self.layout.prop(context.object.WowLiquid, "Color")
-        
+
         column = layout.column()
         idproperty.layout_id_prop(column, context.object.WowLiquid, "WMOGroup")
-        
+
         idproperty.enabled = context.object.WowLiquid.Enabled
         layout.enabled = context.object.WowLiquid.Enabled
 
     @classmethod
     def poll(cls, context):
-        return (context.object is not None 
+        return (context.object is not None
                 and context.object.data is not None
                 and isinstance(context.object.data,bpy.types.Mesh)
                 and context.object.WowLiquid.Enabled
                 )
-    
+
 def liquid_validator(ob):
     for object in bpy.context.scene.objects:
         if object.type == 'MESH' and object.WowLiquid.WMOGroup == ob.name:
@@ -945,7 +945,7 @@ class WowFogPropertyGroup(bpy.types.PropertyGroup):
         default=(1,1,1),
         min=0.0,
         max=1.0
-        )        
+        )
 
 def RegisterWowFogProperties():
     bpy.types.Object.WowFog = bpy.props.PointerProperty(type=WowFogPropertyGroup)
@@ -956,7 +956,7 @@ def UnregisterWowFogProperties():
 
 ###############################
 ## WMO Toolbar
-###############################  
+###############################
 
 def update_wow_visibility(self, context):
     values = self.WoWVisibility
@@ -1023,7 +1023,7 @@ def switch_doodad_set(self, context):
             else:
                 obj.hide = True
 
-    
+
 def RegisterWoWVisibilityProperties():
     bpy.types.Scene.WoWVisibility = bpy.props.EnumProperty(
         items=[
@@ -1077,9 +1077,9 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
 
         has_sets = True if bpy.context.scene.WoWRoot.MODS_Sets else False
         game_data_loaded = hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files
-        
+
         col = layout.column()
-        
+
         col.label(text="Actions:")
 
         if bpy.context.selected_objects:
@@ -1132,7 +1132,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         bpy.utils.register_module(WMOToolsPanelObjectMode)
     def UnregisterWMOToolsPanelObjectMode():
         bpy.utils.register_module(WMOToolsPanelObjectMode)
-        
+
 class WoWToolsPanelLiquidFlags(bpy.types.Panel):
     bl_label = 'Liquid Flags'
     bl_idname = 'WMOQuickPanelVertexColorMode'
@@ -1142,11 +1142,11 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
     bl_category = 'WMO'
 
     def draw(self, context):
-        
+
         layout = self.layout.split()
 
         col = layout.column()
-        
+
         col.label(text="Flags")
         col.prop(context.scene, "WoWLiquidFlags", expand=True)
 
@@ -1158,7 +1158,7 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return (context.object is not None 
+        return (context.object is not None
                 and context.object.data is not None
                 and isinstance(context.object.data,bpy.types.Mesh)
                 and context.object.WowLiquid.Enabled
@@ -1171,7 +1171,7 @@ class WoWToolsPanelLiquidFlags(bpy.types.Panel):
 class IMPORT_LAST_WMO_FROM_WMV(bpy.types.Operator):
     bl_idname = "scene.wow_import_last_wmo_from_wmv"
     bl_label = "Load last WMO from WMV"
-    bl_description = "Load last WMO from WMV" 
+    bl_description = "Load last WMO from WMV"
     bl_options = {'UNDO', 'REGISTER'}
 
     @classmethod
@@ -1188,7 +1188,7 @@ class IMPORT_LAST_WMO_FROM_WMV(bpy.types.Operator):
             lines = open(preferences.wmv_path).readlines()
 
             for line in reversed(lines):
-                result = re.search("[^ ]*\\.*\.wmo", line)
+                result = re.search("[^\d{2}:\d{2}:\d{2}: Loading WMO ].{1,}.wmo\n", line)
                 if result:
                     return result.string[result.regs[0][0]:result.regs[0][1]]
 
@@ -1204,7 +1204,7 @@ class IMPORT_LAST_WMO_FROM_WMV(bpy.types.Operator):
         wmo_path = self.wmv_get_last_wmo()
 
         if not wmo_path:
-            self.report({'ERROR'}, """WoW Model Viewer log contains no WMO entries. 
+            self.report({'ERROR'}, """WoW Model Viewer log contains no WMO entries.
             Make sure to use compatible WMV version or open a .wmo there.""")
             return {'CANCELLED'}
 
@@ -1215,7 +1215,7 @@ class IMPORT_LAST_WMO_FROM_WMV(bpy.types.Operator):
             i = 0
             while True:
                 result = game_data.extract_files(dir, (wmo_path[:-4] + "_" + str(i).zfill(3) + ".wmo", ))
-                if not result:  
+                if not result:
                     break
                 i += 1
 
@@ -1324,7 +1324,7 @@ class DOODAD_SET_CLEAR_PRESERVED(bpy.types.Operator):
     Action = bpy.props.EnumProperty(
         items=[
             ('0', "Load doodad sets", "Load doodad sets from game data", 'LOAD_FACTORY', 0),
-            ('1', "Clear preserved sets", "Clear preserved doodad set data to unlock editing", 'CANCEL', 1)],       
+            ('1', "Clear preserved sets", "Clear preserved doodad set data to unlock editing", 'CANCEL', 1)],
         default='0'
         )
 
@@ -1373,7 +1373,7 @@ class DOODAD_SET_CLEAR_PRESERVED(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
 
 
- 
+
 class DOODAD_SET_ADD(bpy.types.Operator):
     bl_idname = 'scene.wow_doodad_set_add'
     bl_label = 'Add doodad set'
@@ -1416,7 +1416,7 @@ class DOODAD_SET_ADD(bpy.types.Operator):
             text = "Enter set name:"
             col.label(text=text)
             col.prop(self, "Name")
- 
+
     def execute(self, context):
 
         selected_objs = []
@@ -1490,7 +1490,7 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
             ('REPLACE', "Replace", "Replace all instances of selected doodads with last M2 from WMV", 'FILE_REFRESH', 1),
             ('RESIZE', "Resize", "Resize all instances of selected doodads", 'FULLSCREEN_ENTER', 2),
             ('DELETE', "Delete", "Delete all instances of selected doodads", 'CANCEL', 3),
-            ('ROTATE', "Rotate", "Rotate all instances of selected doodads", 'LOOP_FORWARDS', 4)],     
+            ('ROTATE', "Rotate", "Rotate all instances of selected doodads", 'LOOP_FORWARDS', 4)],
         default='SELECT'
         )
 
@@ -1503,7 +1503,7 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
         )
 
     Rotation = bpy.props.FloatVectorProperty(
-        name="Rotation",  
+        name="Rotation",
         default=(0, 0, 0, 0),
         size=4
         )
@@ -1602,7 +1602,7 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
 
                 for ob in objects_to_select:
                     ob.select = True
-            
+
             if new_obj:
                 bpy.data.objects.remove(new_obj, do_unlink = True)
 
@@ -1634,7 +1634,7 @@ class OBJECT_OP_ADD_FLAG(bpy.types.Operator):
                ("CLEAR_ALL", "", "")
             ]
         )
-       
+
     def execute(self, context):
         water = bpy.context.scene.objects.active
         if water.WowLiquid.Enabled:
@@ -1661,12 +1661,12 @@ class OBJECT_OP_ADD_FLAG(bpy.types.Operator):
 
         else:
             self.report({'ERROR'}, "Selected object is not World of Warcraft liquid")
-        
-        return {'FINISHED'}  
-    
+
+        return {'FINISHED'}
+
 ###############################
 ## Object operators
-############################### 
+###############################
 
 class OBJECT_OP_Add_Scale(bpy.types.Operator):
     bl_idname = 'scene.wow_add_scale_reference'
@@ -1677,14 +1677,14 @@ class OBJECT_OP_Add_Scale(bpy.types.Operator):
     ScaleType = bpy.props.EnumProperty(
         name = "Scale Type",
         description = "Select scale reference type",
-        items = [('HUMAN', "Human Scale (average)", ""), 
+        items = [('HUMAN', "Human Scale (average)", ""),
                  ('TAUREN', "Tauren Scale (thickest)", ""),
                  ('TROLL', "Troll Scale (tallest)", ""),
                  ('GNOME', "Gnome Scale (smallest)", "")
                  ],
         default = 'HUMAN'
         )
- 
+
     def execute(self, context):
         if self.ScaleType == 'HUMAN':
             bpy.ops.object.add(type='LATTICE')
@@ -1711,15 +1711,15 @@ class OBJECT_OP_Add_Scale(bpy.types.Operator):
             scale_obj.dimensions = (0.362, 0.758, 0.991)
 
         self.report({'INFO'}, "Successfully added " + self.ScaleType + " scale")
-        return {'FINISHED'} 
-    
-    
+        return {'FINISHED'}
+
+
 class OBJECT_OP_Add_Water(bpy.types.Operator):
     bl_idname = 'scene.wow_add_water'
     bl_label = 'Add water'
     bl_description = 'Add a WoW water plane'
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     xPlanes = bpy.props.IntProperty(
         name="X subdivisions:",
         description="Amount of WoW liquid planes in a row. One plane is 4.1666625 in its radius.",
@@ -1733,7 +1733,7 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
         default=10,
         min=1
         )
-        
+
     def execute(self, context):
         bpy.ops.mesh.primitive_grid_add(x_subdivisions = self.xPlanes + 1,
                                         y_subdivisions = self.yPlanes + 1,
@@ -1741,16 +1741,16 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
                                         )
         water = bpy.context.scene.objects.active
         bpy.ops.transform.resize( value=(self.xPlanes, self.yPlanes, 1.0) )
-        
+
         water.name = water.name + "_Liquid"
-        
+
         mesh = water.data
 
         bit = 1
         while bit <= 0x80:
             mesh.vertex_colors.new("flag_" + hex(bit))
             bit <<= 1
-                                     
+
         water.WowLiquid.Enabled = True
 
         water.hide = False if "4" in bpy.context.scene.WoWVisibility else True
@@ -1758,51 +1758,51 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
         self.report({'INFO'}, "Successfully сreated WoW liquid: " + water.name)
         return {'FINISHED'}
 
-    
+
 class OBJECT_OP_Add_Fog(bpy.types.Operator):
     bl_idname = 'scene.wow_add_fog'
     bl_label = 'Add fog'
     bl_description = 'Add a WoW fog object to the scene'
-                        
+
     def execute(self, context):
-        
+
         bpy.ops.mesh.primitive_uv_sphere_add()
         fog = bpy.context.scene.objects.active
-        fog.name = fog.name + "_Fog" 
-        
+        fog.name = fog.name + "_Fog"
+
         # applying real object transformation
         bpy.ops.object.shade_smooth()
         fog.draw_type = 'SOLID'
         fog.show_transparent = True
         fog.show_name = True
-               
+
         mesh = fog.data
-        
+
         material = bpy.data.materials.new(name = fog.name)
-        
+
         if mesh.materials:
             mesh.materials[0] = material
         else:
             mesh.materials.append(material)
-            
+
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.object.material_slot_assign()
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.object.mode_set(mode='OBJECT')
-        
+
         mesh.materials[0].use_object_color = True
         mesh.materials[0].use_transparency = True
         mesh.materials[0].alpha = 0.35
-        
+
         fog.WowFog.Enabled = True
 
         fog.hide = False if "3" in bpy.context.scene.WoWVisibility else True
 
         self.report({'INFO'}, "Successfully сreated WoW fog: " + fog.name)
         return {'FINISHED'}
-    
-     
+
+
 class OBJECT_OP_Invert_Portals(bpy.types.Operator):
     bl_idname = 'scene.wow_invert_portals'
     bl_label = 'Invert portals'
@@ -1813,11 +1813,11 @@ class OBJECT_OP_Invert_Portals(bpy.types.Operator):
         items=portalDirAlgEnum,
         default="0"
         )
-   
+
     def execute(self, context):
         success = False
         for ob in bpy.context.selected_objects:
-            if ob.WowPortalPlane.Enabled: 
+            if ob.WowPortalPlane.Enabled:
                 ob.WowPortalPlane.Algorithm = self.Algorithm
                 success = True
 
@@ -1834,9 +1834,9 @@ class OBJECT_OP_Fill_Group_Name(bpy.types.Operator):
     bl_label = 'Fill group name'
     bl_description = 'Fill the specified group name for selected objects'
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     Name = bpy.props.StringProperty()
-      
+
     def execute(self, context):
         success = False
         for ob in bpy.context.selected_objects:
@@ -1850,14 +1850,14 @@ class OBJECT_OP_Fill_Group_Name(bpy.types.Operator):
         else:
             self.report({'ERROR'}, "No WMO group objects found among selected objects")
             return {'CANCELLED'}
-            
-        
+
+
 class OBJECT_OP_Fill_Textures(bpy.types.Operator):
     bl_idname = 'scene.wow_fill_textures'
     bl_label = 'Fill textures'
     bl_description = """Fill Texture 1 field of WoW materials with paths from applied image. """
     bl_options = {'REGISTER'}
-               
+
     def execute(self, context):
 
         if not hasattr(bpy, "wow_game_data"):
@@ -1881,7 +1881,7 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
                         if not path[1]:
                             LogDebug(1, False, "Texture " + mesh.materials[i].active_texture.image.filepath + " not found.")
                             break
-                        
+
                         rest_path = os.path.join(path[1], rest_path)
                         rest_path = rest_path[:-1] if rest_path.endswith("\\") else rest_path
 
@@ -1889,21 +1889,21 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
 
                         if game_data.read_file(rest_path):
                             mesh.materials[i].WowMaterial.Texture1 = rest_path
-                            break   
+                            break
 
                         sys.stdout = sys.__stdout__
 
             self.report({'INFO'}, "Done filling texture paths")
-       
+
         return {'FINISHED'}
-                 
+
 
 class OBJECT_OP_Quick_Collision(bpy.types.Operator):
     bl_idname = 'scene.wow_quick_collision'
     bl_label = 'Generate basic collision for selected objects'
     bl_description = 'Generate WoW collision equal to geometry of the selected objects'
     bl_options = {'REGISTER', 'UNDO'}
-        
+
     NodeSize = bpy.props.IntProperty(
         name="Node max size",
         description="Max count of faces for a node in bsp tree",
@@ -1917,14 +1917,14 @@ class OBJECT_OP_Quick_Collision(bpy.types.Operator):
         description="Remove unreferenced vertex groups",
         default = False
         )
-    
+
     def execute(self, context):
-     
+
         success = False
         for ob in bpy.context.selected_objects:
             if ob.WowWMOGroup.Enabled:
                 bpy.context.scene.objects.active = ob
-            
+
                 if self.CleanUp:
                     for vertex_group in ob.vertex_groups:
                         if vertex_group.name != ob.WowVertexInfo.VertexGroup \
@@ -1934,14 +1934,14 @@ class OBJECT_OP_Quick_Collision(bpy.types.Operator):
                         and vertex_group.name != ob.WowVertexInfo.Blendmap \
                         and vertex_group.name != ob.WowVertexInfo.SecondUV:
                             ob.vertex_groups.remove(vertex_group)
-                        
+
                 if ob.vertex_groups.get(ob.WowVertexInfo.VertexGroup):
                     bpy.ops.object.vertex_group_set_active(group=ob.WowVertexInfo.VertexGroup)
                 else:
                     new_vertex_group = ob.vertex_groups.new(name="Collision")
                     bpy.ops.object.vertex_group_set_active(group=new_vertex_group.name)
                     ob.WowVertexInfo.VertexGroup = new_vertex_group.name
-            
+
                 bpy.ops.object.mode_set(mode='EDIT')
                 bpy.ops.mesh.select_all(action='SELECT')
                 bpy.ops.object.vertex_group_assign()
@@ -1957,8 +1957,8 @@ class OBJECT_OP_Quick_Collision(bpy.types.Operator):
         else:
             self.report({'ERROR'}, "No WMO group objects found among selected objects")
             return {'CANCELLED'}
-               
-        
+
+
 class OBJECT_OP_Texface_to_material(bpy.types.Operator):
     bl_idname = 'scene.wow_texface_to_material'
     bl_label = 'Texface to material'
@@ -1971,24 +1971,24 @@ class OBJECT_OP_Texface_to_material(bpy.types.Operator):
         bpy.ops.view3d.texface_to_material()
 
         self.report({'INFO'}, "Successfully generated materials from face textures")
-        return {'FINISHED'}   
+        return {'FINISHED'}
 
-        
+
 class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
     bl_idname = 'scene.wow_selected_objects_to_portals'
     bl_label = 'Selected objects to WMO portals'
     bl_description = 'Transfer all selected objects to WoW WMO portals'
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-         
+
         column = layout.column()
         idproperty.layout_id_prop(column, context.object.WowPortalPlane, "First")
         idproperty.layout_id_prop(column, context.object.WowPortalPlane, "Second")
-    
-    
+
+
     First = idproperty.ObjectIDProperty(
             name="First group",
             validator=portal_validator
@@ -2001,9 +2001,9 @@ class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
 
     def portal_validator(ob):
         return ob.type == 'MESH' and ob.WowWMOGroup.Enabled
-    
+
     def execute(self, context):
-        
+
         success = False
         for ob in bpy.context.selected_objects:
             if ob.type == 'MESH':
@@ -2024,13 +2024,13 @@ class OBJECT_OP_To_WMOPortal(bpy.types.Operator):
             self.report({'ERROR'}, "No mesh objects found among selected objects")
             return {'CANCELLED'}
 
-        
+
 class OBJECT_OP_To_Group(bpy.types.Operator):
     bl_idname = 'scene.wow_selected_objects_to_group'
     bl_label = 'Selected objects to WMO group'
     bl_description = 'Transfer all selected objects to WoW WMO groups'
     bl_options = {'REGISTER', 'UNDO'}
-        
+
     GroupName = bpy.props.StringProperty(name="Name")
     GroupDesc = bpy.props.StringProperty(name="Description")
 
@@ -2059,13 +2059,13 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
     def execute(self, context):
 
         scene = bpy.context.scene
-        
+
         success = False
         for ob in bpy.context.selected_objects:
             if ob.type == 'MESH':
                 ob.WowLiquid.Enabled = False
                 ob.WowFog.Enabled = False
-                ob.WowPortalPlane.Enabled = False  
+                ob.WowPortalPlane.Enabled = False
                 ob.WowWMOGroup.Enabled = True
                 ob.WowWMOGroup.PlaceType = self.PlaceType
                 ob.WowWMOGroup.GroupName = self.GroupName
@@ -2088,13 +2088,13 @@ class OBJECT_OP_To_Group(bpy.types.Operator):
             self.report({'ERROR'}, "No mesh objects found among selected objects")
             return {'CANCELLED'}
 
-    
+
 class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
     bl_idname = 'scene.wow_selected_objects_to_wow_material'
     bl_label = 'Materials of selected objects to WoW Material'
     bl_description = 'Transfer all materials of selected objects to WoW material'
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     Flags = bpy.props.EnumProperty(
         name = "Material flags",
         description = "WoW material flags",
@@ -2103,14 +2103,14 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
         )
 
     Shader = bpy.props.EnumProperty(
-        items=shaderEnum, 
-        name="Shader", 
+        items=shaderEnum,
+        name="Shader",
         description="WoW shader assigned to this material"
         )
 
     BlendingMode = bpy.props.EnumProperty(
-        items=blendingEnum, 
-        name="Blending", 
+        items=blendingEnum,
+        name="Blending",
         description="WoW material blending mode"
         )
 
@@ -2120,11 +2120,11 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
         )
 
     EmissiveColor = bpy.props.FloatVectorProperty(
-        name="Emissive Color", 
-        subtype='COLOR', 
+        name="Emissive Color",
+        subtype='COLOR',
         default=(1,1,1,1),
         size=4,
-        min=0.0, 
+        min=0.0,
         max=1.0
         )
 
@@ -2134,11 +2134,11 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
         )
 
     DiffColor = bpy.props.FloatVectorProperty(
-        name="Diffuse Color", 
-        subtype='COLOR', 
+        name="Diffuse Color",
+        subtype='COLOR',
         default=(1,1,1,1),
         size=4,
-        min=0.0, 
+        min=0.0,
         max=1.0
         )
 
@@ -2186,8 +2186,8 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
         else:
             self.report({'ERROR'}, "No WMO group objects found among selected objects")
             return {'CANCELLED'}
-    
-    
+
+
 def register():
     RegisterWowRootProperties()
     RegisterWoWDoodadProperties()
@@ -2212,6 +2212,5 @@ def unregister():
     UnregisterWoWVisibilityProperties()
     UnregisterWowFogProperties()
 
- 
 
 

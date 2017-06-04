@@ -59,12 +59,12 @@ class WMO_root_file:
         self.modn.Read(f)
         self.modd.Read(f)
         self.mfog.Read(f)
-        
+
         if f.tell() != os.fstat(f.fileno()).st_size:
             self.mcvp.Read(f)
-                
+
     def CompareMaterials(self, material):
-        """ Compare two WoW material properties """  
+        """ Compare two WoW material properties """
 
         get_attributes = operator.attrgetter(
         'Shader', 'TerrainType', 'BlendingMode',
@@ -77,8 +77,8 @@ class WMO_root_file:
 
             if mat1 == get_attributes(material2.WowMaterial):
                 return index
-            
-        return None     
+
+        return None
 
 
     # mat is a bpy.types.Material
@@ -86,10 +86,10 @@ class WMO_root_file:
         """ Add material if not already added, then return index in root file """
 
         mat_index = self.CompareMaterials(mat)
-        
+
         if mat_index != None:
-            return mat_index 
-        
+            return mat_index
+
         else:
             # else add it then return index
             if not mat.WowMaterial.Enabled:
@@ -99,7 +99,7 @@ class WMO_root_file:
                 self.materialLookup[mat] = len(self.momt.Materials)
 
                 WowMat = WMO_Material()
-                
+
                 WowMat.Shader = int(mat.WowMaterial.Shader)
                 WowMat.BlendMode = int(mat.WowMaterial.BlendingMode)
                 WowMat.TerrainType = int(mat.WowMaterial.TerrainType)
@@ -111,8 +111,8 @@ class WMO_root_file:
                     WowMat.Texture1Ofs = self.textureLookup[mat.WowMaterial.Texture1]
 
                 WowMat.EmissiveColor = (int(mat.WowMaterial.EmissiveColor[0] * 255),
-                                        int(mat.WowMaterial.EmissiveColor[1] * 255), 
-                                        int(mat.WowMaterial.EmissiveColor[2] * 255), 
+                                        int(mat.WowMaterial.EmissiveColor[1] * 255),
+                                        int(mat.WowMaterial.EmissiveColor[2] * 255),
                                         int(mat.WowMaterial.EmissiveColor[3] * 255))
 
                 WowMat.TextureFlags1 = 0
@@ -123,14 +123,14 @@ class WMO_root_file:
                     self.textureLookup[mat.WowMaterial.Texture2] = self.motx.AddString(mat.WowMaterial.Texture2)
                     WowMat.Texture2Ofs = self.textureLookup[mat.WowMaterial.Texture2]
 
-                WowMat.DiffColor = (int(mat.WowMaterial.DiffColor[0] * 255), 
-                                    int(mat.WowMaterial.DiffColor[1] * 255), 
-                                    int(mat.WowMaterial.DiffColor[2] * 255), 
+                WowMat.DiffColor = (int(mat.WowMaterial.DiffColor[0] * 255),
+                                    int(mat.WowMaterial.DiffColor[1] * 255),
+                                    int(mat.WowMaterial.DiffColor[2] * 255),
                                     int(mat.WowMaterial.DiffColor[3] * 255))
 
                 for flag in mat.WowMaterial.Flags:
                     WowMat.Flags |= int(flag)
-                    
+
                 self.momt.Materials.append(WowMat)
 
                 return self.materialLookup[mat]
@@ -193,7 +193,7 @@ class WMO_root_file:
             mat.WowMaterial.Flags = mat_flags
 
             # set texture slot and load texture
-            
+
             if mat.WowMaterial.Texture1:
                 tex1_slot = mat.texture_slots.create(2)
                 tex1_slot.uv_layer = "UVMap"
@@ -231,14 +231,14 @@ class WMO_root_file:
                 tex2_slot = mat.texture_slots.create(1)
                 tex2_slot.uv_layer = "UVMap"
                 tex2_slot.texture_coords = 'UV'
-                
+
                 tex2_name = material_name + "_Tex_02"
                 tex2 = bpy.data.textures.new(tex2_name, 'IMAGE')
                 tex2_slot.texture = tex2
 
                 try:
                     tex2_img_filename = os.path.splitext( mat.WowMaterial.Texture2 )[0] + file_format
-                    
+
                     img2_loaded = False
 
                     # check if image already loaded
@@ -263,7 +263,7 @@ class WMO_root_file:
             light_name = name + "_Light_" + str(i).zfill(2)
 
             l = self.molt.Lights[i]
-         
+
             if(l.LightType == 0): # omni
                 l_type = 'POINT'
             elif(l.LightType == 1): # spot
@@ -301,71 +301,71 @@ class WMO_root_file:
             obj.location = self.molt.Lights[i].Position
 
             bpy.context.scene.objects.link(obj)
-             
+
     def LoadFogs(self, name):
         """ Load WoW WMO fog objects """
         self.fogs = []
         for i in range(len(self.mfog.Fogs)):
-            
+
             f = self.mfog.Fogs[i]
-            
+
             bpy.ops.mesh.primitive_uv_sphere_add()
             fog = bpy.context.scene.objects.active
-            
+
             if not f.BigRadius:
                 fog.hide = False
-                
+
             fog.name = name + "_Fog_" + str(i).zfill(2)
-            
+
             # applying real object transformation
             fog.location = f.Position
             bpy.ops.transform.resize( value=(f.BigRadius, f.BigRadius, f.BigRadius) ) # 0.5 is the default radius of sphere primitive in Blender
-            
+
             bpy.ops.object.shade_smooth()
             fog.draw_type = 'SOLID'
             fog.show_transparent = True
             fog.show_name = True
             fog.color = (f.Color1[2] / 255, f.Color1[1] / 255, f.Color1[0] / 255, 0.0)
-            
-            
+
+
             mesh = fog.data
-            
+
             material = bpy.data.materials.new(name = fog.name)
-            
+
             if mesh.materials:
                 mesh.materials[0] = material
             else:
                 mesh.materials.append(material)
-                
+
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
             bpy.ops.object.material_slot_assign()
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT')
-            
+
             mesh.materials[0].use_object_color = True
             mesh.materials[0].use_transparency = True
             mesh.materials[0].alpha = 0.35
 
             # applying object properties
-            
+
             fog.WowFog.Enabled = True
             if f.Flags & 0x01:
                 fog.WowFog.IgnoreRadius = True
             if f.Flags & 0x10:
                 fog.WowFog.Unknown = True
-            
-            if f.SmallRadius != 0:     
+
+            if f.SmallRadius != 0:
                 fog.WowFog.InnerRadius = int(f.SmallRadius / f.BigRadius * 100)
             else:
                 fog.WowFog.InnerRadius = 0
-            
+
             fog.WowFog.EndDist = f.EndDist
             fog.WowFog.StartFactor = f.StartFactor
             fog.WowFog.Color1 = (f.Color1[2] / 255, f.Color1[1] / 255, f.Color1[0] / 255)
             fog.WowFog.EndDist2 = f.EndDist2
             fog.WowFog.StartFactor2 = f.StartFactor2
-            fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)       
+            fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)
 
     def LoadDoodads(self, dir=None, game_data=None):
         """ Load doodad sets to scene. Two modes are supported: data storing and actual import."""
@@ -440,7 +440,7 @@ class WMO_root_file:
             scene.WoWRoot.MODS_Sets.clear()
             scene.WoWRoot.MODN_StringTable.clear()
             scene.WoWRoot.MODD_Definitions.clear()
-        
+
             for doodad_set in self.mods.Sets:
                 property_set = scene.WoWRoot.MODS_Sets.add()
                 property_set.Name = doodad_set.Name
@@ -471,7 +471,7 @@ class WMO_root_file:
                     path = scene.WoWRoot.MODN_StringTable.add()
                     path.Ofs = property_definition.NameOfs
                     path.String = self.modn.GetString(property_definition.NameOfs)
-                    string_filter.append(property_definition.NameOfs) 
+                    string_filter.append(property_definition.NameOfs)
 
     def LoadPortals(self, name, root):
         """ Load WoW WMO portal planes """
@@ -480,7 +480,7 @@ class WMO_root_file:
         for i in range(len(self.mopt.Infos)):
             portal_name = name + "_Portal_" + str(i).zfill(3)
 
-            verts = []            
+            verts = []
             face = []
             faces = []
             for j in range(self.mopt.Infos[i].nVertices):
@@ -488,16 +488,16 @@ class WMO_root_file:
                     verts.append(self.mopv.PortalVertices[self.vert_count])
                     face.append(j)
                 self.vert_count+=1
-            
+
             faces.append(face)
-            
+
             mesh = bpy.data.meshes.new(portal_name)
 
-            obj = bpy.data.objects.new(portal_name, mesh)  
+            obj = bpy.data.objects.new(portal_name, mesh)
 
             obj.WowPortalPlane.Enabled = True
             first_relationship = True
-            
+
             for j in range(len(self.mopr.Relationships)):
                 if self.mopr.Relationships[j].PortalIndex == i:
                     if first_relationship:
@@ -510,36 +510,36 @@ class WMO_root_file:
 
             mesh.from_pydata(verts,[],faces)
             bpy.context.scene.objects.link(obj)
-            
+
     def LoadConvexVolumePlanes(self, name):
         """ Load WoW WMO convex volume planes used for trasport objects """
         self.convex_volume_planes = []
-        
+
         faces = []
         counter = 0
-        
+
         for plane in self.mcvp.convex_volume_planes:
             if plane[2] != 0:
                 self.convex_volume_planes.append((1.0, 1.0, -(plane[0] + plane[1] + plane[3]) / plane[2]))
             else:
                 self.convex_volume_planes.append((1.0, 1.0, -(plane[0] + plane[1] + plane[3]) / plane[2]))
-                
-                
+
+
             self.convex_volume_planes.append((1.0, -(plane[0] + plane[2] + plane[3]) / plane[1], 1.0))
             self.convex_volume_planes.append((-(plane[1] + plane[2] + plane[3]) / plane[0], 1.0, 1.0))
-            
+
             for i in range(0, 3):
                 faces.append(counter * 3 + i)
             counter += 1
-            
+
         mesh = bpy.data.meshes.new('Convex_Volume_Plane')
-        
+
         obj = bpy.data.objects.new('Convex_Volume_Plane', mesh)
-        
+
         mesh.from_pydata(self.convex_volume_planes, [], faces)
         bpy.context.scene.objects.link(obj)
 
-            
+
     def LoadProperties(self, name, filepath):
         """ Load global WoW WMO properties """
         properties = bpy.context.scene.WoWRoot
@@ -564,7 +564,7 @@ class WMO_root_file:
         """ Calculate bounding box of an object """
         corner1 = [0.0, 0.0, 0.0]
         corner2 = [0.0, 0.0, 0.0]
-        
+
         for v in obj.bound_box:
             if v[0] < corner1[0]:
                 corner1[0] = v[0]
@@ -572,7 +572,7 @@ class WMO_root_file:
                 corner1[1] = v[1]
             if v[2] < corner1[2]:
                 corner1[2] = v[2]
-                
+
             if v[0] > corner2[0]:
                 corner2[0] = v[0]
             if v[1] > corner2[1]:
@@ -586,7 +586,7 @@ class WMO_root_file:
         """ Calculate bounding box of an entire scene """
         corner1 = self.mogi.Infos[0].BoundingBoxCorner1
         corner2 = self.mogi.Infos[0].BoundingBoxCorner2
-        
+
         for gi in self.mogi.Infos:
             v = gi.BoundingBoxCorner1
             if v[0] < corner1[0]:
@@ -595,8 +595,8 @@ class WMO_root_file:
                 corner1[1] = v[1]
             if v[2] < corner1[2]:
                 corner1[2] = v[2]
-                
-            v = gi.BoundingBoxCorner2                
+
+            v = gi.BoundingBoxCorner2
             if v[0] > corner2[0]:
                 corner2[0] = v[0]
             if v[1] > corner2[1]:
@@ -607,7 +607,7 @@ class WMO_root_file:
         return (corner1, corner2)
 
     def Save(self, autofill_textures, nPortals):
-        """ Save WoW WMO root file for future export """        
+        """ Save WoW WMO root file for future export """
         # set version header
         self.mver.Version = 17
         self.mopt = MOPT_chunk(nPortals)
@@ -621,10 +621,10 @@ class WMO_root_file:
         source_doodads = True
 
         scn = bpy.context.scene
-                    
+
         for o in scn.objects:
             o.select = False
-        
+
         for ob in bpy.context.scene.objects:
             if ob.type == "LAMP":
                 obj_light = ob.data
@@ -639,25 +639,25 @@ class WMO_root_file:
                     light.UseAttenuation = obj_light.WowLight.UseAttenuation
                     light.Padding = obj_light.WowLight.Padding
 
-                    light.Color = (int(obj_light.WowLight.Color[2] * 255), 
-                                   int(obj_light.WowLight.Color[1] * 255), 
-                                   int(obj_light.WowLight.Color[0] * 255), 
+                    light.Color = (int(obj_light.WowLight.Color[2] * 255),
+                                   int(obj_light.WowLight.Color[1] * 255),
+                                   int(obj_light.WowLight.Color[0] * 255),
                                    int(obj_light.WowLight.ColorAlpha * 255))
 
                     light.Position = ob.location
                     light.Intensity = obj_light.WowLight.Intensity
                     light.AttenuationStart = obj_light.WowLight.AttenuationStart
-                    light.AttenuationEnd = obj_light.WowLight.AttenuationEnd                
+                    light.AttenuationEnd = obj_light.WowLight.AttenuationEnd
                     self.molt.Lights.append(light)
-                    
+
             elif ob.type == "MESH":
                 obj_mesh = ob.data
-                
+
                 if ob.WowWMOGroup.Enabled:
                     global_object_count += 1
                     if ob.WowWMOGroup.PlaceType == '8':
                         global_outdoor_object_count += 1
-                    
+
                 elif ob.WowPortalPlane.Enabled:
                     Log(1, False, "Exporting portal: <<" + ob.name + ">>")
                     portal_info = PortalInfo()
@@ -667,56 +667,56 @@ class WMO_root_file:
                     ob.select = True
                     bpy.ops.object.transform_apply(location = True, rotation = True, scale = True)
                     ob.select = False
-                    
+
                     for poly in obj_mesh.polygons:
                         for loop_index in poly.loop_indices:
                             vertex = obj_mesh.vertices[obj_mesh.loops[loop_index].vertex_index]
                             self.mopv.PortalVertices.append(vertex.co)
                             v.append(vertex.co)
                             local_vertices_count+=1
-                    
+
                     v_A = v[0][1]*v[1][2]-v[1][1]*v[0][2]-v[0][1]*v[2][2]+v[2][1]*v[0][2]+v[1][1]*v[2][2]-v[2][1]*v[1][2]
                     v_B = -v[0][0]*v[1][2]+v[2][0]*v[1][2]+v[1][0]*v[0][2]-v[2][0]*v[0][2]-v[1][0]*v[2][2]+v[0][0]*v[2][2]
                     v_C = v[2][0]*v[0][1]-v[1][0]*v[0][1]-v[0][0]*v[2][1]+v[1][0]*v[2][1]-v[2][0]*v[1][1]+v[0][0]*v[1][1]
-                    
+
                     v_D = -v[0][0]*v[1][1]*v[2][2] + v[0][0]*v[2][1]*v[1][2] + v[1][0]*v[0][1]*v[2][2] - v[1][0]*v[2][1]*v[0][2] \
                     - v[2][0]*v[0][1]*v[1][2] + v[2][0]*v[1][1]*v[0][2]
 
                     portal_info.Unknown = v_D / math.sqrt(v_A*v_A+v_B*v_B+v_C*v_C) # i'm sorry
-                    
+
                     #norm_x = v_A / math.sqrt(v_A*v_A+v_B*v_B+v_C*v_C)
                     #norm_y = v_B / math.sqrt(v_A*v_A+v_B*v_B+v_C*v_C)
                     #morm_z = v_C / math.sqrt(v_A*v_A+v_B*v_B+v_C*v_C)
                     portal_info.nVertices = local_vertices_count
                     portal_info.Normal = obj_mesh.polygons[0].normal
                     #portal_info.Normal = (norm_x, norm_y, morm_z)
-                    
+
                     global_vertices_count+=local_vertices_count
                     self.mopt.Infos[ob.WowPortalPlane.PortalID] = portal_info
-                    
+
                     Log(0, False, "Done exporting portal: <<" + ob.name + ">>")
-                    
-                    
+
+
                 elif ob.WowFog.Enabled:
                     Log(1, False, "Exporting fog: <<" + ob.name + ">>")
                     fog = Fog()
-                    
+
                     ob.select = True
                     bpy.ops.object.transform_apply(location = True, rotation = True, scale = True)
                     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
                     ob.select = False
-                    
+
                     fog.BigRadius = ob.dimensions[2] / 2
                     fog.SmallRadius = fog.BigRadius * (ob.WowFog.InnerRadius / 100)
 
-                    fog.Color1 = (int(ob.WowFog.Color1[2] * 255), 
-                                  int(ob.WowFog.Color1[1] * 255), 
-                                  int(ob.WowFog.Color1[0] * 255), 
+                    fog.Color1 = (int(ob.WowFog.Color1[2] * 255),
+                                  int(ob.WowFog.Color1[1] * 255),
+                                  int(ob.WowFog.Color1[0] * 255),
                                   0xFF)
 
-                    fog.Color2 = (int(ob.WowFog.Color2[2] * 255), 
-                                  int(ob.WowFog.Color2[1] * 255), 
-                                  int(ob.WowFog.Color2[0] * 255), 
+                    fog.Color2 = (int(ob.WowFog.Color2[2] * 255),
+                                  int(ob.WowFog.Color2[1] * 255),
+                                  int(ob.WowFog.Color2[0] * 255),
                                   0xFF)
 
                     fog.EndDist = ob.WowFog.EndDist
@@ -724,22 +724,22 @@ class WMO_root_file:
                     fog.Position = ob.location
                     fog.StartFactor = ob.WowFog.StartFactor
                     fog.StarFactor2 = ob.WowFog.StartFactor2
-                    
+
                     if ob.WowFog.IgnoreRadius:
                         fog.Flags |= 0x01
                     if ob.WowFog.Unknown:
                         fog.Flags |= 0x10
-                        
+
                     global_fog_count += 1
-                        
+
                     self.mfog.Fogs.append(fog)
-                    
+
                     Log(0, False, "Done exporting fog: <<" + ob.name + ">>")
 
                 elif ob.WoWDoodad.Enabled:
                     source_doodads = False
 
-                    
+
         if source_doodads and len(bpy.context.scene.WoWRoot.MODS_Sets):
             scene = bpy.context.scene
             ofsMap = {}
@@ -795,7 +795,7 @@ class WMO_root_file:
 
                 for doodad in doodads:
                     doodad_definition = DoodadDefinition()
-          
+
                     path = os.path.splitext(doodad.WoWDoodad.Path)[0] + ".MDX"
 
                     doodad_definition.NameOfs = doodad_paths.get(path)
@@ -823,7 +823,7 @@ class WMO_root_file:
                     self.modd.Definitions.append(doodad_definition)
 
                 doodad_set.nDoodads = len(self.modd.Definitions) - doodad_set.StartDoodad
-                
+
                 if set_name == "Set_$DefaultGlobal":
                     self.mods.Sets.insert(0, doodad_set)
                     has_global = True
@@ -839,16 +839,16 @@ class WMO_root_file:
                 doodad_set.nDoodads = 0
                 self.mods.Sets.insert(0, doodad_set)
 
-              
+
         if global_object_count > 512:
-            LogError(2, 
-                     "Your scene contains more objects that it is supported by WMO file format " 
-                     + str(global_object_count) 
+            LogError(2,
+                     "Your scene contains more objects that it is supported by WMO file format "
+                     + str(global_object_count)
                      + ". The hardcoded maximum is 512 for one root WMO file. Dividing your scene to a few separate WMO models is recommended.")
 
-        # setting up default fog with default blizzlike values.       
+        # setting up default fog with default blizzlike values.
         if global_fog_count == 0:
-            empty_fog = Fog() 
+            empty_fog = Fog()
             empty_fog.Color1 = (0xFF, 0xFF, 0xFF, 0xFF)
             empty_fog.Color2 = (0x00, 0x00, 0x00, 0xFF)
             empty_fog.EndDist = 444.4445
@@ -856,7 +856,7 @@ class WMO_root_file:
             empty_fog.StartFactor = 0.25
             empty_fog.StartFactor2 = -0.5
             self.mfog.Fogs.append(empty_fog)
-                    
+
         # set portal relations
         self.mopr.Relationships = []
         for i in range(len(self.PortalR)):
@@ -881,26 +881,26 @@ class WMO_root_file:
         self.mohd.AmbientColor = [int(scn.WoWRoot.AmbientColor[2] * 255),
                                   int(scn.WoWRoot.AmbientColor[1] * 255),
                                   int(scn.WoWRoot.AmbientColor[0] * 255),
-                                  int(scn.WoWRoot.AmbientColor[3] * 255)] 
+                                  int(scn.WoWRoot.AmbientColor[3] * 255)]
 
         self.mohd.ID =  scn.WoWRoot.WMOid
         self.mohd.BoundingBoxCorner1 = bb[0]
         self.mohd.BoundingBoxCorner2 = bb[1]
-        
+
         self.mosb.Skybox = scn.WoWRoot.SkyboxPath
 
         flags = scn.WoWRoot.Flags
         if "0" in flags:
             self.mohd.Flags |= 0x01
         if "2" in flags:
-            self.mohd.Flags |= 0x02 
+            self.mohd.Flags |= 0x02
         if "1" in flags:
             self.mohd.Flags |= 0x08
 
 
     def Write(self, f):
         """ Write a saved WoW WMO root to a file """
-        
+
         self.mver.Write(f)
         self.mohd.Write(f)
         self.motx.Write(f)
@@ -918,7 +918,7 @@ class WMO_root_file:
         self.modn.Write(f)
         self.modd.Write(f)
         self.mfog.Write(f)
-        
+
         Log(1, False, "Done writing root file: <<" + os.path.basename(f.name) +">>")
         Log(1, False, "Exporting process finished successfully")
 

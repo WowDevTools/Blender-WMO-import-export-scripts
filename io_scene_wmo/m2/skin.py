@@ -32,7 +32,7 @@ class SkinHeader:
         ret +=  self.TextureUnits.pack()
         ret += struct.pack("i", self.lod)
         return ret
-    
+
 class Mesh:
     def __init__(self):
         self.mesh_id        = 0
@@ -45,7 +45,7 @@ class Mesh:
         self.unknown        = 0
         self.rootbone       = 0
         self.bound      = Bounds()
-        
+
     def unpack(self,f):
         self.mesh_id,       = struct.unpack("i",f.read(4))
         self.vert_offset,   = struct.unpack("H",f.read(2))
@@ -70,7 +70,7 @@ class Mesh:
         ret += struct.pack("H", self.rootbone)
         ret += self.bound.pack()
         return ret
-        
+
 
 class Material:
     def __init__(self):
@@ -98,7 +98,7 @@ class Material:
         self.texture,       = struct.unpack("H",f.read(2))
         self.texunit2,      = struct.unpack("H",f.read(2))
         self.transparency,  = struct.unpack("H",f.read(2))
-        self.animation,      = struct.unpack("H",f.read(2)) 
+        self.animation,      = struct.unpack("H",f.read(2))
         return self
     def pack(self):
         ret = struct.pack("H",self.flags)
@@ -123,11 +123,11 @@ class Propertie:
         return self
     def pack(self):
         return struct.pack("4B",self.Bones[0],self.Bones[1],self.Bones[2],self.Bones[3])
-    
+
 class SkinFile:
     def __init__(self, file):
         f = open(file,"r+b") if type(file) == type("") else io.BytesIO(file[0])
-        
+
         self.header = SkinHeader()
         self.header.unpack(f)
         self.indices    = ReadBlock(f,self.header.Indices,Lookup)
@@ -135,27 +135,26 @@ class SkinFile:
         self.tri    = ReadBlock(f,self.header.Triangles,Triangle)
         self.prop   = ReadBlock(f,self.header.Properties,Propertie)
         self.mesh   = ReadBlock(f,self.header.Submeshes,Mesh)
-        self.texunit    = ReadBlock(f,self.header.TextureUnits,Material)    
-        
-            
+        self.texunit    = ReadBlock(f,self.header.TextureUnits,Material)
+
+
         f.close()
-        
+
     def write(self,filename):
         f = open(filename,"wb")
-        
+
         f.write(self.header.pack())
-        
+
         WriteBlock(f,self.header.Indices,self.indices)
         WriteBlock(f,self.header.Triangles,self.tri)
         self.header.Triangles.count *= 3;
         WriteBlock(f,self.header.Properties,self.prop)
         WriteBlock(f,self.header.Submeshes,self.mesh)
         WriteBlock(f,self.header.TextureUnits,self.texunit)
-        
+
         f.seek(0,SEEK_SET)
         f.write(self.header.pack())
-        
+
         f.close()
-    
 
 

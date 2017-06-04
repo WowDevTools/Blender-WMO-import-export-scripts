@@ -20,7 +20,7 @@ class ChunkHeader:
     def Write(self, f):
         f.write(self.Magic[:4].encode('ascii'))
         f.write(struct.pack('I', self.Size))
-        
+
 # contain version of file
 class MVER_chunk:
     def __init__(self, header=ChunkHeader(), version=0):
@@ -341,7 +341,7 @@ class MOPV_chunk:
         for i in range(count):
             #self.PortalVertices = []
             #for j in range(4):
-            self.PortalVertices.append(struct.unpack("fff", f.read(12)))  
+            self.PortalVertices.append(struct.unpack("fff", f.read(12)))
                 #print(self.mopt.Infos[i].nVertices)
             #self.Portals.append(self.PortalVertices)
 
@@ -783,24 +783,24 @@ class MFOG_chunk:
         for fo in self.Fogs:
             fo.Write(f)
 
-# Convex volume plane, used only for transport objects         
+# Convex volume plane, used only for transport objects
 class MCVP_chunk:
-    def __init__(self):    
+    def __init__(self):
         self.Header = ChunkHeader()
         self.convex_volume_planes = []
-        
+
     def Read(self, f):
         self.Header.Read(f)
-        
+
         count = self.Header.Size // 16
-        
+
         for i in range(0, count):
             self.convex_volume_planes.append(struct.unpack('ffff', f.read(16)))
-            
+
     def Write(self, f):
         self.Header.Magic = 'PVCM'
         self.Header.Size = len(self.convex_volume_planes) * 16
-        
+
         self.Header.Write(f)
         for i in self.convex_volume_planes:
             f.write(struct.pack('ffff', self.convex_volume_planes[i]))
@@ -1252,7 +1252,7 @@ class LiquidVertex:
     def __init__(self):
 
         self.height = 0
-        
+
     def Read(self, f):
         self.height = struct.unpack("f", f.read(4))
 
@@ -1266,41 +1266,41 @@ class WaterVertex(LiquidVertex):
         self.flow2 = 0
         self.flow1Pct = 0
         self.filler = 0
-        
+
     def Read(self, f):
-        
+
         self.flow1 = struct.unpack("B", f.read(1))[0]
         self.flow2 = struct.unpack("B", f.read(1))[0]
         self.flow1Pct = struct.unpack("B", f.read(1))[0]
         self.filler = struct.unpack("B", f.read(1))[0]
         LiquidVertex.Read(self, f) # Python, wtf?
-        
-        
+
+
     def Write(self, f):
-        
+
         f.write(struct.pack('B', self.flow1))
         f.write(struct.pack('B', self.flow2))
         f.write(struct.pack('B', self.flow1Pct))
         f.write(struct.pack('B', self.filler))
         LiquidVertex.Write(self, f) # Python, wtf?
-        
-        
+
+
 class MagmaVertex(LiquidVertex):
     def __init__(self):
         self.u = 0
         self.v = 0
-    
+
     def Read(self, f):
         self.u = struct.unpack("h", f.read(2))[0]
         self.v = struct.unpack("h", f.read(2))[0]
         LiquidVertex.Read(self, f)
-        
+
     def Write(self, f):
         f.write(struct.pack('h', self.u))
-        f.write(struct.pack('h', self.v))  
+        f.write(struct.pack('h', self.v))
         LiquidVertex.Write(self, f)
 
-        
+
 class MLIQ_chunk:
     def __init__(self, mat = True):
         self.Header = ChunkHeader()
@@ -1324,21 +1324,21 @@ class MLIQ_chunk:
         self.yTiles = struct.unpack("I", f.read(4))[0]
         self.Position = struct.unpack("fff", f.read(12))
         self.materialID = struct.unpack("H", f.read(2))[0]
-        
+
         self.VertexMap = []
-        
+
 
         for i in range(self.xVerts * self.yVerts):
             vtx = WaterVertex() if self.LiquidMaterial else MagmaVertex()
             vtx.Read(f)
             self.VertexMap.append(vtx)
-        
+
         self.TileFlags = []
 
         # 0x40 = visible
         # 0x0C = invisible
         # well some other strange things (e.g 0x7F = visible, etc...)
-        
+
         for i in range(self.xTiles * self.yTiles):
             self.TileFlags.append(struct.unpack("B", f.read(1))[0])
 
@@ -1355,7 +1355,7 @@ class MLIQ_chunk:
         f.write(struct.pack('I', self.yTiles))
         f.write(struct.pack('fff', *self.Position))
         f.write(struct.pack('H', self.materialID))
-        
+
         for vtx in self.VertexMap:
             vtx.Write(f)
         for tile_flag in self.TileFlags:

@@ -16,7 +16,7 @@ def M2ToBlenderMesh(dir, filepath, filedata):
 
     m2_path = os.path.splitext(filepath)[0] + ".m2"
     skin_path = os.path.splitext(filepath)[0] + "00.skin"
-    
+
     m2_file = filedata.read_file(m2_path)
     skin_file = filedata.read_file(skin_path)
 
@@ -38,7 +38,7 @@ def M2ToBlenderMesh(dir, filepath, filedata):
         tex_coords.append(vertex.uv)
         normals.append(vertex.normal)
 
-    for polygon in skin.tri: 
+    for polygon in skin.tri:
         face = []
         for index in polygon.indices:
             face.append(skin.indices[index].Id)
@@ -48,7 +48,7 @@ def M2ToBlenderMesh(dir, filepath, filedata):
     # create mesh
     mesh = bpy.data.meshes.new(name)
     mesh.from_pydata(vertices, [], polygons)
-    
+
     for poly in mesh.polygons:
         poly.use_smooth = True
 
@@ -79,7 +79,7 @@ def M2ToBlenderMesh(dir, filepath, filedata):
             m2.textures[m2.tex_lookup[batch.texture].Id].name.decode("utf-8").rstrip('\0')
             )[0] + ".png"
 
-        img = None 
+        img = None
 
         try:
             img = bpy.data.images.load(os.path.join(dir, path), check_existing=True)
@@ -92,7 +92,7 @@ def M2ToBlenderMesh(dir, filepath, filedata):
 
     # create object
     scn = bpy.context.scene
-                    
+
     for o in scn.objects:
         o.select = False
 
@@ -116,9 +116,9 @@ def wmv_get_last_m2():
         lines = open(preferences.wmv_path).readlines()
 
         for line in reversed(lines):
-            result = re.search("[^ ]*\\.*\.m2", line)
+            result = re.search("[^\d{2}:\d{2}:\d{2}: Loading model: ].{1,}.m2\n", line)
             if result:
-                return result.string[result.regs[0][0]:result.regs[0][1]]
+                return result.string[result.regs[0][0]:result.regs[0][1]].rstrip("\n")
 
 
 class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
@@ -139,7 +139,7 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
         m2_path = wmv_get_last_m2()
 
         if not m2_path:
-            self.report({'ERROR'}, """WoW Model Viewer log contains no model entries. 
+            self.report({'ERROR'}, """WoW Model Viewer log contains no model entries.
             Make sure to use compatible WMV version or open an .m2 there.""")
             return {'CANCELLED'}
 
@@ -157,7 +157,7 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
                 obj.location = bpy.context.scene.objects.active.location
             else:
                 obj.location = bpy.context.scene.cursor_location
-                
+
             obj.WoWDoodad.Enabled = True
             obj.WoWDoodad.Path = m2_path
 
@@ -175,4 +175,3 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
         return {'FINISHED'}
 
 
-   

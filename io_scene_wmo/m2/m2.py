@@ -66,7 +66,7 @@ class M2Header:
         self.ribbon_emitters = Chunk()
         self.particle_emitters = Chunk()
         self.unknown = Chunk()
-            
+
     def unpack(self,f):
         self.magic,         = struct.unpack("i",f.read(4))
         self.version,        = struct.unpack("i",f.read(4))
@@ -104,10 +104,10 @@ class M2Header:
         self.cameras.unpack(f)
         self.camera_lookup.unpack(f)
         self.ribbon_emitters.unpack(f)
-        self.particle_emitters.unpack(f)    
+        self.particle_emitters.unpack(f)
         if(self.modeltype&8):
             self.unknown.unpack(f)
-        
+
     def pack(self):
         ret = struct.pack("i",self.magic)
         ret += struct.pack("i",self.version)
@@ -156,7 +156,7 @@ class Vertex:
         self.normal     = (0,0,0)
         self.uv         = (0,0)
         self.unk         = (0,0)
-        
+
     def unpack(self,f):
         self.pos        = Vec3().unpack(f)
         self.bweights   = struct.unpack("4B",f.read(4))
@@ -173,7 +173,7 @@ class Vertex:
         ret += struct.pack("2f",self.uv[0],self.uv[1])
         ret += struct.pack("2f",self.unk[0],self.unk[1])
         return ret
-        
+
 class Sequ:
     def __init__(self):
         self.animId = 0
@@ -188,7 +188,7 @@ class Sequ:
         self.bound  = Bounds()
         self.next   = 0
         self.index  = 0
-        
+
     def unpack(self,f):
         self.animId,    = struct.unpack("H",f.read(2))
         self.subId, = struct.unpack("H",f.read(2))
@@ -217,7 +217,7 @@ class Sequ:
         ret += struct.pack("h",self.next)
         ret += struct.pack("H",self.index)
         return ret
-    
+
 
 class AnimSub:
     def __init__(self):
@@ -226,7 +226,7 @@ class AnimSub:
         self.ofsEntries= 0
         self.values = []
 
-        
+
     def unpack(self,f,type,animfile = None):
         self.type = type
         self.nEntries,  = struct.unpack("i",f.read(4))
@@ -261,7 +261,7 @@ class AnimSub:
                     pass
             f.seek(oldpos)
         else:
-            file = open(animfile[1],"r+b")          
+            file = open(animfile[1],"r+b")
             file.seek(self.ofsEntries)
             self.values = []
             for i in xrange(self.nEntries):
@@ -293,28 +293,28 @@ class AnimSub:
         ret = struct.pack("i",self.nEntries)
         ret += struct.pack("i",self.ofsEntries)
         return ret
-    
+
 class AnimBlock:
     def __init__(self):
         self.interpolation= 0
         self.gsequ  = -1
         self.nTimes = 0
         self.ofsTimes   = 0
-        self.TimeSubs = []      
+        self.TimeSubs = []
         self.nKeys  = 0
-        self.ofsKeys    = 0     
+        self.ofsKeys    = 0
         self.KeySubs = []
         self.type = DATA_INT
-        
 
-        
+
+
     def unpack(self,f,type,animfiles):
         self.interpolation,= struct.unpack("h",f.read(2))
         self.gsequ, = struct.unpack("h",f.read(2))
         self.nTimes,    = struct.unpack("i",f.read(4))
         self.ofsTimes,  = struct.unpack("i",f.read(4))
         self.type = type
-        
+
         oldpos = f.tell()
         f.seek(self.ofsTimes)
         self.TimeSubs = []
@@ -325,10 +325,10 @@ class AnimBlock:
                 temp = AnimSub().unpack(f,DATA_INT)
             self.TimeSubs.append(temp)
         f.seek(oldpos)
-        
+
         self.nKeys, = struct.unpack("i",f.read(4))
         self.ofsKeys,   = struct.unpack("i",f.read(4))
-        
+
         oldpos = f.tell()
         f.seek(self.ofsKeys)
         self.KeySubs = []
@@ -348,7 +348,7 @@ class AnimBlock:
         ret += struct.pack("i",self.nKeys)
         ret += struct.pack("i",self.ofsKeys)
         return ret
-        
+
 class Bone:
     def __init__(self):
         self.KeyBoneId  = 0
@@ -381,7 +381,7 @@ class Bone:
         ret += self.scaling.pack()
         ret += self.pivot.pack()
         return ret
-        
+
 class Attachment:
     def __init__(self):
         self.Id = 0
@@ -400,7 +400,7 @@ class Attachment:
         ret += self.pos.pack()
         ret += self.Enabled.pack()
         return ret
-        
+
 class Texture:
     def __init__(self):
         self.type   = 0
@@ -408,7 +408,7 @@ class Texture:
         self.len_name   = 0
         self.ofs_name   = 0
         self.name = ""
-        
+
     def unpack(self,f):
         self.type,  = struct.unpack("i",f.read(4))
         self.flags, = struct.unpack("i",f.read(4))
@@ -425,7 +425,7 @@ class Texture:
         ret += struct.pack("i",self.len_name)
         ret += struct.pack("i",self.ofs_name)
         return ret
-        
+
 class Renderflags:
     def __init__(self):
         self.flags  = 0
@@ -438,7 +438,7 @@ class Renderflags:
         ret = struct.pack("h",self.flags)
         ret += struct.pack("h",self.blend)
         return ret
-        
+
 class UVAnimation:
     def __init__(self):
         self.translation= AnimBlock()
@@ -447,7 +447,7 @@ class UVAnimation:
     def unpack(self,f,animfiles):
         self.translation= AnimBlock().unpack(f,DATA_VEC3,animfiles)
         self.rotation   = AnimBlock().unpack(f,DATA_QUAT,animfiles)
-        self.scaling    = AnimBlock().unpack(f,DATA_VEC3,animfiles) 
+        self.scaling    = AnimBlock().unpack(f,DATA_VEC3,animfiles)
         return self
     def pack(self):
         ret = self.translation.pack()
@@ -461,22 +461,22 @@ class Color:
         self.alpha = AnimBlock()
     def unpack(self,f,animfiles):
         self.color = AnimBlock().unpack(f,DATA_VEC3,animfiles)
-        self.alpha = AnimBlock().unpack(f,DATA_SHORT,animfiles) 
+        self.alpha = AnimBlock().unpack(f,DATA_SHORT,animfiles)
         return self
     def pack(self):
         ret = self.color.pack()
         ret += self.alpha.pack()
         return ret
-        
+
 class Transparency:
     def __init__(self):
         self.alpha = AnimBlock()
     def unpack(self,f,animfiles):
-        self.alpha = AnimBlock().unpack(f,DATA_SHORT,animfiles) 
+        self.alpha = AnimBlock().unpack(f,DATA_SHORT,animfiles)
         return self
     def pack(self):
         return self.alpha.pack()
-    
+
 class Event:
     def __init__(self):
         self.Id = 0
@@ -490,7 +490,7 @@ class Event:
 
         self.TimeSubs = []
 
-        
+
     def unpack(self,f):
         self.Id,    = struct.unpack("i",f.read(4))
         self.Data,  = struct.unpack("i",f.read(4))
@@ -500,7 +500,7 @@ class Event:
         self.gsequ, = struct.unpack("h",f.read(2))
         self.nTimes,    = struct.unpack("i",f.read(4))
         self.ofsTimes,  = struct.unpack("i",f.read(4))
-        
+
         oldpos = f.tell()
         f.seek(self.ofsTimes)
         self.TimeSubs = []
@@ -519,7 +519,7 @@ class Event:
         ret += struct.pack("i",self.nTimes)
         ret += struct.pack("i",self.ofsTimes)
         return ret
-    
+
 class Light:
     def __init__(self):
         self.Type   = 0
@@ -562,17 +562,17 @@ class FakeAnim:
         self.nTimes = 0
         self.ofsTimes   = 0
         self.type = 0
-        self.Times = []     
+        self.Times = []
         self.nKeys  = 0
         self.ofsKeys= 0
         self.Keys = []
 
-        
+
     def unpack(self,f,type):
         self.nTimes,    = struct.unpack("i",f.read(4))
         self.ofsTimes,  = struct.unpack("i",f.read(4))
         self.type = type
-        
+
         oldpos = f.tell()
         f.seek(self.ofsTimes)
         self.Times = []
@@ -580,10 +580,10 @@ class FakeAnim:
             temp, = struct.unpack("h",f.read(2))
             self.Times.append(temp)
         f.seek(oldpos)
-        
+
         self.nKeys, = struct.unpack("i",f.read(4))
         self.ofsKeys,   = struct.unpack("i",f.read(4))
-        
+
         oldpos = f.tell()
         f.seek(self.ofsKeys)
         self.Keys = []
@@ -600,7 +600,7 @@ class FakeAnim:
             else:
                 pass
         f.seek(oldpos)
-        return self 
+        return self
     def pack(self):
         ret = struct.pack("i",self.nTimes)
         ret += struct.pack("i",self.ofsTimes)
@@ -616,16 +616,16 @@ class Particle:
         self.Pos    = Vec3()
         self.bone   = 0
         self.texture    = 0
-        
+
         self.lenModel   = 0
         self.ofsModel   = 0
         self.ModelName = ""
-        
+
         self.lenParticle    = 0
         self.ofsParticle    = 0
         self.ParticleName = ""
 
-        
+
         self.blend  = 0
         self.emitter    = 0
         self.color_dbc  = 0
@@ -660,13 +660,13 @@ class Particle:
         self.rot2   = Vec3()
         self.translation= Vec3()
         self.unk3   = (0,0,0,0)
-        
+
         self.nUnk   =0
         self.ofsUnk =0
         self.UnkRef = []
-        
+
         self.Enabled = AnimBlock()
-        
+
     def unpack(self,f,animfiles):
         self.Id,    = struct.unpack("i",f.read(4))
         self.flags1,    = struct.unpack("h",f.read(2))
@@ -674,21 +674,21 @@ class Particle:
         self.Pos    = Vec3().unpack(f)
         self.bone,  = struct.unpack("h",f.read(2))
         self.texture,   = struct.unpack("h",f.read(2))
-        
+
         self.lenModel,  = struct.unpack("i",f.read(4))
         self.ofsModel,  = struct.unpack("i",f.read(4))
         oldpos  = f.tell()
         f.seek(self.ofsModel)
         self.ModelName = f.read(self.lenModel)
         f.seek(oldpos)
-        
+
         self.lenParticle,   = struct.unpack("i",f.read(4))
         self.ofsParticle,   = struct.unpack("i",f.read(4))
         oldpos  = f.tell()
         f.seek(self.ofsParticle)
         self.ParticleName = f.read(self.lenParticle)
         f.seek(oldpos)
-        
+
         self.blend, = struct.unpack("b",f.read(1))
         self.emitter,   = struct.unpack("b",f.read(1))
         self.color_dbc, = struct.unpack("h",f.read(2))
@@ -727,7 +727,7 @@ class Particle:
         self.rot2   = Vec3().unpack(f)
         self.translation= Vec3().unpack(f)
         self.unk3   = struct.unpack("4f",f.read(16))
-        
+
         self.nUnk,  = struct.unpack("i",f.read(4))
         self.ofsUnk,    = struct.unpack("i",f.read(4))
         oldpos = f.tell()
@@ -737,7 +737,7 @@ class Particle:
             temp = Vec3().unpack(f)
             self.UnkRef.append(temp)
         f.seek(oldpos)
-        
+
         self.Enabled = AnimBlock().unpack(f,DATA_INT,animfiles)
         return self
     def pack(self):
@@ -747,12 +747,12 @@ class Particle:
         ret += self.Pos.pack()
         ret += struct.pack("h",self.bone)
         ret += struct.pack("h",self.texture)
-        
+
         ret += struct.pack("i",self.lenModel)
         ret += struct.pack("i",self.ofsModel)
         ret += struct.pack("i",self.lenParticle)
         ret += struct.pack("i",self.ofsParticle)
-        
+
         ret += struct.pack("b",self.blend)
         ret += struct.pack("b",self.emitter)
         ret += struct.pack("h",self.color_dbc)
@@ -761,7 +761,7 @@ class Particle:
         ret += struct.pack("h",self.tex_tile_rot)
         ret += struct.pack("h",self.tex_rows)
         ret += struct.pack("h",self.tex_cols)
-        
+
         ret += self.emission_speed.pack()
         ret += self.speed_var.pack()
         ret += self.vert_range.pack()
@@ -792,7 +792,7 @@ class Particle:
         ret += struct.pack("i",self.ofsUnk)
         ret += self.Enabled.pack()
         return ret
-        
+
 class Ribbon:
     def __init__(self):
         self.Id = 0
@@ -801,28 +801,28 @@ class Ribbon:
         self.nTexRefs   = 0
         self.ofsTexRefs= 0
         self.TexRefs = []
-        
+
         self.nBlendRef  = 0
         self.ofsBlendRef= 0
         self.BlendRef = []
 
-        
+
         self.Color  = AnimBlock()
         self.Opacity    = AnimBlock()
         self.Above  = AnimBlock()
         self.Below  = AnimBlock()
-        
+
         self.Resolution = 0
         self.Length = 0
         self.Angle  = 0
         self.Flags  = 0
         self.Blend  = 0
-        
+
         self.Unk1   = AnimBlock()
         self.Unk2   = AnimBlock()
-        
+
         self.pad    = 0
-        
+
     def unpack(self,f,animfiles):
         self.Id,    = struct.unpack("i",f.read(4))
         self.Bone,  = struct.unpack("i",f.read(4))
@@ -836,7 +836,7 @@ class Ribbon:
             temp, = struct.unpack("i",f.read(4))
             self.TexRefs.append(temp)
         f.seek(oldpos)
-        
+
         self.nBlendRef, = struct.unpack("i",f.read(4))
         self.ofsBlendRef,= struct.unpack("i",f.read(4))
         oldpos = f.tell()
@@ -846,21 +846,21 @@ class Ribbon:
             temp, = struct.unpack("i",f.read(4))
             self.BlendRef.append(temp)
         f.seek(oldpos)
-        
+
         self.Color  = AnimBlock().unpack(f,DATA_VEC3,animfiles)
         self.Opacity    = AnimBlock().unpack(f,DATA_SHORT,animfiles)
         self.Above  = AnimBlock().unpack(f,DATA_FLOAT,animfiles)
         self.Below  = AnimBlock().unpack(f,DATA_FLOAT,animfiles)
-        
+
         self.Resolution,= struct.unpack("f",f.read(4))
         self.Length,    = struct.unpack("f",f.read(4))
         self.Angle, = struct.unpack("f",f.read(4))
         self.Flags, = struct.unpack("h",f.read(2))
         self.Blend, = struct.unpack("h",f.read(2))
-        
+
         self.Unk1   = AnimBlock().unpack(f,DATA_SHORT,animfiles)
         self.Unk2   = AnimBlock().unpack(f,DATA_INT,animfiles)
-        
+
         self.pad,   = struct.unpack("i",f.read(4))
         return self
     def pack(self):
@@ -884,8 +884,8 @@ class Ribbon:
         ret += self.Unk2.pack()
         ret += struct.pack("i",self.pad)
         return ret
-        
-        
+
+
 class Camera:
     def __init__(self):
         self.Type   = 0
@@ -897,7 +897,7 @@ class Camera:
         self.TransTar   = AnimBlock()
         self.Target = Vec3()
         self.Scaling    = AnimBlock()
-        
+
     def unpack(self,f,animfiles):
         self.Type,  = struct.unpack("i",f.read(4))
         self.FOV,   = struct.unpack("f",f.read(4))
@@ -920,7 +920,7 @@ class Camera:
         ret += self.Target.pack()
         ret += self.Scaling.pack()
         return ret
-        
+
 
 
 class GlobalSequence:
@@ -931,7 +931,7 @@ class GlobalSequence:
         return self
     def pack(self):
         return struct.pack("i",self.Timestamp)
-    
+
 
 def WriteAnimBlock(f,block,animfiles):
     if(block.nTimes != 0):
@@ -939,10 +939,10 @@ def WriteAnimBlock(f,block,animfiles):
         for i in block.TimeSubs:
             f.write(i.pack())
         FillLine(f)
-    
+
         for i in xrange(block.nTimes):
             if (animfiles[i][0] == False ):
-                block.TimeSubs[i].ofsEntries = f.tell() 
+                block.TimeSubs[i].ofsEntries = f.tell()
                 for j in block.TimeSubs[i].values:
                     if(block.TimeSubs[i].type == DATA_QUAT):
                         f.write(j.pack())
@@ -962,9 +962,9 @@ def WriteAnimBlock(f,block,animfiles):
                         pass
                 FillLine(f)
             else:
-                file = open(animfiles[i][1],"a+b")  
+                file = open(animfiles[i][1],"a+b")
                 file.seek(0,SEEK_END)
-                block.TimeSubs[i].ofsEntries = file.tell()  
+                block.TimeSubs[i].ofsEntries = file.tell()
                 for j in block.TimeSubs[i].values:
                     if(block.TimeSubs[i].type == DATA_QUAT):
                         file.write(j.pack())
@@ -983,15 +983,15 @@ def WriteAnimBlock(f,block,animfiles):
                     else:
                         pass
                 FillLine(file)
-    
-    
+
+
         block.ofsKeys = f.tell()
         for i in block.KeySubs:
             f.write(i.pack())
         FillLine(f)
         for i in xrange(block.nKeys):
             if (animfiles[i][0] == False ):
-                block.KeySubs[i].ofsEntries = f.tell()  
+                block.KeySubs[i].ofsEntries = f.tell()
                 for j in block.KeySubs[i].values:
                     if(block.KeySubs[i].type == DATA_QUAT):
                         f.write(j.pack())
@@ -1007,13 +1007,13 @@ def WriteAnimBlock(f,block,animfiles):
                         f.write(j.pack())
                     elif(block.KeySubs[i].type == DATA_FLOAT):
                         f.write(struct.pack("f",j))
-                    else:   
+                    else:
                         pass
                 FillLine(f)
             else:
-                file = open(animfiles[i][1],"a+b")  
+                file = open(animfiles[i][1],"a+b")
                 file.seek(0,SEEK_END)
-                block.KeySubs[i].ofsEntries = file.tell()   
+                block.KeySubs[i].ofsEntries = file.tell()
                 for j in block.KeySubs[i].values:
                     if(block.KeySubs[i].type == DATA_QUAT):
                         file.write(j.pack())
@@ -1032,28 +1032,28 @@ def WriteAnimBlock(f,block,animfiles):
                     else:
                         pass
                 FillLine(file)
-            
+
         oldpos = f.tell()
-    
+
         f.seek(block.ofsTimes)
         for i in block.TimeSubs:
             f.write(i.pack())
-        
+
         f.seek(block.ofsKeys)
         for i in block.KeySubs:
             f.write(i.pack())
-        
+
         f.seek(oldpos)
     else:
         block.ofsTimes = 0
         block.ofsKeys = 0
-    
+
 def WriteFakeBlock(f,block):
     block.ofsTimes = f.tell()
     for j in block.Times:
         f.write(struct.pack("h",j))
     FillLine(f)
-            
+
     block.ofsKeys = f.tell()
     for j in block.Keys:
         if   (block.type == DATA_SHORT):
@@ -1065,8 +1065,8 @@ def WriteFakeBlock(f,block):
         else:
             pass
     FillLine(f)
-    
-    
+
+
 def InAnimFile(a_name,anim):
     first = str(anim.animId)
     while len(first) < 4:
@@ -1086,22 +1086,22 @@ def CreateAnimFileName(a_name,anim,animfile):
         scnd = "0" +scnd
     fname = a_name + first + "-" + scnd + ".anim"
     return (animfile[0],fname)
-                
-           
+
+
 class M2File:
     def __init__(self, file):
- 
+
         f = open(file,"r+b") if type(file) == type("") else io.BytesIO(file[0])
         filename = file[1]
 
         self.hdr = M2Header()
         self.hdr.unpack(f)
         hdr = self.hdr #just spare some time in tipping
-        
+
         f.seek(hdr.name.offset)#Go to the name
         self.name = f.read(hdr.name.count)#Read the name
         #Read Blocks
-        self.gSequ      = ReadBlock(f,hdr.global_sequences,GlobalSequence)          
+        self.gSequ      = ReadBlock(f,hdr.global_sequences,GlobalSequence)
         self.animations     = ReadBlock(f,hdr.animations,Sequ)
         self.anim_files     = []
         tempname = filename[0:len(filename)-3]
@@ -1112,7 +1112,7 @@ class M2File:
         self.key_bones      = ReadBlock(f,hdr.key_bones,Lookup)
         self.vertices       = ReadBlock(f,hdr.vertices,Vertex)
         self.colors     = ReadBlock(f,hdr.colors,Color,self.anim_files)
-        self.textures       = ReadBlock(f,hdr.textures,Texture) 
+        self.textures       = ReadBlock(f,hdr.textures,Texture)
         self.transparency   = ReadBlock(f,hdr.transparency,Transparency,self.anim_files)
         self.uv_anim        = ReadBlock(f,hdr.uv_anim,UVAnimation,self.anim_files)
         self.tex_replace    = ReadBlock(f,hdr.tex_replace,Lookup)
@@ -1133,30 +1133,30 @@ class M2File:
         self.camera_lookup  = ReadBlock(f,hdr.camera_lookup,Lookup)
         self.ribbon_emitters    = ReadBlock(f,hdr.ribbon_emitters,Ribbon,self.anim_files)
         self.particle_emitters  = ReadBlock(f,hdr.particle_emitters,Particle,self.anim_files)
-            
+
         f.close()
-        
+
     def write(self,filename):
         f = open(filename,"w+b")
-        
+
         tempname = filename[0:len(filename)-3]
         counter = 0
         for i in self.animations:
             self.anim_files[counter] = CreateAnimFileName(tempname,i,self.anim_files[counter])
             counter += 1
-        
+
         f.seek(0)
         f.write(self.hdr.pack())
         FillLine(f)
-        
+
         self.hdr.name.offset = f.tell()
         f.write(self.name)
         FillLine(f)
-        
-        WriteBlock(f,self.hdr.global_sequences,self.gSequ)          
-        WriteBlock(f,self.hdr.animations,self.animations)       
+
+        WriteBlock(f,self.hdr.global_sequences,self.gSequ)
+        WriteBlock(f,self.hdr.animations,self.animations)
         WriteBlock(f,self.hdr.anim_lookup,self.anim_lookup)
-        
+
         WriteBlock(f,self.hdr.bones,self.bones)
         for i in self.bones:
             WriteAnimBlock(f,i.translation,self.anim_files)
@@ -1166,11 +1166,11 @@ class M2File:
         f.seek(self.hdr.bones.offset)
         WriteBlock(f,self.hdr.bones,self.bones)
         f.seek(oldpos)
-        
-        
+
+
         WriteBlock(f,self.hdr.key_bones,self.key_bones)
         WriteBlock(f,self.hdr.vertices,self.vertices )
-        
+
         WriteBlock(f,self.hdr.colors,self.colors)
         for i in self.colors:
             WriteAnimBlock(f,i.color,self.anim_files)
@@ -1178,9 +1178,9 @@ class M2File:
         oldpos = f.tell()
         f.seek(self.hdr.colors.offset)
         WriteBlock(f,self.hdr.colors,self.colors)
-        f.seek(oldpos)  
-        
-        WriteBlock(f,self.hdr.textures,self.textures )  
+        f.seek(oldpos)
+
+        WriteBlock(f,self.hdr.textures,self.textures )
         for i in self.textures:
             i.ofs_name = f.tell()
             i.len_name = len(i.name)
@@ -1189,16 +1189,16 @@ class M2File:
         oldpos = f.tell()
         f.seek(self.hdr.textures.offset)
         WriteBlock(f,self.hdr.textures,self.textures)
-        f.seek(oldpos)  
-        
+        f.seek(oldpos)
+
         WriteBlock(f,self.hdr.transparency,self.transparency)
         for i in self.transparency:
             WriteAnimBlock(f,i.alpha,self.anim_files)
         oldpos = f.tell()
         f.seek(self.hdr.transparency.offset)
         WriteBlock(f,self.hdr.transparency,self.transparency)
-        f.seek(oldpos)  
-        
+        f.seek(oldpos)
+
         WriteBlock(f,self.hdr.uv_anim,self.uv_anim )
         for i in self.uv_anim:
             WriteAnimBlock(f,i.translation,self.anim_files)
@@ -1207,8 +1207,8 @@ class M2File:
         oldpos = f.tell()
         f.seek(self.hdr.uv_anim.offset)
         WriteBlock(f,self.hdr.uv_anim,self.uv_anim)
-        f.seek(oldpos)  
-        
+        f.seek(oldpos)
+
         WriteBlock(f,self.hdr.tex_replace,self.tex_replace)
         WriteBlock(f,self.hdr.renderflags,self.renderflags )
         WriteBlock(f,self.hdr.bone_lookup,self.bone_lookup)
@@ -1219,17 +1219,17 @@ class M2File:
         WriteBlock(f,self.hdr.bounding_triangles,self.bounding_triangles)
         WriteBlock(f,self.hdr.bounding_vertices,self.bounding_vertices)
         WriteBlock(f,self.hdr.bounding_normals,self.bounding_normals)
-        
+
         WriteBlock(f,self.hdr.attachments,self.attachments)
         for i in self.attachments:
             WriteAnimBlock(f,i.Enabled,self.anim_files)
         oldpos = f.tell()
         f.seek(self.hdr.attachments.offset)
         WriteBlock(f,self.hdr.attachments,self.attachments)
-        f.seek(oldpos)  
-        
+        f.seek(oldpos)
+
         WriteBlock(f,self.hdr.attach_lookup,self.attach_lookup)
-        
+
         WriteBlock(f,self.hdr.events,self.events)
         for i in self.events:
             i.ofsTimes = f.tell()
@@ -1237,7 +1237,7 @@ class M2File:
                 f.write(n.pack())
                 FillLine(f)
             for n in xrange(i.nTimes):
-                i.TimeSubs[n].ofsEntries = f.tell() 
+                i.TimeSubs[n].ofsEntries = f.tell()
                 for j in i.TimeSubs[n].values:
                     f.write(struct.pack("i",j))
             oldpos = f.tell()
@@ -1245,12 +1245,12 @@ class M2File:
             for n in i.TimeSubs:
                 f.write(n.pack())
             f.seek(oldpos)
-        FillLine(f)         
+        FillLine(f)
         oldpos = f.tell()
         f.seek(self.hdr.events.offset)
         WriteBlock(f,self.hdr.events,self.events)
-        f.seek(oldpos)  
-        
+        f.seek(oldpos)
+
         WriteBlock(f,self.hdr.lights,self.lights)
         for i in self.lights:
             WriteAnimBlock(f,i.AmbientCol,self.anim_files)
@@ -1263,9 +1263,9 @@ class M2File:
         oldpos = f.tell()
         f.seek(self.hdr.lights.offset)
         WriteBlock(f,self.hdr.lights,self.lights)
-        f.seek(oldpos)  
-        
-        
+        f.seek(oldpos)
+
+
         WriteBlock(f,self.hdr.cameras,self.cameras)
         for i in self.cameras:
             WriteAnimBlock(f,i.TransPos,self.anim_files)
@@ -1274,10 +1274,10 @@ class M2File:
         oldpos = f.tell()
         f.seek(self.hdr.cameras.offset)
         WriteBlock(f,self.hdr.cameras,self.cameras)
-        f.seek(oldpos)  
-        
+        f.seek(oldpos)
+
         WriteBlock(f,self.hdr.camera_lookup,self.camera_lookup)
-        
+
         WriteBlock(f,self.hdr.ribbon_emitters,self.ribbon_emitters)
         for i in self.ribbon_emitters:
             i.ofsTexRefs = f.tell()
@@ -1297,8 +1297,8 @@ class M2File:
         oldpos = f.tell()
         f.seek(self.hdr.ribbon_emitters.offset)
         WriteBlock(f,self.hdr.ribbon_emitters,self.ribbon_emitters)
-        f.seek(oldpos)  
-        
+        f.seek(oldpos)
+
         WriteBlock(f,self.hdr.particle_emitters,self.particle_emitters)
         for i in self.particle_emitters:
             i.ofsModel = f.tell()
@@ -1307,7 +1307,7 @@ class M2File:
             i.ofsParticle = f.tell()
             f.write(i.ParticleName)
             FillLine(f)
-            
+
             WriteAnimBlock(f,i.emission_speed,self.anim_files)
             WriteAnimBlock(f,i.speed_var,self.anim_files)
             WriteAnimBlock(f,i.vert_range,self.anim_files)
@@ -1319,13 +1319,13 @@ class M2File:
             WriteAnimBlock(f,i.emission_area_width,self.anim_files)
             WriteAnimBlock(f,i.gravity2,self.anim_files)
             WriteAnimBlock(f,i.Enabled,self.anim_files)
-            
+
             WriteFakeBlock(f,i.color)
             WriteFakeBlock(f,i.opacity)
             WriteFakeBlock(f,i.size)
             WriteFakeBlock(f,i.intensity)
             WriteFakeBlock(f,i.unkfake)
-            
+
             i.ofsUnk = f.tell()
             for j in i.UnkRef:
                 f.write(j.pack())
@@ -1334,15 +1334,14 @@ class M2File:
         oldpos = f.tell()
         f.seek(self.hdr.particle_emitters.offset)
         WriteBlock(f,self.hdr.particle_emitters,self.particle_emitters)
-        f.seek(oldpos)  
-        
-        
-        
-        
-        
+        f.seek(oldpos)
+
+
+
+
+
         f.seek(0,SEEK_SET)
         f.write(self.hdr.pack())
-        
+
         f.close()
 
-        

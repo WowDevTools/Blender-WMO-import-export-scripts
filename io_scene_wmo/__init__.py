@@ -31,7 +31,7 @@ bl_info = {
         "Scripts/Import-Export/Wow_WMO_IO",
     "tracker_url": "https://developer.blender.org/T25692",
     "category": "Import-Export"}
-    
+
 # load and reload submodules
 ##################################
 
@@ -51,7 +51,7 @@ if "bpy" in locals():
         imp.reload(export_wmo)
 else:
     import bpy
-    
+
 from bpy.props import IntProperty, StringProperty, BoolProperty, FloatVectorProperty
 from bpy_extras.io_utils import ExportHelper
 
@@ -75,7 +75,7 @@ class WMOPreferences(bpy.types.AddonPreferences):
         description = "If enabled, auto-check for updates using an interval",
         default = True,
         )
-    
+
     updater_intrval_months = bpy.props.IntProperty(
         name='Months',
         description = "Number of months between checking for updates",
@@ -107,29 +107,29 @@ class WMOPreferences(bpy.types.AddonPreferences):
         self.layout.prop(self, "wow_path")
         self.layout.prop(self, "wmv_path")
         self.layout.prop(self, "blp_path")
-        addon_updater_ops.update_settings_ui(self, context) 
+        addon_updater_ops.update_settings_ui(self, context)
 
 class WMOImporter(bpy.types.Operator):
     """Load WMO mesh data"""
     bl_idname = "import_mesh.wmo"
     bl_label = "Import WMO"
     bl_options = {'UNDO'}
-    
+
     filepath = StringProperty(
         subtype='FILE_PATH',
         )
 
     filter_glob = StringProperty(
-        default="*.wmo", 
+        default="*.wmo",
         options={'HIDDEN'}
         )
-    
-    formatEnum = [('.png', "PNG", ""), ('.bmp', "BMP", ""), ('.dds', "DDS", ""), 
+
+    formatEnum = [('.png', "PNG", ""), ('.bmp', "BMP", ""), ('.dds', "DDS", ""),
                   ('.jpg', "JPG", ""), ('.tga', "TGA", ""), ('.tiff', "TIFF", "")]
-        
+
     texture_format = bpy.props.EnumProperty(
-        items=formatEnum, 
-        name="Texture format", 
+        items=formatEnum,
+        name="Texture format",
         description="Choose your texture file format"
         )
 
@@ -164,20 +164,20 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
 
     filename_ext = ".wmo"
     filter_glob = StringProperty(default="*.wmo", options={'HIDDEN'})
-    
+
     export_selected = BoolProperty(
         name="Export selected objects",
         description="Makes the exporter export only selected objects on the scene",
         default=False,
         )
-    
+
     autofill_textures = BoolProperty(
         name="Fill texture paths",
         description="Automatically fills WoW Material texture paths based on texture filenames",
         default=True,
-        )           
+        )
 
-    
+
     def execute(self, context):
         from . import export_wmo
         export_wmo.write(self.filepath, self.autofill_textures, self.export_selected)
@@ -209,7 +209,7 @@ def unregister():
 
     bpy.types.INFO_MT_file_import.remove(menu_import)
     bpy.types.INFO_MT_file_export.remove(menu_export)
-    
+
     idproperty.unregister()
 
 if __name__ == "__main__":

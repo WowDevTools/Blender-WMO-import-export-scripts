@@ -15,7 +15,7 @@ class BSP_Tree:
         self.Nodes = []
         self.Faces = []
         pass
-    
+
     # split box in two smaller, at dist calculated internally
     def SplitBox(self, box, facesInBox, vertices, indices, axis):
         # compute average of vertice positions
@@ -31,7 +31,7 @@ class BSP_Tree:
         # if split is out of box, just split in half
         if(splitDist <= box[0][axis] or splitDist >= box[1][axis]):"""
         splitDist = (box[0][axis] + box[1][axis]) / 2
-            
+
         newBox1 = (Vector((box[0][0], box[0][1], box[0][2])), Vector((box[1][0], box[1][1], box[1][2])))
         newBox1[1][axis] = splitDist
 
@@ -44,12 +44,12 @@ class BSP_Tree:
 
     # return index of add
     def AddNode(self, box, facesInBox, vertices, indices, maxFaceCount):
-        
+
         node = BSP_Node()
 
         iNode = len(self.Nodes)
         self.Nodes.append(node)
-        
+
         # part contain less than 30 polygons, lets end this, add final node
         if(len(facesInBox) <= maxFaceCount):
             node.PlaneType = BSP_PLANE_TYPE.Leaf
@@ -76,7 +76,7 @@ class BSP_Tree:
         else:
             # split on axis Z (XY plane)
             planeType = BSP_PLANE_TYPE.XY_plane
-            
+
 
         splitResult = self.SplitBox(box, facesInBox, vertices, indices, planeType)
 
@@ -111,7 +111,7 @@ class BSP_Tree:
             iChild1 = -1
         else:
             iChild1 = self.AddNode(child1_box, child1_faces, vertices, indices, maxFaceCount)
-            
+
         if(len(child2_faces) == 0):
             iChild2 = -1
         else:
@@ -123,7 +123,7 @@ class BSP_Tree:
         node.NumFaces = 0
         node.FirstFace = 0
         node.Dist = splitDist
-        
+
         return iNode
 
     def GenerateBSP(self, vertices, indices, maxFaceCount):

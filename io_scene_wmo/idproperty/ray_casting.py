@@ -73,4 +73,3 @@ def main(context, event):
     # we could do lots of stuff but for the example just select.
     if best_obj is not None:
         rayCasting.result = best_obj
-
