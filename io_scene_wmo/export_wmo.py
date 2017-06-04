@@ -19,7 +19,7 @@ def find_nearest_object(object, objects):
     result = None
     for obj in objects:
         hit = obj.closest_point_on_mesh(object.location)
-        hit_dist = (object.location - hit[1]).length 
+        hit_dist = (object.location - hit[1]).length
         if hit_dist < dist:
             dist = hit_dist
             result = obj
@@ -29,13 +29,13 @@ def find_nearest_object(object, objects):
 def write(filepath, autofill_textures, export_selected):
 
     start_time = time.time()
-    
+
     bpy.ops.scene.wow_wmo_validate_scene
     Log(1, True, "Scene successfuly validated")
 
     with open(filepath, "wb") as f:
         root_filename = filepath
-    
+
         base_name = os.path.splitext(filepath)[0]
 
         group_counter = 0
@@ -82,12 +82,12 @@ def write(filepath, autofill_textures, export_selected):
                 doodad_set = (object.name, [])
 
                 for obj in object.children:
-                    if obj.WoWDoodad.Enabled:
+                    if obj.WoWDoodad.Enabled and obj.name in bpy.context.scene.objects:
 
                         group = find_nearest_object(obj, groups)
                         if group:
                             rel = group.WowWMOGroup.Relations.Doodads.add()
-                            rel.id = doodad_counter  
+                            rel.id = doodad_counter
                             doodad_set[1].append(obj)
                             doodad_counter += 1
 
@@ -130,7 +130,7 @@ def write(filepath, autofill_textures, export_selected):
 
         wmo_groups = [None] * len(groups)
 
-        try: 
+        try:
             Log(2, True, "Saving group files")
 
             for group in groups:
@@ -155,14 +155,13 @@ def write(filepath, autofill_textures, export_selected):
         Log(1, True, "Writing group files")
         for group in wmo_groups:
             group.Write()
-        
+
         # save root file
         Log(2, True, "Saving root file")
         wmo_root.Save(autofill_textures, portal_counter)
-    
+
         # write root file
         Log(2, True, "Writing root file")
         wmo_root.Write(f)
 
         Log(1, False, "Total export time: ", time.strftime("%M minutes %S seconds\a", time.gmtime(time.time() - start_time)))
-    
