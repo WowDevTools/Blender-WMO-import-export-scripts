@@ -1188,9 +1188,9 @@ class IMPORT_LAST_WMO_FROM_WMV(bpy.types.Operator):
             lines = open(preferences.wmv_path).readlines()
 
             for line in reversed(lines):
-                result = re.search("[^\d{2}:\d{2}:\d{2}: Loading WMO ].{1,}.wmo\n", line)
-                if result:
-                    return result.string[result.regs[0][0]:result.regs[0][1]]
+                if 'Loading WMO' in line:
+                    return line[22:].rstrip("\n")
+  
 
     def execute(self, context):
 

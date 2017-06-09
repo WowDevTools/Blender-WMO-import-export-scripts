@@ -805,6 +805,8 @@ class WMO_root_file:
 
                     doodad_definition.Position = doodad.location
 
+                    doodad.rotation_mode = 'QUATERNION'
+
                     doodad_definition.Rotation = (doodad.rotation_quaternion[1],
                                                   doodad.rotation_quaternion[2],
                                                   doodad.rotation_quaternion[3],
