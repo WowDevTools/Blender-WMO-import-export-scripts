@@ -1568,6 +1568,7 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
                         location = obj.location
                         rotation = obj.rotation_quaternion
                         scale = obj.scale
+                        parent = obj.parent
 
                         bpy.data.objects.remove(obj, do_unlink = True)
 
@@ -1579,6 +1580,7 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
                         obj.rotation_mode = 'QUATERNION'
                         obj.rotation_quaternion = rotation
                         obj.scale = scale
+                        obj.parent = parent
                         objects_to_select.append(obj)
 
                     elif self.Action == 'RESIZE':
