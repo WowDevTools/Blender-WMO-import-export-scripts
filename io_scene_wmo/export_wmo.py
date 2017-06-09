@@ -149,7 +149,7 @@ def write(filepath, autofill_textures, export_selected):
             for doodad_set in wmo_root.doodad_sets:
                 for doodad in doodad_set[1]:
                     bpy.context.scene.objects.link(doodad)
-                    object.use_fake_user = False
+                    doodad.use_fake_user = False
 
         # write group files
         Log(1, True, "Writing group files")
