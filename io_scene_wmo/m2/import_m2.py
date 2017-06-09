@@ -117,7 +117,7 @@ def wmv_get_last_m2():
 
         for line in reversed(lines):
             if 'Loading model:' in line:
-                return line[23:].rstrip("\n")
+                return line[25:].rstrip("\n")
 
 
 class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
