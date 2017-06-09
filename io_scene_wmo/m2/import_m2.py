@@ -116,9 +116,8 @@ def wmv_get_last_m2():
         lines = open(preferences.wmv_path).readlines()
 
         for line in reversed(lines):
-            result = re.search("[^\d{2}:\d{2}:\d{2}: Loading model: ].{1,}.m2\n", line)
-            if result:
-                return result.string[result.regs[0][0]:result.regs[0][1]].rstrip("\n")
+            if 'Loading model:' in line:
+                return line[23:].rstrip("\n")
 
 
 class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
