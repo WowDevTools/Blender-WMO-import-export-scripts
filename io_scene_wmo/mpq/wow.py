@@ -102,6 +102,8 @@ class WoWFileData():
             and re.match(r'patch-\w.mpq', f.lower()):
                 dir_files.append(cur_path)
 
+        map(lambda x: x.lower(), dir_files)
+
         dir_files.sort(key=lambda s: os.path.splitext(s)[0])
 
         return dir_files
