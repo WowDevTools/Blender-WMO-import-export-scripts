@@ -906,9 +906,9 @@ class WMOGroupFile:
 
         for batch_key, poly_batch in poly_batch_map.items():
 
-            firstIndex = len(self.movi.Indices)
+            first_index = len(self.movi.Indices)
 
-            sentryIndices = [0xFFFF, 0x00]
+            sentry_indices = [0xFFFF, 0x00]
 
             for poly in poly_batch:
                 collision_counter = 0
@@ -921,10 +921,10 @@ class WMOGroupFile:
                         vertex_map[vertex_index] = new_index_last
                         new_index_current = new_index_last
                         new_index_last += 1
-                        self.movt.Vertices[new_index_current] = mesh.vertices[vertex_index].co
+                        self.movt.Vertices[new_index_current] = tuple(mesh.vertices[vertex_index].co)
 
-                    sentryIndices[0] = self.ret_min(sentryIndices[0], new_index_current)
-                    sentryIndices[1] = self.ret_max(sentryIndices[1], new_index_current)
+                    sentry_indices[0] = self.ret_min(sentry_indices[0], new_index_current)
+                    sentry_indices[1] = self.ret_max(sentry_indices[1], new_index_current)
 
                     self.movi.Indices.append(new_index_current)
 
@@ -975,7 +975,7 @@ class WMOGroupFile:
                             else:
                                 self.mocv.vertColors[new_index] = [0x7F, 0x7F, 0x7F, 0xFF]
 
-                    if vg_blendmap != None:
+                    if vg_blendmap is not None:
                         for vertex_group_element in vertex.groups:
                                     if vertex_group_element.group == vg_blendmap.index:
                                         weight = round(vertex.groups[vg_blendmap.index].weight * 255)
@@ -984,13 +984,13 @@ class WMOGroupFile:
                                                                             0,
                                                                             weight if weight > 0 else 0x00)
 
-                    normal_map.setdefault(new_index, []).append(mesh.loops[loop_index].normal)
+                    normal_map.setdefault(new_index, []).append(tuple(mesh.loops[loop_index].normal))
 
                 self.mopy.TriangleMaterials.append(tri_mat)
 
-            nIndices = len(self.movi.Indices) - firstIndex
+            n_indices = len(self.movi.Indices) - first_index
 
-            BoundingBox = [32767, 32767, 32767, -32768, -32768, -32768]
+            bounding_box = [32767, 32767, 32767, -32768, -32768, -32768]
 
             for poly in poly_batch:
                 for vertex_index in mesh.polygons[poly].vertices:
@@ -1000,8 +1000,8 @@ class WMOGroupFile:
                     for i in range(0, 2):
                         for j in range(0, 3):
                             idx = i * 3 + j
-                            BoundingBox[idx] = self.ret_min(BoundingBox[idx], floor(self.movt.Vertices[new_index][j])) \
-                                               if i == 0 else self.ret_max(BoundingBox[idx], ceil(self.movt.Vertices[new_index][j]))
+                            bounding_box[idx] = self.ret_min(bounding_box[idx], floor(self.movt.Vertices[new_index][j])) \
+                                               if i == 0 else self.ret_max(bounding_box[idx], ceil(self.movt.Vertices[new_index][j]))
 
             # skip batch writing if processed polyBatch is collision
             if batch_key[0] == 0xFF:
@@ -1010,13 +1010,13 @@ class WMOGroupFile:
             # write current batch
             batch = Batch()
 
-            batch.BoundingBox = BoundingBox
+            batch.BoundingBox = bounding_box
 
-            batch.StartTriangle = firstIndex
-            batch.nTriangle = nIndices
+            batch.StartTriangle = first_index
+            batch.nTriangle = n_indices
 
-            batch.StartVertex = sentryIndices[0]
-            batch.LastVertex = sentryIndices[1]
+            batch.StartVertex = sentry_indices[0]
+            batch.LastVertex = sentry_indices[1]
 
             batch.MaterialID = batch_key[0]
 
