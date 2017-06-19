@@ -142,7 +142,6 @@ class WoWFileData():
             print("\nPath to World of Warcraft is empty or invalid. Failed to load game data.")
             return None
 
-
 class BLPConverter:
     def __init__(self, toolPath):
         if os.path.exists(toolPath):
@@ -177,6 +176,7 @@ class BLPConverter:
             final_command.extend(cur_args)
             if subprocess.call(final_command):
                 raise Exception("\nBLP convertion failed.")
+
 
 class WOW_FILESYSTEM_LOAD_OP(bpy.types.Operator):
     bl_idname = 'scene.load_wow_filesystem'

@@ -36,37 +36,48 @@ bl_info = {
 ##################################
 
 import importlib
-from . import developer_utils
-importlib.reload(developer_utils)
-modules = developer_utils.setup_addon_modules(__path__, __name__, "bpy" in locals())
 
-
-if "bpy" in locals():
-    import imp
-    #if "wow_custom_ui" in locals():
-    #    imp.reload(wow_custom_ui)
-    if "import_wmo" in locals():
-        imp.reload(import_wmo)
-    if "export_wmo" in locals():
-        imp.reload(export_wmo)
-else:
-    import bpy
-
-from bpy.props import IntProperty, StringProperty, BoolProperty, FloatVectorProperty
+import bpy
+from bpy.props import StringProperty, BoolProperty
 from bpy_extras.io_utils import ExportHelper
 
-from . import wow_custom_ui
-from . import debug_utils
-from .idproperty import idproperty
+from .wmo.ui import enums
+from .wmo.ui import operators
+from .wmo.ui import panels
 from . import addon_updater_ops
-#from . import Utility
+from .idproperty import idproperty
+from .mpq import wow as mpq
+from .wmo import export_wmo
+from .wmo import import_wmo
+from .wmo import wmo_file
+from .wmo import wmo_group
+
+importlib.reload(wmo_file)
+importlib.reload(wmo_group)
+importlib.reload(import_wmo)
+importlib.reload(export_wmo)
+importlib.reload(enums)
+importlib.reload(operators)
+importlib.reload(panels)
+importlib.reload(mpq)
 
 class WMOPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    wow_path = StringProperty(name="WoW Client Path")
-    wmv_path = StringProperty(name="WoW Model Viewer Log Path")
-    blp_path = StringProperty(name="BLP Converter Path")
+    wow_path = StringProperty(
+        name="WoW Client Path",
+        subtype='DIR_PATH'
+    )
+
+    wmv_path = StringProperty(
+        name="WoW Model Viewer Log Path",
+        subtype='FILE_PATH'
+    )
+
+    blp_path = StringProperty(
+        name="BLP Converter Path",
+        subtype='FILE_PATH'
+    )
 
     # addon updater preferences
 
@@ -124,15 +135,6 @@ class WMOImporter(bpy.types.Operator):
         options={'HIDDEN'}
         )
 
-    formatEnum = [('.png', "PNG", ""), ('.bmp', "BMP", ""), ('.dds', "DDS", ""),
-                  ('.jpg', "JPG", ""), ('.tga', "TGA", ""), ('.tiff', "TIFF", "")]
-
-    texture_format = bpy.props.EnumProperty(
-        items=formatEnum,
-        name="Texture format",
-        description="Choose your texture file format"
-        )
-
     load_textures = BoolProperty(
         name="Fetch textures",
         description="Automatically fetch textures from game data",
@@ -146,8 +148,7 @@ class WMOImporter(bpy.types.Operator):
         )
 
     def execute(self, context):
-        from . import import_wmo
-        import_wmo.read(self.filepath, self.texture_format, self.load_textures, self.import_doodads)
+        import_wmo.import_wmo_to_blender_scene(self.filepath, self.load_textures, self.import_doodads)
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -163,7 +164,11 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
     bl_options = {'PRESET'}
 
     filename_ext = ".wmo"
-    filter_glob = StringProperty(default="*.wmo", options={'HIDDEN'})
+
+    filter_glob = StringProperty(
+        default="*.wmo",
+        options={'HIDDEN'}
+    )
 
     export_selected = BoolProperty(
         name="Export selected objects",
@@ -179,8 +184,7 @@ class WMOExporter(bpy.types.Operator, ExportHelper):
 
 
     def execute(self, context):
-        from . import export_wmo
-        export_wmo.write(self.filepath, self.autofill_textures, self.export_selected)
+        export_wmo.export_wmo_from_blender_scene(self.filepath, self.autofill_textures, self.export_selected)
 
         return {'FINISHED'}
 
@@ -197,19 +201,16 @@ def register():
     addon_updater_ops.register(bl_info)
     idproperty.register()
     bpy.utils.register_module(__name__)
-    wow_custom_ui.register()
-
+    panels.register()
     bpy.types.INFO_MT_file_import.append(menu_import)
     bpy.types.INFO_MT_file_export.append(menu_export)
 
 
 def unregister():
     bpy.utils.unregister_module(__name__)
-    wow_custom_ui.unregister()
-
+    panels.unregister()
     bpy.types.INFO_MT_file_import.remove(menu_import)
     bpy.types.INFO_MT_file_export.remove(menu_export)
-
     idproperty.unregister()
 
 if __name__ == "__main__":

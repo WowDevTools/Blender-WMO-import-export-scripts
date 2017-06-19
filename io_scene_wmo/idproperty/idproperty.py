@@ -47,9 +47,6 @@ HASH_TO_NAME = {}
 
 SUPPORTED_COLLECTIONS = (
     ("objects", "Object"),
-    ("materials", "Material"),
-    ("groups", "Group"),
-    ("libraries", "Library"),
 )
 
 
@@ -63,7 +60,7 @@ class IDPropertyOpMixin(object):
     def ob(self):
         data = eval(self.to_populate_data)
         ob_name = getattr(data, self.to_populate_field)
-        return bpy.data.objects.get(ob_name)
+        return bpy.context.scene.objects.get(ob_name)
 
     @ob.setter
     def ob(self, new_ob):
@@ -178,7 +175,7 @@ def layout_id_prop(layout, data, prop):
     field_name = json.loads(prop_obj.description)["field_name"]
 
     row = layout.row(align=True)
-    row.prop_search(data, prop, bpy.data, field_name)
+    row.prop_search(data, prop, bpy.context.scene, field_name)
 
     if field_name == "objects":
         op_props = row.operator("view3d.object_picker_operator", emboss=True, text="", icon="EYEDROPPER")
@@ -252,7 +249,7 @@ def _create_value_key(name):
 def create_getter(data_field, value_key):
 
     def fn(self):
-        data = getattr(bpy.data, data_field)
+        data = getattr(bpy.context.scene, data_field)
 
         ob_id = self.get(value_key, None)
 
@@ -280,7 +277,7 @@ def create_getter(data_field, value_key):
 def create_setter(data_field, value_key, validator=None):
 
     def fn(self, value):
-        data = getattr(bpy.data, data_field)
+        data = getattr(bpy.context.scene, data_field)
 
         if value == "":
             self[value_key] = 0
@@ -345,7 +342,7 @@ def load_file(_=None):
         ID_TO_HASH[col_name] = id_to_hash
         HASH_TO_NAME[col_name] = hash_to_name
 
-        col = getattr(bpy.data, col_name)
+        col = getattr(bpy.context.scene, col_name)
         all_obs = sorted(list(col), key=lambda ob: ob.name, reverse=True)
 
         for ob in all_obs:
@@ -365,9 +362,6 @@ def load_file_shim(_=None):
 
 
 def register():
-    bpy.utils.register_class(FindSelected)
-    bpy.utils.register_class(ObjectPickerOperator)
-    bpy.utils.register_class(ViewOperatorRayCast)
 
     for col_name, type_name in SUPPORTED_COLLECTIONS:
         type = getattr(bpy.types, type_name)
@@ -382,9 +376,6 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(FindSelected)
-    bpy.utils.unregister_class(ObjectPickerOperator)
-    bpy.utils.unregister_class(ViewOperatorRayCast)
 
     for col_name, type_name in SUPPORTED_COLLECTIONS:
         type = getattr(bpy.types, type_name)

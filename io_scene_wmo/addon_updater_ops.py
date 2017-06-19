@@ -43,7 +43,6 @@ except Exception as e:
 # Must be all lowercase and no spaces
 updater.addon = "io_scene_wmo"
 
-
 # -----------------------------------------------------------------------------
 # Updater operators
 # -----------------------------------------------------------------------------

@@ -3,6 +3,7 @@ import sys
 import pkgutil
 import importlib
 
+
 def setup_addon_modules(path, package_name, reload):
     """
     Imports and reloads all modules in this addon.
