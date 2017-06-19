@@ -80,3 +80,8 @@ io_scene_adt/import_adt.py
 io_scene_adt/.vscode/launch.json
 io_scene_wmo/mpq/wow.py~RF3d9002.TMP
 io_scene_wmo/io_scene_wmo_updater/updater_status.json
+io_scene_wmo/io_wow_studio_updater/updater_status.json
+io_scene_wmo/.idea/workspace.xml
+io_scene_wmo/.idea/modules.xml
+io_scene_wmo/.idea/misc.xml
+io_scene_wmo/.idea/io_scene_wmo.iml
