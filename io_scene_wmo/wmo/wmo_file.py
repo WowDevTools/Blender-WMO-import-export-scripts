@@ -202,20 +202,20 @@ class WMOFile:
 
                 return self.materialLookup[mat]
 
-    def add_group_info(self, flags, boundingBox, name, desc):
+    def add_group_info(self, flags, bounding_box, name, desc):
         """ Add group info, then return offset of name and desc in a tuple """
         group_info = GroupInfo()
 
         group_info.Flags = flags  # 8
-        group_info.BoundingBoxCorner1 = boundingBox[0].copy()
-        group_info.BoundingBoxCorner2 = boundingBox[1].copy()
+        group_info.BoundingBoxCorner1 = bounding_box[0].copy()
+        group_info.BoundingBoxCorner2 = bounding_box[1].copy()
         group_info.NameOfs = self.mogn.AddString(name)  # 0xFFFFFFFF
 
-        descOfs = self.mogn.AddString(desc)
+        desc_ofs = self.mogn.AddString(desc)
 
         self.mogi.Infos.append(group_info)
 
-        return (group_info.NameOfs, descOfs)
+        return group_info.NameOfs, desc_ofs
 
     def load_materials(self, name, texture_path):
         """ Load materials from WoW WMO root file """
@@ -473,10 +473,10 @@ class WMOFile:
                         nobj = obj.copy()
                         scene.objects.link(nobj)
 
-                    nobj.WoWDoodad.Color = (doodad.Color[0] / 255,
-                                            doodad.Color[1] / 255,
+                    nobj.WoWDoodad.Color = (doodad.Color[3] / 255,
                                             doodad.Color[2] / 255,
-                                            doodad.Color[3] / 255)
+                                            doodad.Color[1] / 255,
+                                            doodad.Color[0] / 255)
 
                     flags = []
                     bit = 1
@@ -653,7 +653,6 @@ class WMOFile:
             has_global = False
 
             for set_name, doodads in self.bl_scene_objects.doodad_sets:
-                set_name = set_name[:-4]
                 print("\nSaving doodadset: <<{}>>".format(set_name))
 
                 doodad_set = DoodadSet()
@@ -681,15 +680,13 @@ class WMOFile:
 
                     doodad_def.Scale = doodad.scale[0]
 
-                    doodad_def.Color = (int(doodad.WoWDoodad.Color[0] * 255),
-                                        int(doodad.WoWDoodad.Color[1] * 255),
+                    doodad_def.Color = (int(doodad.WoWDoodad.Color[3] * 255),
                                         int(doodad.WoWDoodad.Color[2] * 255),
-                                        int(doodad.WoWDoodad.Color[3] * 255))
+                                        int(doodad.WoWDoodad.Color[1] * 255),
+                                        int(doodad.WoWDoodad.Color[0] * 255))
 
                     for flag in doodad.WoWDoodad.Flags:
                         doodad_def.Flags |= int(flag)
-
-                    bpy.data.objects.remove(doodad, do_unlink=True)
 
                     self.modd.Definitions.append(doodad_def)
 
@@ -781,7 +778,6 @@ class WMOFile:
             light.AttenuationEnd = mesh.WowLight.AttenuationEnd
             self.molt.Lights.append(light)
 
-            # bpy.data.objects.remove(obj, do_unlink=True)
 
         print("\nDone saving lights. "
               "\nTotal saving time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
@@ -790,10 +786,10 @@ class WMOFile:
         start_time = time.time()
 
         for liquid_obj in self.bl_scene_objects.liquids:
-            print("\nSaving liquid: <<{}>>".format(liquid_obj.name[:-4]))
+            print("\nSaving liquid: <<{}>>".format(liquid_obj.name))
 
             if not liquid_obj.WowLiquid.WMOGroup:
-                print("WARNING: Failed saving liquid: <<{}>>".format(liquid_obj.name[:-4]))
+                print("WARNING: Failed saving liquid: <<{}>>".format(liquid_obj.name))
                 continue
             group_obj = bpy.context.scene.objects[liquid_obj.WowLiquid.WMOGroup]
 
@@ -802,8 +798,7 @@ class WMOFile:
 
             group.save_liquid(liquid_obj)
 
-            print("Done saving liquid: <<{}>>".format(liquid_obj.name[:-4]))
-            bpy.data.objects.remove(liquid_obj, do_unlink=True)
+            print("Done saving liquid: <<{}>>".format(liquid_obj.name))
 
         print("\nDone saving liquids. "
               "\nTotal saving time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
@@ -828,7 +823,7 @@ class WMOFile:
                 portal_index = portal_obj.WowPortalPlane.PortalID
 
                 if portal_index not in saved_portals_ids:
-                    print("\nSaving portal: <<{}>>".format(portal_obj.name[:-4]))
+                    print("\nSaving portal: <<{}>>".format(portal_obj.name))
 
                     portal_mesh = portal_obj.data
                     portal_info = PortalInfo()
@@ -858,7 +853,7 @@ class WMOFile:
                     self.mopt.Infos[portal_index] = portal_info
                     saved_portals_ids.append(portal_index)
 
-                    print("Done saving portal: <<{}>>".format(portal_obj.name[:-4]))
+                    print("Done saving portal: <<{}>>".format(portal_obj.name))
 
                 first = bpy.context.scene.objects[self.bl_scene_objects.portals[portal_index].WowPortalPlane.First]
                 second = bpy.context.scene.objects[self.bl_scene_objects.portals[portal_index].WowPortalPlane.Second]
@@ -873,9 +868,6 @@ class WMOFile:
 
             group.mogp.PortalCount = len(self.mopr.Relationships) - group.mogp.PortalStart
 
-        for portal_obj in self.bl_scene_objects.portals:
-            bpy.data.objects.remove(portal_obj, do_unlink=True)
-
         print("\nDone saving portals. "
               "\nTotal saving time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
 
@@ -884,7 +876,7 @@ class WMOFile:
         print("\nSaving fogs")
 
         for fog_obj in self.bl_scene_objects.fogs:
-            print("\nSaving fog: <<{}>>".format(fog_obj.name[:-4]))
+            print("\nSaving fog: <<{}>>".format(fog_obj.name))
             fog = Fog()
 
             fog.BigRadius = fog_obj.dimensions[2] / 2
@@ -913,8 +905,7 @@ class WMOFile:
 
             self.mfog.Fogs.append(fog)
 
-            print("Done saving fog: <<{}>>".format(fog_obj.name[:-4]))
-            # bpy.data.objects.remove(fog_obj, do_unlink=True)
+            print("Done saving fog: <<{}>>".format(fog_obj.name))
 
         print("\nDone saving fogs. "
               "\nTotal saving time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
@@ -998,6 +989,8 @@ class BlenderSceneObjects:
 
             return result
 
+        start_time = time.time()
+
         empties = []
 
         for obj in bpy.context.scene.objects:
@@ -1030,7 +1023,7 @@ class BlenderSceneObjects:
                             try:
                                 group_obj = bpy.context.scene.objects[group_name]
                             except KeyError:
-                                print("\nWARNING: portal <<{}>> points to a non-existing object.".format(group_name[:-4]))
+                                print("\nWARNING: portal <<{}>> points to a non-existing object.".format(group_name))
                                 continue
                             rel = group_obj.WowWMOGroup.Relations.Portals.add()
                             rel.id = obj.name
@@ -1045,7 +1038,7 @@ class BlenderSceneObjects:
                     try:
                         group = bpy.context.scene.objects[obj.WowLiquid.WMOGroup]
                     except KeyError:
-                        print("\nWARNING: liquid <<{}>> points to a non-existing object.".format(obj.WowLiquid.WMOGroup[:-4]))
+                        print("\nWARNING: liquid <<{}>> points to a non-existing object.".format(obj.WowLiquid.WMOGroup))
                         group.WowWMOGroup.Relations.Liquid = ""
                         continue
                     group.WowWMOGroup.Relations.Liquid = obj.name
@@ -1055,6 +1048,12 @@ class BlenderSceneObjects:
 
             elif obj.type == 'EMPTY':
                 empties.append(obj)
+
+        print("\nDone building references. "
+              "\nTotal building time: ",
+              time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
+
+        start_time = time.time()
 
         # sorting doodads into sets
         doodad_counter = 0
@@ -1082,3 +1081,7 @@ class BlenderSceneObjects:
             if group:
                 rel = group.WowWMOGroup.Relations.Lights.add()
                 rel.id = index
+
+        print("\nDone assigning doodads and lights to groups. "
+              "\nTotal time: ",
+              time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))

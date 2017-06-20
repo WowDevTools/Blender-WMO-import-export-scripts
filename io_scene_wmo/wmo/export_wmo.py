@@ -5,42 +5,6 @@ import bpy
 import time
 
 
-def fix_scene_references():
-    """Horrible hack. To be removed with Blender 2.79"""
-
-    def find_valid_object_name(name):
-        obj = None
-        for i in range(100):
-            try:
-                obj = bpy.context.scene.objects[name + "." + str(i).zfill(3)]
-            except:
-                continue
-            break
-
-        if obj is None:
-            return ""
-        else:
-            return obj.name
-
-    for obj in bpy.context.scene.objects:
-        if obj.WowPortalPlane.Enabled:
-            obj.WowPortalPlane.First = find_valid_object_name(obj.WowPortalPlane.First)
-            obj.WowPortalPlane.Second = find_valid_object_name(obj.WowPortalPlane.Second)
-        if obj.WowWMOGroup.Enabled:
-            obj.WowWMOGroup.Fog1 = find_valid_object_name(obj.WowWMOGroup.Fog1)
-            obj.WowWMOGroup.Fog2 = find_valid_object_name(obj.WowWMOGroup.Fog2)
-            obj.WowWMOGroup.Fog3 = find_valid_object_name(obj.WowWMOGroup.Fog3)
-            obj.WowWMOGroup.Fog4 = find_valid_object_name(obj.WowWMOGroup.Fog4)
-
-            obj.WowWMOGroup.Relations.Portals.clear()
-            obj.WowWMOGroup.Relations.Doodads.clear()
-            obj.WowWMOGroup.Relations.Lights.clear()
-            obj.WowWMOGroup.Relations.Liquid = ""
-
-        if obj.WowLiquid.Enabled:
-            obj.WowLiquid.WMOGroup = find_valid_object_name(obj.WowLiquid.WMOGroup)
-
-
 def export_wmo_from_blender_scene(filepath, autofill_textures, export_selected):
     """ Export WoW WMO object from Blender scene to files """
 
@@ -51,42 +15,59 @@ def export_wmo_from_blender_scene(filepath, autofill_textures, export_selected):
 
     wmo = WMOFile(filepath)
 
-    print("\n\n### Building object references ###")
-
-    bpy.ops.scene.new(type='FULL_COPY')
-    fix_scene_references()  # I am sorry.
-
     wmo.bl_scene_objects.build_references(export_selected)
 
     wmo.groups = list([WMOGroupFile(wmo) for _ in wmo.bl_scene_objects.groups])
 
+    wmo.save_doodad_sets()
+    wmo.save_lights()
+    wmo.save_liquids()
+    wmo.save_fogs()
+
+    # temporary unlink doodad sets to increase performance
+    for set in wmo.bl_scene_objects.doodad_sets:
+        for doodad in set[1]:
+            doodad.use_fake_user = True
+            bpy.context.scene.objects.unlink(doodad)
+
+    def restore_doodads():
+        for set in wmo.bl_scene_objects.doodad_sets:
+            for doodad in set[1]:
+                bpy.context.scene.objects.link(doodad)
+                doodad.use_fake_user = False
+
     try:
-        wmo.save_doodad_sets()
-        wmo.save_lights()
-        wmo.save_liquids()
-        wmo.save_fogs()
         wmo.save_portals()
 
         print("\n\n### Saving WMO groups ###")
+        g_start_time = time.time()
 
         for index, group in enumerate(wmo.groups):
-            group.save(wmo.bl_scene_objects.groups[index], autofill_textures)
+            obj = wmo.bl_scene_objects.groups[index]
+            proxy_obj = obj.copy()
+            proxy_obj.data = obj.data.copy()
+            bpy.context.scene.objects.link(proxy_obj)
+            try:
+                group.save(proxy_obj, autofill_textures)
+            except Exception as exception:
+                bpy.data.objects.remove(proxy_obj, do_unlink=True)
+                raise exception
+            else:
+                bpy.data.objects.remove(proxy_obj, do_unlink=True)
+
+        print("\nDone saving groups. "
+              "\nTotal saving time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - g_start_time)))
+
 
         wmo.save_root_header()
 
-        wmo.write()
-
     except Exception as exception:
-        for obj in bpy.context.scene.objects:
-            bpy.data.objects.remove(obj, do_unlink=True)
-        bpy.ops.scene.delete()
-
+        restore_doodads()
         raise exception
-
     else:
-        for obj in bpy.context.scene.objects:
-            bpy.data.objects.remove(obj, do_unlink=True)
-        bpy.ops.scene.delete()
+        restore_doodads()
+
+    wmo.write()
 
     print("\nExport finished successfully. "
           "\nTotal export time: ", time.strftime("%M minutes %S seconds\a", time.gmtime(time.time() - start_time)))

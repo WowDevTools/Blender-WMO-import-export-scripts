@@ -464,7 +464,7 @@ class WMOGroupFile:
 
             # set texture displayed in viewport
             img = material_viewport_textures[material_indices[matID]]
-            if img != None:
+            if img is not None:
                 uv1.data[i].image = img
 
         # set textured solid in all 3D views and switch to textured mode
@@ -556,6 +556,67 @@ class WMOGroupFile:
     def get_portal_direction(self, portal_obj, group_obj):
         """ Get the direction of MOPR portal relation given a portal object and a target group """
 
+        def try_calculate_direction():
+
+            # reveal hidden geometry
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.mesh.reveal()
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+            bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+
+            mesh = group_obj.data
+            portal_mesh = portal_obj.data
+            normal = portal_obj.data.polygons[0].normal
+
+            for poly in mesh.polygons:
+                poly_normal = mathutils.Vector(poly.normal)
+                g_center = poly.center * group_obj.matrix_world + poly_normal * sys.float_info.epsilon
+
+                dist = normal[0] * g_center[0] + normal[1] * g_center[1] \
+                       + normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0] \
+                                                   * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0] \
+                       - portal_mesh.polygons[0].normal[1] \
+                         * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1] \
+                       - portal_mesh.polygons[0].normal[2] \
+                         * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
+
+                if dist == 0:
+                    continue
+
+                for portal_poly in portal_mesh.polygons:
+
+                    direction = portal_poly.center * portal_obj.matrix_world - g_center
+                    length = mathutils.Vector(direction).length
+                    direction.normalize()
+
+                    angle = mathutils.Vector(direction).angle(poly.normal, None)
+
+                    if angle is None or angle >= pi * 0.5:
+                        continue
+
+                    ray_cast_result = bpy.context.scene.ray_cast(g_center, direction)
+
+                    if not ray_cast_result[0] \
+                            or ray_cast_result[4].name == portal_obj.name \
+                            or mathutils.Vector(
+                                (ray_cast_result[1][0] - g_center[0], ray_cast_result[1][1] - g_center[1],
+                                 ray_cast_result[1][2] - g_center[2])).length > length:
+                        result = 1 if dist > 0 else -1
+                        if bound_relation_side is not None:
+                            bound_relation.Side = -result
+
+                        bpy.context.scene.objects.active = active_obj
+                        return result
+
+            return None
+
+        # store the previous active object
+        active_obj = bpy.context.scene.objects.active
+        bpy.context.scene.objects.active = portal_obj
+
         # check if this portal was already processed
         bound_relation_side = None
         bound_relation = None
@@ -567,76 +628,32 @@ class WMOGroupFile:
         if not bound_relation_side:
 
             if portal_obj.WowPortalPlane.Algorithm == "0":
+                result = try_calculate_direction()
 
-                # store the previous active object
-                active_obj = bpy.context.scene.objects.active
-                bpy.context.scene.objects.active = portal_obj
+                if result is None:
+                    # triangulate the proxy portal
+                    bpy.ops.object.mode_set(mode='EDIT')
+                    bpy.ops.mesh.select_all(action='SELECT')
+                    bpy.ops.mesh.quads_convert_to_tris()
+                    bpy.ops.mesh.select_all(action='DESELECT')
+                    bpy.ops.object.mode_set(mode='OBJECT')
 
-                # reveal hidden geometry
-                bpy.ops.object.mode_set(mode='EDIT')
-                bpy.ops.mesh.select_all(action='SELECT')
-                bpy.ops.mesh.reveal()
-                bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.object.mode_set(mode='OBJECT')
+                    result = try_calculate_direction()
 
-                # triangulate the proxy portal
-                bpy.ops.object.mode_set(mode='EDIT')
-                bpy.ops.mesh.select_all(action='SELECT')
-                bpy.ops.mesh.quads_convert_to_tris()
-                bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.object.mode_set(mode='OBJECT')
+                    if result is not None:
+                        return result
 
-                portal_obj.select = True
-                bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-                portal_obj.select = False
-
-                mesh = group_obj.data
-                portal_mesh = portal_obj.data
-                normal = portal_obj.data.polygons[0].normal
-
-                for poly in mesh.polygons:
-
-                    poly_normal = mathutils.Vector(poly.normal)
-                    g_center = poly.center * group_obj.matrix_world + poly_normal * sys.float_info.epsilon
-
-                    dist = normal[0] * g_center[0] + normal[1] * g_center[1] \
-                    + normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0] \
-                    * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0] \
-                    - portal_mesh.polygons[0].normal[1] \
-                    * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1] \
-                    - portal_mesh.polygons[0].normal[2] \
-                    * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
-
-                    if dist == 0:
-                        continue
-
-                    for portal_poly in portal_mesh.polygons:
-
-                        direction = portal_poly.center * portal_obj.matrix_world - g_center
-                        length = mathutils.Vector(direction).length
-                        direction.normalize()
-
-                        angle = mathutils.Vector(direction).angle(poly.normal, None)
-
-                        if angle is None or angle >= pi * 0.5:
-                            continue
-
-                        ray_cast_result = bpy.context.scene.ray_cast(g_center, direction)
-
-                        if not ray_cast_result[0] \
-                        or ray_cast_result[4].name == portal_obj.name \
-                        or mathutils.Vector((ray_cast_result[1][0] - g_center[0], ray_cast_result[1][1] - g_center[1],
-                                             ray_cast_result[1][2] - g_center[2])).length > length:
-                            result = 1 if dist > 0 else -1
-                            if bound_relation_side is not None:
-                                bound_relation.Side = -result
-
-                            bpy.context.scene.objects.active = active_obj
-                            return result
+                else:
+                    return result
 
                 bpy.context.scene.objects.active = active_obj
 
-                print("\nFailed to calculate portal direction. Calculation from another side will be attempted.")
+                if bound_relation_side is None:
+                    print("\nFailed to calculate direction for portal <<{}>>. "
+                          "Calculation from another side will be attempted.".format(portal_obj.name))
+                else:
+                    print("\nFailed to calculate direction from the opposite side for portal <<{}>> "
+                          "You may consider setting up the direction manually.".format(portal_obj.name))
                 return 0
 
             else:
@@ -740,9 +757,10 @@ class WMOGroupFile:
 
     def save(self, obj, autofill_textures):
         """ Save WoW WMO group data for future export """
-        print("\nSaving group: <<" + obj.name + ">>")
+        print("\nSaving group: <<{}>>".format(obj.name[:-4]))
 
         bpy.context.scene.objects.active = obj
+        mesh = obj.data
 
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
@@ -750,12 +768,13 @@ class WMOGroupFile:
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.object.mode_set(mode='OBJECT')
 
-        mesh = obj.data
-
-         # apply all modifiers. Needs to optional.
         if len(obj.modifiers):
             for modifier in obj.modifiers:
                 bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+        bpy.ops.object.modifier_add(type='TRIANGULATE')
+        bpy.context.object.modifiers["Triangulate"].quad_method = 'BEAUTY'
+        bpy.ops.object.modifier_remove(modifier="Triangulate")
 
         # triangulate mesh
         bpy.ops.object.mode_set(mode='EDIT')
@@ -1084,13 +1103,13 @@ class WMOGroupFile:
         self.mogp.Unknown1 = 0
         self.mogp.Unknown2 = 0
 
-        groupInfo = self.root.add_group_info(self.mogp.Flags,
-                                             [self.mogp.BoundingBoxCorner1,self.mogp.BoundingBoxCorner2],
+        group_info = self.root.add_group_info(self.mogp.Flags,
+                                             [self.mogp.BoundingBoxCorner1, self.mogp.BoundingBoxCorner2],
                                              obj.WowWMOGroup.GroupName,
                                              obj.WowWMOGroup.GroupDesc)
 
-        self.mogp.GroupNameOfs = groupInfo[0]
-        self.mogp.DescGroupNameOfs = groupInfo[1]
+        self.mogp.GroupNameOfs = group_info[0]
+        self.mogp.DescGroupNameOfs = group_info[1]
 
         if len(obj.WowWMOGroup.MODR):
             for doodad in obj.WowWMOGroup.MODR:
@@ -1137,7 +1156,7 @@ class WMOGroupFile:
         if vg_blendmap == None:
             self.mocv2 = None
 
-        print("\nDone saving group: <<{}>>".format(obj.name))
+        print("\nDone saving group: <<{}>>".format(obj.name[:-4]))
 
 
 
