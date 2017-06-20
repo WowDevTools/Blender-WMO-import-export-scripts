@@ -48,7 +48,7 @@ def export_wmo_from_blender_scene(filepath, autofill_textures, export_selected):
             proxy_obj.data = obj.data.copy()
             bpy.context.scene.objects.link(proxy_obj)
             try:
-                group.save(proxy_obj, autofill_textures)
+                group.save(obj, proxy_obj, autofill_textures)
             except Exception as exception:
                 bpy.data.objects.remove(proxy_obj, do_unlink=True)
                 raise exception

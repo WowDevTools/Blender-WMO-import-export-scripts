@@ -565,6 +565,10 @@ class WMOGroupFile:
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT')
 
+            portal_obj.select = True
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+            portal_obj.select = False
+
             bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
 
             mesh = group_obj.data
@@ -576,12 +580,12 @@ class WMOGroupFile:
                 g_center = poly.center * group_obj.matrix_world + poly_normal * sys.float_info.epsilon
 
                 dist = normal[0] * g_center[0] + normal[1] * g_center[1] \
-                       + normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0] \
-                                                   * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0] \
-                       - portal_mesh.polygons[0].normal[1] \
-                         * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1] \
-                       - portal_mesh.polygons[0].normal[2] \
-                         * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
+                     + normal[2] * g_center[2] - portal_mesh.polygons[0].normal[0] \
+                     * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[0] \
+                     - portal_mesh.polygons[0].normal[1] \
+                     * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[1] \
+                     - portal_mesh.polygons[0].normal[2] \
+                     * portal_mesh.vertices[portal_mesh.polygons[0].vertices[0]].co[2]
 
                 if dist == 0:
                     continue
@@ -755,7 +759,7 @@ class WMOGroupFile:
 
                 self.mliq.TileFlags.append(tile_flag)
 
-    def save(self, obj, autofill_textures):
+    def save(self, original_obj, obj, autofill_textures):
         """ Save WoW WMO group data for future export """
         print("\nSaving group: <<{}>>".format(obj.name[:-4]))
 
@@ -820,7 +824,6 @@ class WMOGroupFile:
         else:
             mesh.customdata_custom_splitnormals_add()
             normal_dict = {}
-            original_obj = bpy.data.objects[obj.name[:-4]]
 
             for vertex in original_obj.data.vertices:
                 normal_dict[tuple(vertex.co * original_obj.matrix_world)] = vertex.normal
