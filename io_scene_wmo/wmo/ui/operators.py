@@ -3,6 +3,7 @@ from ...m2 import import_m2 as m2
 
 import bpy
 import os
+import mathutils
 import sys
 
 
@@ -155,6 +156,85 @@ def LoadDoodadsFromPreserved(dir, game_data):
             nobj.lock_location = (True, True, True)
             nobj.lock_rotation = (True, True, True)
             nobj.lock_scale = (True, True, True)
+
+
+class DOODADS_BAKE_COLOR(bpy.types.Operator):
+    bl_idname = "scene.wow_doodads_bake_color"
+    bl_label = "Bake doodads color"
+    bl_description = "Bake doodads colors from nearby vertex color values"
+    bl_options = {'UNDO', 'REGISTER'}
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def find_nearest_object(object, objects):
+        """Get closest object to another object"""
+
+        dist = 32767
+        result = None
+        for obj in objects:
+            obj_location_relative = obj.matrix_world.inverted() * object.location
+            hit = obj.closest_point_on_mesh(obj_location_relative)
+            hit_dist = (obj_location_relative - hit[1]).length
+            if hit_dist < dist:
+                dist = hit_dist
+                result = obj
+
+        return result
+
+    def get_object_radius(obj):
+        corner_min = [32767, 32767, 32767]
+        corner_max = [0, 0, 0]
+
+        mesh = obj.data
+
+        for vertex in mesh.vertices:
+            for i in range(3):
+                corner_min[i] = min(corner_min[i], vertex.co[i])
+                corner_max[i] = max(corner_max[i], vertex.co[i])
+        result = (mathutils.Vector(corner_min) - mathutils.Vector(corner_max))
+        return (abs(result.x) + abs(result.y) + abs(result.z)) / 3
+
+    def gen_doodad_color(obj, group):
+        mesh = group.data
+
+        if not mesh.vertex_colors:
+            return (0.5, 0.5, 0.5, 1.0)
+
+        radius = DOODADS_BAKE_COLOR.get_object_radius(obj)
+        colors = []
+
+        for vertex in mesh.vertices:
+            dist = max((group.matrix_world * vertex.co - obj.location).length, 0.001)
+
+            if dist <= radius:
+                colors.extend([mesh.vertex_colors[mesh.vertex_colors.active_index].data[x.index].color * (dist / radius)
+                               for x in mesh.loops if x.vertex_index == vertex.index])
+
+        if not colors:
+            return (0.5, 0.5, 0.5, 1.0)
+
+        final_color = mathutils.Vector((0x00, 0x00, 0x00))
+        for color in colors:
+            final_color += mathutils.Vector(color)
+
+        return tuple(final_color / len(colors)) + (1.0,)
+
+    def execute(self, context):
+
+        objects = bpy.context.selected_objects if bpy.context.selected_objects else bpy.context.scene.objects
+        groups = [obj for obj in bpy.context.scene.objects if obj.WowWMOGroup.Enabled]
+
+        for obj in objects:
+            if obj.WoWDoodad.Enabled:
+                obj.WoWDoodad.Color = DOODADS_BAKE_COLOR.gen_doodad_color(obj,
+                                                                          DOODADS_BAKE_COLOR.find_nearest_object(obj, groups))
+
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_confirm(self, event)
 
 
 class DOODAD_SET_CLEAR_PRESERVED(bpy.types.Operator):

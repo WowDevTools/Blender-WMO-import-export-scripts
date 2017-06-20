@@ -996,9 +996,7 @@ class BlenderSceneObjects:
 
         for obj in bpy.context.scene.objects:
             if not obj.WoWDoodad.Enabled and not obj.type == 'EMPTY':
-                if obj.hide:
-                    continue
-                elif export_selected and not obj.select:
+                if obj.hide or export_selected and not obj.select:
                     continue
                 else:
                     bpy.context.scene.objects.active = obj
