@@ -558,19 +558,6 @@ class WMOGroupFile:
 
         def try_calculate_direction():
 
-            # reveal hidden geometry
-            bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.mesh.reveal()
-            bpy.ops.mesh.select_all(action='DESELECT')
-            bpy.ops.object.mode_set(mode='OBJECT')
-
-            portal_obj.select = True
-            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-            portal_obj.select = False
-
-            bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
-
             mesh = group_obj.data
             portal_mesh = portal_obj.data
             normal = portal_obj.data.polygons[0].normal
@@ -604,22 +591,19 @@ class WMOGroupFile:
                     ray_cast_result = bpy.context.scene.ray_cast(g_center, direction)
 
                     if not ray_cast_result[0] \
-                            or ray_cast_result[4].name == portal_obj.name \
-                            or mathutils.Vector(
-                                (ray_cast_result[1][0] - g_center[0], ray_cast_result[1][1] - g_center[1],
-                                 ray_cast_result[1][2] - g_center[2])).length > length:
+                    or ray_cast_result[4].name == portal_obj.name \
+                    or mathutils.Vector(
+                        (ray_cast_result[1][0] - g_center[0], ray_cast_result[1][1] - g_center[1],
+                         ray_cast_result[1][2] - g_center[2])).length > length:
                         result = 1 if dist > 0 else -1
-                        
-                        if bound_relation_side is not None:
+
+                        if bound_relation_side == 0:
                             bound_relation.Side = -result
 
-                        bpy.context.scene.objects.active = active_obj
                         return result
 
-            return None
+            return 0
 
-        # store the previous active object
-        active_obj = bpy.context.scene.objects.active
         bpy.context.scene.objects.active = portal_obj
 
         # check if this portal was already processed
@@ -630,43 +614,50 @@ class WMOGroupFile:
                 bound_relation_side = relation.Side
                 bound_relation = relation
 
-        if not bound_relation_side:
-
-            if portal_obj.WowPortalPlane.Algorithm == "0":
-                result = try_calculate_direction()
-
-                if result is None:
-                    # triangulate the proxy portal
-                    bpy.ops.object.mode_set(mode='EDIT')
-                    bpy.ops.mesh.select_all(action='SELECT')
-                    bpy.ops.mesh.quads_convert_to_tris()
-                    bpy.ops.mesh.select_all(action='DESELECT')
-                    bpy.ops.object.mode_set(mode='OBJECT')
-
-                    result = try_calculate_direction()
-
-                    if result is not None:
-                        return result
-
-                else:
-                    return result
-
-                bpy.context.scene.objects.active = active_obj
-
-                if bound_relation_side is None:
-                    print("\nFailed to calculate direction for portal <<{}>>. "
-                          "Calculation from another side will be attempted.".format(portal_obj.name))
-                else:
-                    print("\nFailed to calculate direction from the opposite side for portal <<{}>> "
-                          "You may consider setting up the direction manually.".format(portal_obj.name))
-                return 0
-
-            else:
-                result = 1 if portal_obj.WowPortalPlane.Algorithm == "1" else -1
-                return result
-
-        else:
+        if bound_relation_side:
             return -bound_relation_side
+
+        if portal_obj.WowPortalPlane.Algorithm != '0':
+            return 1 if portal_obj.WowPortalPlane.Algorithm == '1' else -1
+
+        # reveal hidden geometry
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.reveal()
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        portal_obj.select = True
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        portal_obj.select = False
+
+        bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+
+        result = try_calculate_direction()
+
+        if result:
+            return result
+
+        # triangulate the proxy portal
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.quads_convert_to_tris()
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        result = try_calculate_direction()
+
+        if result:
+            return result
+
+        if bound_relation_side is None:
+            print("\nFailed to calculate direction for portal <<{}>>. "
+                  "Calculation from another side will be attempted.".format(portal_obj.name))
+        else:
+            print("\nFailed to calculate direction from the opposite side for portal <<{}>> "
+                  "You may consider setting up the direction manually.".format(portal_obj.name))
+
+        return 0
 
     def save_liquid(self, ob):
         mesh = ob.data
