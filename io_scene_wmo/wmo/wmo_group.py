@@ -880,7 +880,7 @@ class WMOGroupFile:
             vg_blendmap = obj.vertex_groups.get(obj.WowVertexInfo.Blendmap)
             self.mogp.Flags |= MOGP_FLAG.HasTwoMOCV
             self.root.Flags |= 0x1
-            
+
         if obj.WowVertexInfo.SecondUV != "":
             uv_second_uv = obj.data.uv_textures.get(obj.WowVertexInfo.SecondUV)
             self.mogp.Flags |= MOGP_FLAG.HasTwoMOTV

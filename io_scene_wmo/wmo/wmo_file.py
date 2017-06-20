@@ -473,10 +473,10 @@ class WMOFile:
                         nobj = obj.copy()
                         scene.objects.link(nobj)
 
-                    nobj.WoWDoodad.Color = (doodad.Color[3] / 255,
-                                            doodad.Color[2] / 255,
+                    nobj.WoWDoodad.Color = (doodad.Color[2] / 255,
                                             doodad.Color[1] / 255,
-                                            doodad.Color[0] / 255)
+                                            doodad.Color[0] / 255,
+                                            doodad.Color[3] / 255)
 
                     flags = []
                     bit = 1
@@ -680,10 +680,10 @@ class WMOFile:
 
                     doodad_def.Scale = doodad.scale[0]
 
-                    doodad_def.Color = (int(doodad.WoWDoodad.Color[3] * 255),
-                                        int(doodad.WoWDoodad.Color[2] * 255),
+                    doodad_def.Color = (int(doodad.WoWDoodad.Color[2] * 255),
                                         int(doodad.WoWDoodad.Color[1] * 255),
-                                        int(doodad.WoWDoodad.Color[0] * 255))
+                                        int(doodad.WoWDoodad.Color[0] * 255),
+                                        int(doodad.WoWDoodad.Color[3] * 255))
 
                     for flag in doodad.WoWDoodad.Flags:
                         doodad_def.Flags |= int(flag)
