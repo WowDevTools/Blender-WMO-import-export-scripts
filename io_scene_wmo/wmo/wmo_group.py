@@ -592,7 +592,7 @@ class WMOGroupFile:
 
                 for portal_poly in portal_mesh.polygons:
 
-                    direction = portal_obj.matrix_world * portal_poly.center - g_center
+                    direction = portal_poly.center - g_center
                     length = mathutils.Vector(direction).length
                     direction.normalize()
 
@@ -609,6 +609,7 @@ class WMOGroupFile:
                                 (ray_cast_result[1][0] - g_center[0], ray_cast_result[1][1] - g_center[1],
                                  ray_cast_result[1][2] - g_center[2])).length > length:
                         result = 1 if dist > 0 else -1
+                        
                         if bound_relation_side is not None:
                             bound_relation.Side = -result
 
