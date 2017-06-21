@@ -2,9 +2,10 @@ from .panels import *
 from ...m2 import import_m2 as m2
 
 import bpy
-import os
 import mathutils
+import os
 import sys
+import time
 
 
 ###############################
@@ -168,6 +169,8 @@ class DOODADS_BAKE_COLOR(bpy.types.Operator):
     def poll(cls, context):
         return True
 
+    tree_map = {}
+
     def find_nearest_object(object, objects):
         """Get closest object to another object"""
 
@@ -196,7 +199,8 @@ class DOODADS_BAKE_COLOR(bpy.types.Operator):
         result = (mathutils.Vector(corner_min) - mathutils.Vector(corner_max))
         return (abs(result.x) + abs(result.y) + abs(result.z)) / 3
 
-    def gen_doodad_color(obj, group):
+    def gen_doodad_color(self, obj, group):
+
         mesh = group.data
 
         if not mesh.vertex_colors:
@@ -205,12 +209,24 @@ class DOODADS_BAKE_COLOR(bpy.types.Operator):
         radius = DOODADS_BAKE_COLOR.get_object_radius(obj)
         colors = []
 
-        for vertex in mesh.vertices:
-            dist = max((group.matrix_world * vertex.co - obj.location).length, 0.001)
+        kd_tree = self.tree_map.get(group.name)
+        if not kd_tree:
+            kd_tree = mathutils.kdtree.KDTree(len(mesh.polygons))
 
-            if dist <= radius:
-                colors.extend([mesh.vertex_colors[mesh.vertex_colors.active_index].data[x.index].color * (dist / radius)
-                               for x in mesh.loops if x.vertex_index == vertex.index])
+            for index, poly in enumerate(mesh.polygons):
+                kd_tree.insert(group.matrix_world * poly.center, index)
+
+            kd_tree.balance()
+            self.tree_map[group.name] = kd_tree
+
+        polygons = kd_tree.find_range(obj.location, radius)
+
+        if not polygons:
+            polygons.append(kd_tree.find(obj.location))
+
+        for poly in polygons:
+            for loop_index in mesh.polygons[poly[1]].loop_indices:
+                colors.append(mesh.vertex_colors[mesh.vertex_colors.active_index].data[loop_index].color)
 
         if not colors:
             return 0.5, 0.5, 0.5, 1.0
@@ -223,15 +239,20 @@ class DOODADS_BAKE_COLOR(bpy.types.Operator):
 
     def execute(self, context):
 
+        start_time = time.time()
+
         objects = bpy.context.selected_objects if bpy.context.selected_objects else bpy.context.scene.objects
         groups = [obj for obj in bpy.context.scene.objects if obj.WowWMOGroup.Enabled]
 
         for obj in objects:
             if obj.WoWDoodad.Enabled:
-                obj.WoWDoodad.Color = DOODADS_BAKE_COLOR.gen_doodad_color(obj,
-                                                                          DOODADS_BAKE_COLOR.find_nearest_object(obj, groups))
+                obj.WoWDoodad.Color = self.gen_doodad_color(obj, DOODADS_BAKE_COLOR.find_nearest_object(obj, groups))
 
             print(obj.name)
+
+        print("\nDone baking doodad colors. "
+              "\nTotal baking time: ", time.strftime("%M minutes %S seconds\a", time.gmtime(time.time() - start_time)))
+
         return {'FINISHED'}
 
     def invoke(self, context, event):

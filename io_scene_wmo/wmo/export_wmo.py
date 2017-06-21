@@ -20,15 +20,16 @@ def export_wmo_from_blender_scene(filepath, autofill_textures, export_selected):
     wmo.groups = list([WMOGroupFile(wmo) for _ in wmo.bl_scene_objects.groups])
 
     wmo.save_doodad_sets()
-    wmo.save_lights()
-    wmo.save_liquids()
-    wmo.save_fogs()
 
     # temporary unlink doodad sets to increase performance
     for set in wmo.bl_scene_objects.doodad_sets:
         for doodad in set[1]:
             doodad.use_fake_user = True
             bpy.context.scene.objects.unlink(doodad)
+
+    wmo.save_lights()
+    wmo.save_liquids()
+    wmo.save_fogs()
 
     def restore_doodads():
         for set in wmo.bl_scene_objects.doodad_sets:
