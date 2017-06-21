@@ -669,6 +669,10 @@ class WMOFile:
                         doodad_def.NameOfs = self.modn.AddString(path)
                         doodad_paths[path] = doodad_def.NameOfs
 
+                    doodad.select = True
+                    bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+                    doodad.select = False
+
                     doodad_def.Position = doodad.location
 
                     doodad.rotation_mode = 'QUATERNION'

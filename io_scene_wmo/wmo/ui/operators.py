@@ -200,7 +200,7 @@ class DOODADS_BAKE_COLOR(bpy.types.Operator):
         mesh = group.data
 
         if not mesh.vertex_colors:
-            return (0.5, 0.5, 0.5, 1.0)
+            return 0.5, 0.5, 0.5, 1.0
 
         radius = DOODADS_BAKE_COLOR.get_object_radius(obj)
         colors = []
@@ -213,7 +213,7 @@ class DOODADS_BAKE_COLOR(bpy.types.Operator):
                                for x in mesh.loops if x.vertex_index == vertex.index])
 
         if not colors:
-            return (0.5, 0.5, 0.5, 1.0)
+            return 0.5, 0.5, 0.5, 1.0
 
         final_color = mathutils.Vector((0x00, 0x00, 0x00))
         for color in colors:
@@ -231,6 +231,7 @@ class DOODADS_BAKE_COLOR(bpy.types.Operator):
                 obj.WoWDoodad.Color = DOODADS_BAKE_COLOR.gen_doodad_color(obj,
                                                                           DOODADS_BAKE_COLOR.find_nearest_object(obj, groups))
 
+            print(obj.name)
         return {'FINISHED'}
 
     def invoke(self, context, event):
