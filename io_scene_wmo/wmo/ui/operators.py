@@ -239,20 +239,26 @@ class DOODADS_BAKE_COLOR(bpy.types.Operator):
 
     def execute(self, context):
 
-        start_time = time.time()
+        window_manager = context.window_manager
+        doodad_counter = 0
+        len_objects = len(bpy.context.selected_objects)
 
-        objects = bpy.context.selected_objects if bpy.context.selected_objects else bpy.context.scene.objects
         groups = [obj for obj in bpy.context.scene.objects if obj.WowWMOGroup.Enabled]
 
-        for obj in objects:
+        window_manager.progress_begin(0, 100)
+        for index, obj in enumerate(bpy.context.selected_objects):
             if obj.WoWDoodad.Enabled:
                 obj.WoWDoodad.Color = self.gen_doodad_color(obj, DOODADS_BAKE_COLOR.find_nearest_object(obj, groups))
+                print("\nBaking color to doodad instance <<{}>>".format(obj.name))
+                doodad_counter += 1
+                window_manager.progress_update(int(index / len_objects * 100))
 
-            print(obj.name)
+        window_manager.progress_end()
 
-        print("\nDone baking doodad colors. "
-              "\nTotal baking time: ", time.strftime("%M minutes %S seconds\a", time.gmtime(time.time() - start_time)))
-
+        if doodad_counter:
+            self.report({'INFO'}, "Done baking colors to {} doodad instances.".format(doodad_counter))
+        else:
+            self.report({'ERROR'}, "No doodad instances found among selected objects.")
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -1136,8 +1142,8 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
 
 class WOW_WMO_SELECT_ENTITY(bpy.types.Operator):
     bl_idname = 'scene.wow_wmo_select_entity'
-    bl_label = 'Select WMO entity'
-    bl_description = 'Add models to doodadset'
+    bl_label = 'Select WMO entities'
+    bl_description = 'Select all WMO entities of given type'
     bl_options = {'REGISTER', 'INTERNAL'}
 
     Entity = bpy.props.EnumProperty(
