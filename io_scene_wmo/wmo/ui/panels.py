@@ -879,6 +879,7 @@ def update_wow_visibility(self, context):
         elif obj.type == "LAMP" and obj.data.WowLight.Enabled:
             obj.hide = False if '5' in values else True
 
+
 def update_liquid_flags(self, context):
     value = self.WoWLiquidFlags
 
@@ -893,6 +894,7 @@ def update_liquid_flags(self, context):
         else:
             layer = mesh.vertex_colors.new("flag_" + value)
             layer.active = True
+
 
 def get_doodad_sets(self, context):
     has_global = False
@@ -914,6 +916,7 @@ def get_doodad_sets(self, context):
         doodad_sets.insert(1, ("Set_$DefaultGlobal", "Set_$DefaultGlobal", "", 'WORLD', 1))
 
     return doodad_sets
+
 
 def switch_doodad_set(self, context):
     set = self.WoWDoodadVisibility
@@ -1021,21 +1024,37 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         col.label(text="Display:")
         box2 = col.box()
         box2.label(text="Unit Types:")
-        box2.prop(context.scene, "WoWVisibility")
+        box2_row = box2.row()
+        box2_col1 = box2_row.column()
+        box2_col2 = box2_row.column()
+        box2_col2.scale_y = 0.9
+        box2_col1.prop(context.scene, "WoWVisibility")
+        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'Outdoor'
+        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'Indoor'
+        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowPortalPlane'
+        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowFog'
+        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowLiquid'
+        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowLight'
 
         if not bpy.context.scene.WoWRoot.MODS_Sets:
             box2.label(text="Doodad Sets:")
-            box2.prop(context.scene, "WoWDoodadVisibility", expand=False)
+            box2_row2 = box2.row()
+            box2_row2.prop(context.scene, "WoWDoodadVisibility", expand=False)
+            box2_row2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WoWDoodad'
 
         col.label(text="Game data:")
         icon = 'COLOR_GREEN' if game_data_loaded else 'COLOR_RED'
         text = "Unload game data" if game_data_loaded else "Load game data"
         load_data = col.operator("scene.load_wow_filesystem", text = text, icon = icon)
 
+
 def RegisterWMOToolsPanelObjectMode():
     bpy.utils.register_module(WMOToolsPanelObjectMode)
+
+
 def UnregisterWMOToolsPanelObjectMode():
     bpy.utils.register_module(WMOToolsPanelObjectMode)
+
 
 class WoWToolsPanelLiquidFlags(bpy.types.Panel):
     bl_label = 'Liquid Flags'

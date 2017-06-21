@@ -1132,3 +1132,46 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
         else:
             self.report({'ERROR'}, "No WMO group objects found among selected objects")
             return {'CANCELLED'}
+
+
+class WOW_WMO_SELECT_ENTITY(bpy.types.Operator):
+    bl_idname = 'scene.wow_wmo_select_entity'
+    bl_label = 'Select WMO entity'
+    bl_description = 'Add models to doodadset'
+    bl_options = {'REGISTER', 'INTERNAL'}
+
+    Entity = bpy.props.EnumProperty(
+        name="Entity",
+        description="Select WMO component entity objects",
+        items=[
+            ("Outdoor", "Outdoor", ""),
+            ("Indoor", "Indoor", ""),
+            ("WowPortalPlane", "Portals", ""),
+            ("WowLiquid", "Liquids", ""),
+            ("WowFog", "Fogs", ""),
+            ("WowLight", "Lights", ""),
+            ("WoWDoodad", "Doodads", "")
+        ]
+    )
+
+    def execute(self, context):
+
+        for obj in bpy.context.scene.objects:
+            if obj.hide:
+                continue
+
+            if obj.type == 'MESH':
+                if obj.WowWMOGroup.Enabled:
+                    if self.Entity == "Outdoor" and obj.WowWMOGroup.PlaceType == '8':
+                        obj.select = True
+                    elif self.Entity == "Indoor" and obj.WowWMOGroup.PlaceType == '8192':
+                        obj.select = True
+                elif self.Entity not in ("WowLight", "Outdoor", "Indoor"):
+                    if getattr(obj, self.Entity).Enabled:
+                        obj.select = True
+
+            elif obj.type == 'LAMP':
+               if self.Entity == "WowLight":
+                   obj.select = True
+
+        return {'FINISHED'}
