@@ -986,75 +986,89 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
 
         col = layout.column()
 
+        col.label(text="Display:")
+        col_row = col.row()
+        col_row.column(align=True).prop(context.scene, "WoWVisibility")
+        col_col = col_row.column(align=True)
+        col_col.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'Outdoor'
+        col_col.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'Indoor'
+        col_col.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowPortalPlane'
+        col_col.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowFog'
+        col_col.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowLiquid'
+        col_col.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowLight'
+
+        if not bpy.context.scene.WoWRoot.MODS_Sets:
+            box2_row2 = col.row()
+            box2_row2.prop(context.scene, "WoWDoodadVisibility", expand=False)
+            box2_row2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WoWDoodad'
+
         col.label(text="Actions:")
 
         if bpy.context.selected_objects:
             box = col.box()
             box.label(text="Convert:")
-            box.operator("scene.wow_selected_objects_to_group", text = 'To WMO group', icon = 'OBJECT_DATA')
-            box.operator("scene.wow_selected_objects_to_wow_material", text = 'To WMO material', icon = 'SMOOTH')
-            box.operator("scene.wow_selected_objects_to_portals", text = 'To WMO portal', icon = 'MOD_MIRROR')
-            box.operator("scene.wow_texface_to_material", text = 'Texface to mat.', icon = 'TEXTURE_DATA')
+            box.prop(context.scene.wmo_convert_operators, "Convert", text="")
             box.label(text="Apply:")
-            box.operator("scene.wow_quick_collision", text = 'Quick collision', icon = 'STYLUS_PRESSURE')
-            box.operator("scene.wow_fill_textures", text = 'Fill textures', icon = 'FILE_IMAGE')
-            box.operator("scene.wow_fill_group_name", text = 'Fill group name', icon = 'FONTPREVIEW')
-            box.operator("scene.wow_invert_portals", text = 'Invert portals', icon = 'FILE_REFRESH')
+            box_col = box.column(align=True)
+            box_col.operator("scene.wow_quick_collision", text = 'Quick collision', icon = 'STYLUS_PRESSURE')
+            box_col.operator("scene.wow_fill_textures", text = 'Fill textures', icon = 'FILE_IMAGE')
+            box_col.operator("scene.wow_invert_portals", text = 'Invert portals', icon = 'FILE_REFRESH')
+            box.label(text="Doodads:")
+            box_col2 = box.column(align=True)
             if not has_sets:
-                box.label(text="Doodads:")
-                box.operator("scene.wow_doodad_set_add", text = 'Add to doodadset', icon = 'ZOOMIN')
-                box.operator("scene.wow_doodads_bake_color", text='Bake doodads color', icon = 'GROUP_VCOL')
-                box.operator("scene.wow_doodad_set_template_action", text = 'Template action', icon = 'FORCE_MAGNETIC')
+                box_col2.operator("scene.wow_doodad_set_add", text = 'Add to doodadset', icon = 'ZOOMIN')
+                box_col2.operator("scene.wow_doodads_bake_color", text='Bake doodads color', icon = 'GROUP_VCOL')
+                box_col2.operator("scene.wow_doodad_set_template_action", text = 'Template action', icon = 'FORCE_MAGNETIC')
+            else:
+                box_col2.operator("scene.wow_clear_preserved_doodad_sets", text='Clear doodad sets', icon='CANCEL')
 
+        col.separator()
         box1 = col.box()
         box1.label(text="Add to scene:")
-        box1.operator("scene.wow_add_fog", text = 'Add fog', icon = 'GROUP_VERTEX')
-        box1.operator("scene.wow_add_water", text = 'Add water', icon = 'MOD_WAVE')
-        box1.operator("scene.wow_add_scale_reference", text = 'Add scale', icon = 'OUTLINER_OB_ARMATURE')
+        box1_col = box1.column(align=True)
+        box1_row1 = box1_col.row(align=True)
+        box1_row1.operator("scene.wow_add_fog", text = 'Fog', icon = 'GROUP_VERTEX')
+        box1_row1.operator("scene.wow_add_water", text = 'Water', icon = 'MOD_WAVE')
+        box1_row2 = box1_col.row(align=True)
 
         if game_data_loaded:
             if not has_sets:
-                box1.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'Add M2 from WMV', icon = 'LOAD_FACTORY')
+                box1_row2.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'M2', icon = 'LOAD_FACTORY')
 
-            box1.operator("scene.wow_import_last_wmo_from_wmv", text = 'Add WMO from WMV', icon = 'APPEND_BLEND')
+                box1_row2.operator("scene.wow_import_last_wmo_from_wmv", text = 'WMO', icon = 'APPEND_BLEND')
 
-        if has_sets:
-            col.operator("scene.wow_clear_preserved_doodad_sets", text = 'Clear doodad sets', icon = 'CANCEL')
-
-        col.label(text="Display:")
-        box2 = col.box()
-        box2.label(text="Unit Types:")
-        box2_row = box2.row()
-        box2_col1 = box2_row.column()
-        box2_col2 = box2_row.column()
-        box2_col2.scale_y = 0.9
-        box2_col1.prop(context.scene, "WoWVisibility")
-        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'Outdoor'
-        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'Indoor'
-        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowPortalPlane'
-        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowFog'
-        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowLiquid'
-        box2_col2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WowLight'
-
-        if not bpy.context.scene.WoWRoot.MODS_Sets:
-            box2.label(text="Doodad Sets:")
-            box2_row2 = box2.row()
-            box2_row2.prop(context.scene, "WoWDoodadVisibility", expand=False)
-            box2_row2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WoWDoodad'
+        box1_col.operator("scene.wow_add_scale_reference", text = 'Scale', icon = 'OUTLINER_OB_ARMATURE')
 
         col.label(text="Game data:")
         icon = 'COLOR_GREEN' if game_data_loaded else 'COLOR_RED'
         text = "Unload game data" if game_data_loaded else "Load game data"
-        load_data = col.operator("scene.load_wow_filesystem", text = text, icon = icon)
+        col.operator("scene.load_wow_filesystem", text=text, icon = icon)
 
+
+
+class ConvertOperators(bpy.types.PropertyGroup):
+
+    def execute_operator(self, context):
+        eval('bpy.ops.' + self.Convert + '()')
+
+    mode_options = [
+        ("scene.wow_selected_objects_to_group", "To WMO group", '', 'OBJECT_DATA', 0),
+        ("scene.wow_selected_objects_to_wow_material", "To WMO material", '', 'SMOOTH', 1),
+        ("scene.wow_selected_objects_to_portals", "To WMO portal", '', 'MOD_MIRROR', 2),
+        ("scene.wow_texface_to_material", "Texface to material", '', 'TEXTURE_DATA', 3)
+    ]
+
+    Convert = bpy.props.EnumProperty(
+        items=mode_options,
+        description="Convert to",
+        update=execute_operator
+    )
 
 def RegisterWMOToolsPanelObjectMode():
-    bpy.utils.register_module(WMOToolsPanelObjectMode)
-
+    bpy.types.Scene.wmo_convert_operators = bpy.props.PointerProperty(type=ConvertOperators)
 
 def UnregisterWMOToolsPanelObjectMode():
-    bpy.utils.register_module(WMOToolsPanelObjectMode)
-
+    del bpy.types.Scene.wmo_convert_operators
 
 class WoWToolsPanelLiquidFlags(bpy.types.Panel):
     bl_label = 'Liquid Flags'
@@ -1098,6 +1112,7 @@ def register():
     RegisterWowPortalPlaneProperties()
     RegisterWoWVisibilityProperties()
     RegisterWowFogProperties()
+    RegisterWMOToolsPanelObjectMode()
 
 def unregister():
     UnregisterWowRootProperties()
@@ -1110,6 +1125,7 @@ def unregister():
     UnregisterWowPortalPlaneProperties()
     UnregisterWoWVisibilityProperties()
     UnregisterWowFogProperties()
+    UnregisterWMOToolsPanelObjectMode()
 
 
 

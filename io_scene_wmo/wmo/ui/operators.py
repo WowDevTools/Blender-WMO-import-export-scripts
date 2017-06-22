@@ -782,29 +782,6 @@ class OBJECT_OP_Invert_Portals(bpy.types.Operator):
             return {'CANCELLED'}
 
 
-class OBJECT_OP_Fill_Group_Name(bpy.types.Operator):
-    bl_idname = 'scene.wow_fill_group_name'
-    bl_label = 'Fill group name'
-    bl_description = 'Fill the specified group name for selected objects'
-    bl_options = {'REGISTER', 'UNDO'}
-
-    Name = bpy.props.StringProperty()
-
-    def execute(self, context):
-        success = False
-        for ob in bpy.context.selected_objects:
-            if ob.WowWMOGroup.Enabled:
-                ob.WowWMOGroup.GroupName = self.Name
-                success = True
-
-        if success:
-            self.report({'INFO'}, "Successfully set names for selected groups")
-            return {'FINISHED'}
-        else:
-            self.report({'ERROR'}, "No WMO group objects found among selected objects")
-            return {'CANCELLED'}
-
-
 class OBJECT_OP_Fill_Textures(bpy.types.Operator):
     bl_idname = 'scene.wow_fill_textures'
     bl_label = 'Fill textures'
