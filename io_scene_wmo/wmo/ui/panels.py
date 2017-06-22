@@ -521,7 +521,6 @@ class WowWMOGroupRelations(bpy.types.PropertyGroup):
 
 class WowWMOGroupPropertyGroup(bpy.types.PropertyGroup):
 
-    GroupName = bpy.props.StringProperty(name="Name")
     GroupDesc = bpy.props.StringProperty(name="Description")
 
     Enabled = bpy.props.BoolProperty(

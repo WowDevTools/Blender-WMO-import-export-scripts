@@ -494,7 +494,6 @@ class WMOGroupFile:
 
         # add WMO group properties
         nobj.WowWMOGroup.Enabled = True
-        nobj.WowWMOGroup.GroupName = self.root.mogn.GetString(self.mogp.GroupNameOfs)
         nobj.WowWMOGroup.GroupDesc = self.root.mogn.GetString(self.mogp.DescGroupNameOfs)
         nobj.WowWMOGroup.GroupDBCid = int(self.mogp.GroupID)
 
@@ -1101,7 +1100,7 @@ class WMOGroupFile:
 
         group_info = self.root.add_group_info(self.mogp.Flags,
                                              [self.mogp.BoundingBoxCorner1, self.mogp.BoundingBoxCorner2],
-                                             obj.WowWMOGroup.GroupName,
+                                             original_obj.name,
                                              obj.WowWMOGroup.GroupDesc)
 
         self.mogp.GroupNameOfs = group_info[0]
