@@ -1,12 +1,10 @@
 import bpy
 import os
-import time
-import re
 from . import m2 as m2_
 from . import skin as skin_
 
 
-def M2ToBlenderMesh(dir, filepath, filedata):
+def m2_to_blender_mesh(dir, filepath, filedata):
     """Import World of Warcraft M2 model to scene."""
 
     print("\nImporting model: <<" + filepath + ">>")
@@ -117,7 +115,7 @@ def wmv_get_last_m2():
 
         for line in reversed(lines):
             if 'Loading model:' in line:
-                return line[25:].rstrip("\n")
+                return line[25:].split(",", 1)[0].rstrip("\n")
 
 
 class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
@@ -146,11 +144,17 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
 
         if dir:
             try:
-                obj = M2ToBlenderMesh(dir, m2_path, game_data)
+                obj = m2_to_blender_mesh(dir, m2_path, game_data)
+            except NotImplementedError:
+                bpy.ops.mesh.primitive_cube_add()
+                obj = bpy.context.scene.objects.active
+                self.report({'WARNING'}, "Model is encrypted. Placeholder is imported instead.")
             except:
                 bpy.ops.mesh.primitive_cube_add()
                 obj = bpy.context.scene.objects.active
                 self.report({'WARNING'}, "Failed to import model. Placeholder is imported instead.")
+            else:
+                self.report({'INFO'}, "Imported model: {}".format(m2_path))
 
             if bpy.context.scene.objects.active and bpy.context.scene.objects.active.select:
                 obj.location = bpy.context.scene.objects.active.location
@@ -165,11 +169,9 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
             obj.select = True
 
         else:
-            self.report({'ERROR'}, """Failed to import model.
-            Save your blendfile first.""")
+            self.report({'ERROR'}, "Failed to import model. "
+            "ave your blendfile first.")
             return {'CANCELLED'}
-
-        self.report({'INFO'}, "Imported model: " + m2_path)
 
         return {'FINISHED'}
 

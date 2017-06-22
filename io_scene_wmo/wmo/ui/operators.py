@@ -64,7 +64,7 @@ class IMPORT_LAST_WMO_FROM_WMV(bpy.types.Operator):
 
             try:
                 from .. import import_wmo
-                import_wmo.read(os.path.join(dir, wmo_path), '.png', True, True)
+                import_wmo.import_wmo_to_blender_scene(os.path.join(dir, wmo_path), True, True)
             except:
                 self.report({'ERROR'}, "Failed to import model.")
                 return {'CANCELLED'}
@@ -113,7 +113,7 @@ def LoadDoodadsFromPreserved(dir, game_data):
 
             if not obj:
                 try:
-                    obj = m2.M2ToBlenderMesh(dir, doodad_path, game_data)
+                    obj = m2.m2_to_blender_mesh(dir, doodad_path, game_data)
                 except:
                     bpy.ops.mesh.primitive_cube_add()
                     obj = bpy.context.scene.objects.active

@@ -26,7 +26,7 @@ class WoWFileData():
                 file = storage.read_file(filepath, force_decompress)
             else:
                 abs_path = os.path.join(storage, filepath)
-                if os.path.exists(abs_path):
+                if os.path.exists(abs_path) and os.path.isfile(abs_path):
                     file = open(abs_path, "rb").read()
             if file:
                 return file

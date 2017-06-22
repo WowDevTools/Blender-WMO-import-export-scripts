@@ -984,7 +984,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         has_sets = True if bpy.context.scene.WoWRoot.MODS_Sets else False
         game_data_loaded = hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files
 
-        col = layout.column()
+        col = layout.column(align=True)
 
         col.label(text="Display:")
         col_row = col.row()
@@ -1002,6 +1002,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
             box2_row2.prop(context.scene, "WoWDoodadVisibility", expand=False)
             box2_row2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WoWDoodad'
 
+        col.separator()
         col.label(text="Actions:")
 
         if bpy.context.selected_objects:

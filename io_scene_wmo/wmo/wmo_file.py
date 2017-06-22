@@ -458,7 +458,7 @@ class WMOFile:
 
                     if not obj:
                         try:
-                            obj = m2.M2ToBlenderMesh(dir, doodad_path, game_data)
+                            obj = m2.m2_to_blender_mesh(dir, doodad_path, game_data)
                         except:
                             bpy.ops.mesh.primitive_cube_add()
                             obj = bpy.context.scene.objects.active
@@ -641,7 +641,7 @@ class WMOFile:
             if v[2] > corner2[2]:
                 corner2[2] = v[2]
 
-        return (corner1, corner2)
+        return corner1, corner2
 
     def save_doodad_sets(self):
         """ Save doodads data from Blender scene to WMO root """
