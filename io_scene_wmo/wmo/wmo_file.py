@@ -236,25 +236,26 @@ class WMOFile:
 
         self.materials[0xFF] = mat
 
-        for i in range(len(self.momt.Materials)):
-            material_name = name + "_Mat_" + str(i).zfill(2)
+        for index, wmo_material in enumerate(self.momt.Materials):
+            texture1 = self.motx.GetString(wmo_material.Texture1Ofs)
+            material_name = os.path.basename(texture1)[:-4] + '.png'
 
             mat = bpy.data.materials.new(material_name)
-            self.materials[i] = mat
+            self.materials[index] = mat
 
             mat.WowMaterial.Enabled = True
-            mat.WowMaterial.Shader = str(self.momt.Materials[i].Shader)
-            mat.WowMaterial.BlendingMode = str(self.momt.Materials[i].BlendMode)
-            mat.WowMaterial.Texture1 = self.motx.GetString(self.momt.Materials[i].Texture1Ofs)
-            mat.WowMaterial.EmissiveColor = [x / 255 for x in self.momt.Materials[i].EmissiveColor[0:4]]
-            mat.WowMaterial.Texture2 = self.motx.GetString(self.momt.Materials[i].Texture2Ofs)
-            mat.WowMaterial.DiffColor = [x / 255 for x in self.momt.Materials[i].DiffColor[0:4]]
-            mat.WowMaterial.TerrainType = str(self.momt.Materials[i].TerrainType)
+            mat.WowMaterial.Shader = str(wmo_material.Shader)
+            mat.WowMaterial.BlendingMode = str(wmo_material.BlendMode)
+            mat.WowMaterial.Texture1 = texture1
+            mat.WowMaterial.EmissiveColor = [x / 255 for x in wmo_material.EmissiveColor[0:4]]
+            mat.WowMaterial.Texture2 = self.motx.GetString(wmo_material.Texture2Ofs)
+            mat.WowMaterial.DiffColor = [x / 255 for x in wmo_material.DiffColor[0:4]]
+            mat.WowMaterial.TerrainType = str(wmo_material.TerrainType)
 
             mat_flags = set()
             bit = 1
             while bit <= 0x80:
-                if self.momt.Materials[i].Flags & bit:
+                if wmo_material.Flags & bit:
                     mat_flags.add(str(bit))
                 bit <<= 1
             mat.WowMaterial.Flags = mat_flags
