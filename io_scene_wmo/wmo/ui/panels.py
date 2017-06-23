@@ -1002,10 +1002,24 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
             box2_row2.operator("scene.wow_wmo_select_entity", text='', icon='VIEWZOOM').Entity = 'WoWDoodad'
 
         col.separator()
-        col.label(text="Actions:")
+        col.label(text="Add to scene:")
+        box1 = col.box().column(align=True)
+        box1_col = box1.column(align=True)
+        box1_row1 = box1_col.row(align=True)
+        box1_row1.operator("scene.wow_add_fog", text = 'Fog', icon = 'GROUP_VERTEX')
+        box1_row1.operator("scene.wow_add_water", text = 'Water', icon = 'MOD_WAVE')
+        box1_row2 = box1_col.row(align=True)
+
+        col.label(text="Game data:")
+        icon = 'COLOR_GREEN' if game_data_loaded else 'COLOR_RED'
+        text = "Unload game data" if game_data_loaded else "Load game data"
+        col.operator("scene.load_wow_filesystem", text=text, icon = icon)
+
 
         if bpy.context.selected_objects:
-            box = col.box()
+            col.separator()
+            col.label(text="Selected:")
+            box = col.box().column(align=True)
             box.label(text="Convert:")
             box.prop(context.scene.wmo_convert_operators, "Convert", text="")
             box.label(text="Apply:")
@@ -1017,19 +1031,10 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
             box_col2 = box.column(align=True)
             if not has_sets:
                 box_col2.operator("scene.wow_doodad_set_add", text = 'Add to doodadset', icon = 'ZOOMIN')
-                box_col2.operator("scene.wow_doodads_bake_color", text='Bake doodads color', icon = 'GROUP_VCOL')
+                box_col2.operator("scene.wow_doodads_bake_color", text='Bake color', icon = 'GROUP_VCOL')
                 box_col2.operator("scene.wow_doodad_set_template_action", text = 'Template action', icon = 'FORCE_MAGNETIC')
             else:
                 box_col2.operator("scene.wow_clear_preserved_doodad_sets", text='Clear doodad sets', icon='CANCEL')
-
-        col.separator()
-        box1 = col.box()
-        box1.label(text="Add to scene:")
-        box1_col = box1.column(align=True)
-        box1_row1 = box1_col.row(align=True)
-        box1_row1.operator("scene.wow_add_fog", text = 'Fog', icon = 'GROUP_VERTEX')
-        box1_row1.operator("scene.wow_add_water", text = 'Water', icon = 'MOD_WAVE')
-        box1_row2 = box1_col.row(align=True)
 
         if game_data_loaded:
             if not has_sets:
@@ -1038,13 +1043,6 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
                 box1_row2.operator("scene.wow_import_last_wmo_from_wmv", text = 'WMO', icon = 'APPEND_BLEND')
 
         box1_col.operator("scene.wow_add_scale_reference", text = 'Scale', icon = 'OUTLINER_OB_ARMATURE')
-
-        col.label(text="Game data:")
-        icon = 'COLOR_GREEN' if game_data_loaded else 'COLOR_RED'
-        text = "Unload game data" if game_data_loaded else "Load game data"
-        col.operator("scene.load_wow_filesystem", text=text, icon = icon)
-
-
 
 class ConvertOperators(bpy.types.PropertyGroup):
 
