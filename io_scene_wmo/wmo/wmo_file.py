@@ -1085,3 +1085,11 @@ class BlenderSceneObjects:
         print("\nDone assigning doodads and lights to groups. "
               "\nTotal time: ",
               time.strftime("%M minutes %S seconds", time.gmtime(time.time() - start_time)))
+
+    def clear_references(self):
+        for group in self.groups:
+            group.WowWMOGroup.Relations.Doodads.clear()
+            group.WowWMOGroup.Relations.Lights.clear()
+            group.WowWMOGroup.Relations.Portals.clear()
+            group.WowWMOGroup.Relations.Lights.clear()
+            group.WowWMOGroup.Relations.Liquid = ""

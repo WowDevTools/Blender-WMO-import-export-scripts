@@ -1015,7 +1015,6 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         text = "Unload game data" if game_data_loaded else "Load game data"
         col.operator("scene.load_wow_filesystem", text=text, icon = icon)
 
-
         if bpy.context.selected_objects:
             col.separator()
             col.label(text="Selected:")
@@ -1024,21 +1023,21 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
             box.prop(context.scene.wmo_convert_operators, "Convert", text="")
             box.label(text="Apply:")
             box_col = box.column(align=True)
-            box_col.operator("scene.wow_quick_collision", text = 'Quick collision', icon = 'STYLUS_PRESSURE')
-            box_col.operator("scene.wow_fill_textures", text = 'Fill texture paths', icon = 'FILE_IMAGE')
-            box_col.operator("scene.wow_invert_portals", text = 'Set portal dir.', icon = 'FILE_REFRESH')
+            box_col.operator("scene.wow_quick_collision", text='Quick collision', icon='STYLUS_PRESSURE')
+            box_col.operator("scene.wow_fill_textures", text='Fill texture paths', icon='FILE_IMAGE')
+            box_col.operator("scene.wow_invert_portals", text='Set portal dir.', icon='FILE_REFRESH')
             box.label(text="Doodads:")
             box_col2 = box.column(align=True)
             if not has_sets:
-                box_col2.operator("scene.wow_doodad_set_add", text = 'Add to doodadset', icon = 'ZOOMIN')
-                box_col2.operator("scene.wow_doodads_bake_color", text='Bake color', icon = 'GROUP_VCOL')
-                box_col2.operator("scene.wow_doodad_set_template_action", text = 'Template action', icon = 'FORCE_MAGNETIC')
+                box_col2.operator("scene.wow_doodad_set_add", text='Add to doodadset', icon='ZOOMIN')
+                box_col2.operator("scene.wow_doodads_bake_color", text='Bake color', icon='GROUP_VCOL')
+                box_col2.operator("scene.wow_doodad_set_template_action", text='Template action', icon='FORCE_MAGNETIC')
             else:
                 box_col2.operator("scene.wow_clear_preserved_doodad_sets", text='Clear doodad sets', icon='CANCEL')
 
         if game_data_loaded:
             if not has_sets:
-                box1_row2.operator("scene.wow_wmo_import_doodad_from_wmv", text = 'M2', icon = 'LOAD_FACTORY')
+                box1_row2.operator("scene.wow_wmo_import_doodad_from_wmv", text='M2', icon = 'LOAD_FACTORY')
 
                 box1_row2.operator("scene.wow_import_last_wmo_from_wmv", text = 'WMO', icon = 'APPEND_BLEND')
 

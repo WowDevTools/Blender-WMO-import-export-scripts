@@ -64,9 +64,11 @@ def export_wmo_from_blender_scene(filepath, autofill_textures, export_selected):
 
     except Exception as exception:
         restore_doodads()
+        wmo.bl_scene_objects.clear_references()
         raise exception
     else:
         restore_doodads()
+        wmo.bl_scene_objects.clear_references()
 
     wmo.write()
 
