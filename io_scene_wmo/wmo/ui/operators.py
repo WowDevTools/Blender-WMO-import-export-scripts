@@ -621,6 +621,53 @@ class OBJECT_OP_ADD_FLAG(bpy.types.Operator):
 ## Object operators
 ###############################
 
+class OBJECT_OP_Bake_Portal_Relations(bpy.types.Operator):
+    bl_idname = 'scene.wow_bake_portal_relations'
+    bl_label = 'Bake portal relations'
+    bl_description = 'Bake portal relations'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+
+        def find_nearest_objects_pair(object, objects):
+
+            pairs = []
+
+            for obj in objects:
+                hit = obj.closest_point_on_mesh(
+                    obj.matrix_world.inverted() * (object.matrix_world * object.data.polygons[0].center))
+                hit_dist = (
+                obj.matrix_world.inverted() * (object.matrix_world * object.data.polygons[0].center) - hit[1]).length
+
+                pairs.append((obj.name, hit_dist))
+
+            pairs.sort(key=lambda x: x[1])
+
+            return pairs[0][0], pairs[1][0]
+
+        if not  bpy.context.selected_objects:
+            self.report({'ERROR'}, "No objects selected.")
+            return {'FINISHED'}
+
+        success = False
+
+        groups = tuple(x for x in bpy.context.scene.objects if x.WowWMOGroup.Enabled)
+
+        for obj in bpy.context.selected_objects:
+            if obj.WowPortalPlane.Enabled:
+                direction = find_nearest_objects_pair(obj, groups)
+                obj.WowPortalPlane.First = direction[0] if direction[0] else ""
+                obj.WowPortalPlane.Second = direction[1] if direction[1] else ""
+                success = True
+
+        if success:
+            self.report({'INFO'}, "Done baking portal relations.")
+        else:
+            self.report({'ERROR'}, "No portal objects found among selected objects.")
+
+        return {'FINISHED'}
+
+
 class OBJECT_OP_Add_Scale(bpy.types.Operator):
     bl_idname = 'scene.wow_add_scale_reference'
     bl_label = 'Add scale'

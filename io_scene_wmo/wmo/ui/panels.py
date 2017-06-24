@@ -1026,6 +1026,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
             box_col.operator("scene.wow_quick_collision", text='Quick collision', icon='STYLUS_PRESSURE')
             box_col.operator("scene.wow_fill_textures", text='Fill texture paths', icon='FILE_IMAGE')
             box_col.operator("scene.wow_invert_portals", text='Set portal dir.', icon='FILE_REFRESH')
+            box_col.operator("scene.wow_bake_portal_relations", text='Bake portal rels.', icon='LINKED')
             box.label(text="Doodads:")
             box_col2 = box.column(align=True)
             if not has_sets:
