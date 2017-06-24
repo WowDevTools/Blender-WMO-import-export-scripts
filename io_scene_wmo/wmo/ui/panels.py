@@ -463,7 +463,6 @@ class WowWMOGroupPanel(bpy.types.Panel):
 
     def draw(self, context):
         col = self.layout.column()
-        col.prop(context.object.WowWMOGroup, "GroupName")
         col.prop(context.object.WowWMOGroup, "GroupDesc")
 
         col.separator()
