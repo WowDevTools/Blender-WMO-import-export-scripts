@@ -992,7 +992,10 @@ class WMOGroupFile:
                     if vg_blendmap is not None:
                         for vertex_group_element in vertex.groups:
                                     if vertex_group_element.group == vg_blendmap.index:
-                                        weight = round(vertex.groups[vg_blendmap.index].weight * 255)
+                                        try:
+                                            weight = round(vertex.groups[vg_blendmap.index].weight * 255)
+                                        except:
+                                            weight = 1
                                         self.mocv2.vertColors[new_index] = (0,
                                                                             0,
                                                                             0,
