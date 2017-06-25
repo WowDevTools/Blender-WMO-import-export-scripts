@@ -813,7 +813,7 @@ class WMOGroupFile:
         if mesh.has_custom_normals:
             mesh.calc_normals_split()
         else:
-            mesh.customdata_custom_splitnormals_add()
+            bpy.ops.mesh.customdata_custom_splitnormals_add()
             normal_dict = {}
 
             for vertex in original_obj.data.vertices:
