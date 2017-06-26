@@ -1100,7 +1100,6 @@ def register():
     RegisterWowPortalPlaneProperties()
     RegisterWoWVisibilityProperties()
     RegisterWowFogProperties()
-    RegisterWMOToolsPanelObjectMode()
 
 def unregister():
     UnregisterWowRootProperties()
@@ -1113,7 +1112,6 @@ def unregister():
     UnregisterWowPortalPlaneProperties()
     UnregisterWoWVisibilityProperties()
     UnregisterWowFogProperties()
-    UnregisterWMOToolsPanelObjectMode()
 
 
 
