@@ -1,6 +1,7 @@
 from .wmo_group import *
 from .wmo_format import *
 from ..m2 import import_m2 as m2
+from mathutils.kdtree import KDTree
 
 import bpy
 import operator
@@ -973,23 +974,23 @@ class BlenderSceneObjects:
         self.liquids = []
         self.doodad_sets = []
 
+    def find_nearest_object(object, objects):
+        """Get closest object to another object"""
+
+        dist = sys.float_info
+        result = None
+        for obj in objects:
+            obj_location_relative = obj.matrix_world.inverted() * object.location
+            hit = obj.closest_point_on_mesh(obj_location_relative)
+            hit_dist = (obj_location_relative - hit[1]).length
+            if hit_dist < dist:
+                dist = hit_dist
+                result = obj
+
+        return result
+
     def build_references(self, export_selected):
         """ Build WMO references in Blender scene """
-
-        def find_nearest_object(object, objects):
-            """Get closest object to another object"""
-
-            dist = 32767
-            result = None
-            for obj in objects:
-                obj_location_relative = obj.matrix_world.inverted() * object.location
-                hit = obj.closest_point_on_mesh(obj_location_relative)
-                hit_dist = (obj_location_relative - hit[1]).length
-                if hit_dist < dist:
-                    dist = hit_dist
-                    result = obj
-
-            return result
 
         start_time = time.time()
 
@@ -1063,7 +1064,7 @@ class BlenderSceneObjects:
 
             for doodad in empty.children:
                 if doodad.WoWDoodad.Enabled:
-                    group = find_nearest_object(doodad, self.groups)
+                    group = BlenderSceneObjects.find_nearest_object(doodad, self.groups)
 
                     if group:
                         rel = group.WowWMOGroup.Relations.Doodads.add()
@@ -1077,7 +1078,7 @@ class BlenderSceneObjects:
 
         # setting light references
         for index, light in enumerate(self.lights):
-            group = find_nearest_object(light, self.groups)
+            group = BlenderSceneObjects.find_nearest_object(light, self.groups)
             if group:
                 rel = group.WowWMOGroup.Relations.Lights.add()
                 rel.id = index

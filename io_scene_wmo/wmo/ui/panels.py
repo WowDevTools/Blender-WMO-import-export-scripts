@@ -1018,8 +1018,8 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
             col.separator()
             col.label(text="Selected:")
             box = col.box().column(align=True)
-            box.label(text="Convert:")
-            box.prop(context.scene.wmo_convert_operators, "Convert", text="")
+            #box.label(text="Convert:")
+            box.menu("view3D.convert_to_menu", text="Convert selected")
             box.label(text="Apply:")
             box_col = box.column(align=True)
             box_col.operator("scene.wow_quick_collision", text='Quick collision', icon='STYLUS_PRESSURE')
@@ -1043,29 +1043,20 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
 
         box1_col.operator("scene.wow_add_scale_reference", text = 'Scale', icon = 'OUTLINER_OB_ARMATURE')
 
-class ConvertOperators(bpy.types.PropertyGroup):
 
-    def execute_operator(self, context):
-        eval('bpy.ops.' + self.Convert + '()')
+class ConvertOperators(bpy.types.Menu):
+    bl_label = "Convert"
+    bl_idname = "view3D.convert_to_menu"
+    bl_options = {'REGISTER'}
 
-    mode_options = [
-        ("scene.wow_selected_objects_to_group", "To WMO group", '', 'OBJECT_DATA', 0),
-        ("scene.wow_selected_objects_to_wow_material", "To WMO material", '', 'SMOOTH', 1),
-        ("scene.wow_selected_objects_to_portals", "To WMO portal", '', 'MOD_MIRROR', 2),
-        ("scene.wow_texface_to_material", "Texface to material", '', 'TEXTURE_DATA', 3)
-    ]
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+        col.operator("scene.wow_selected_objects_to_group", text='To WNO group', icon='OBJECT_DATA')
+        col.operator("scene.wow_selected_objects_to_wow_material", text='To WMO material', icon='SMOOTH')
+        col.operator("scene.wow_selected_objects_to_portals", text='To WMO portal', icon='MOD_MIRROR')
+        col.operator("scene.wow_texface_to_material", text='Texface to material', icon='TEXTURE_DATA')
 
-    Convert = bpy.props.EnumProperty(
-        items=mode_options,
-        description="Convert to",
-        update=execute_operator
-    )
-
-def RegisterWMOToolsPanelObjectMode():
-    bpy.types.Scene.wmo_convert_operators = bpy.props.PointerProperty(type=ConvertOperators)
-
-def UnregisterWMOToolsPanelObjectMode():
-    del bpy.types.Scene.wmo_convert_operators
 
 class WoWToolsPanelLiquidFlags(bpy.types.Panel):
     bl_label = 'Liquid Flags'
