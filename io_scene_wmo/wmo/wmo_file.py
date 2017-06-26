@@ -977,7 +977,7 @@ class BlenderSceneObjects:
     def find_nearest_object(object, objects):
         """Get closest object to another object"""
 
-        dist = sys.float_info
+        dist = sys.float_info.max
         result = None
         for obj in objects:
             obj_location_relative = obj.matrix_world.inverted() * object.location
