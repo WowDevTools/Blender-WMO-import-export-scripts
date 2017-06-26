@@ -804,9 +804,9 @@ class OBJECT_OP_Add_Fog(bpy.types.Operator):
 
 
 class OBJECT_OP_Invert_Portals(bpy.types.Operator):
-    bl_idname = 'scene.wow_invert_portals'
-    bl_label = 'Invert portals'
-    bl_description = 'Invert predefined direction of all selected WoW portals.'
+    bl_idname = 'scene.wow_set_portal_dir_alg'
+    bl_label = 'Set portal direction algorithm'
+    bl_description = 'Set portal direction calculation algorithm.'
     bl_options = {'REGISTER', 'UNDO'}
 
     Algorithm = bpy.props.EnumProperty(
