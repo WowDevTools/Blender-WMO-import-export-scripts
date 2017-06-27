@@ -220,7 +220,7 @@ class WMOFile:
 
     def load_materials(self, name, texture_path):
         """ Load materials from WoW WMO root file """
-        self.materials = {}
+        self.materialLookup = {}
 
         images = []
         imageNames = []
@@ -235,14 +235,14 @@ class WMOFile:
             mat.transparency_method = 'Z_TRANSPARENCY'
             mat.use_transparency = True
 
-        self.materials[0xFF] = mat
+        self.materialLookup[0xFF] = mat
 
         for index, wmo_material in enumerate(self.momt.Materials):
             texture1 = self.motx.GetString(wmo_material.Texture1Ofs)
             material_name = os.path.basename(texture1)[:-4] + '.png'
 
             mat = bpy.data.materials.new(material_name)
-            self.materials[index] = mat
+            self.materialLookup[index] = mat
 
             mat.WowMaterial.Enabled = True
             mat.WowMaterial.Shader = str(wmo_material.Shader)
@@ -372,7 +372,6 @@ class WMOFile:
 
     def load_fogs(self, name):
         """ Load WoW WMO fog objects """
-        self.fogs = []
         for i in range(len(self.mfog.Fogs)):
 
             f = self.mfog.Fogs[i]
@@ -542,8 +541,7 @@ class WMOFile:
 
     def load_portals(self, name, root):
         """ Load WoW WMO portal planes """
-        self.portals = []
-        self.vert_count = 0
+        vert_count = 0
         for index, portal in enumerate(self.mopt.Infos):
             portal_name = name + "_Portal_" + str(index).zfill(3)
 
@@ -553,9 +551,9 @@ class WMOFile:
 
             for j in range(portal.nVertices):
                 if (len(face) < 4):
-                    verts.append(self.mopv.PortalVertices[self.vert_count])
+                    verts.append(self.mopv.PortalVertices[vert_count])
                     face.append(j)
-                self.vert_count += 1
+                vert_count += 1
 
             faces.append(face)
 
