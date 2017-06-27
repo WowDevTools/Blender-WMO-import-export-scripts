@@ -86,15 +86,18 @@ def CollideBoxTri(box, triangle):
        return False
     if(not ProjOverlap(box[0].z, box[1].z, triangleMinMax[0].z, triangleMinMax[1].z)):
        return False
-    pt_box = []
-    pt_box.append(Vector(box[0].xyz))
-    pt_box.append(Vector((box[0].x, box[1].y, box[0].z)))
-    pt_box.append(Vector((box[1].x, box[1].y, box[0].z)))
-    pt_box.append(Vector((box[1].x, box[0].y, box[0].z)))
-    pt_box.append(Vector(box[1].xyz))
-    pt_box.append(Vector((box[0].x, box[1].y, box[1].z)))
-    pt_box.append(Vector((box[1].x, box[1].y, box[1].z)))
-    pt_box.append(Vector((box[1].x, box[0].y, box[1].z)))
+
+    pt_box = [
+        Vector(box[0].xyz),
+        Vector((box[0].x, box[1].y, box[0].z)),
+        Vector((box[1].x, box[1].y, box[0].z)),
+        Vector((box[1].x, box[0].y, box[0].z)),
+        Vector(box[1].xyz),
+        Vector((box[0].x, box[1].y, box[1].z)),
+        Vector((box[1].x, box[1].y, box[1].z)),
+        Vector((box[1].x, box[0].y, box[1].z))
+    ]
+
     # project on edge 1 axis
     E0 = triangle[1] - triangle[0]
     pt_box_projected = []
