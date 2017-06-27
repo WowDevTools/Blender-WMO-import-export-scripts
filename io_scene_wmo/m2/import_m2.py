@@ -75,7 +75,7 @@ def m2_to_blender_mesh(dir, filepath, filedata):
         # check if forced decompression is required here !!!
         path = os.path.splitext(
             m2.textures[m2.tex_lookup[batch.texture].Id].name.decode("utf-8").rstrip('\0')
-            )[0] + ".png"
+        )[0] + ".png"
 
         img = None
 
@@ -86,7 +86,7 @@ def m2_to_blender_mesh(dir, filepath, filedata):
 
         if img:
             for i in range(m2_mesh.tri_offset // 3, (m2_mesh.tri_offset + m2_mesh.num_tris) // 3):
-                    uv1.data[i].image = img
+                uv1.data[i].image = img
 
     # create object
     scn = bpy.context.scene
@@ -170,9 +170,7 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
 
         else:
             self.report({'ERROR'}, "Failed to import model. "
-            "Save your blendfile first.")
+                                   "Save your blendfile first.")
             return {'CANCELLED'}
 
         return {'FINISHED'}
-
-

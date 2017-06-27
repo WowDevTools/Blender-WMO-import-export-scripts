@@ -10,8 +10,8 @@ def export_wmo_from_blender_scene(filepath, autofill_textures, export_selected):
 
     start_time = time.time()
 
-    #bpy.ops.scene.wow_wmo_validate_scene()
-    #print("\nScene successfully validated")
+    # bpy.ops.scene.wow_wmo_validate_scene()
+    # print("\nScene successfully validated")
 
     wmo = WMOFile(filepath)
 
@@ -58,7 +58,6 @@ def export_wmo_from_blender_scene(filepath, autofill_textures, export_selected):
 
         print("\nDone saving groups. "
               "\nTotal saving time: ", time.strftime("%M minutes %S seconds", time.gmtime(time.time() - g_start_time)))
-
 
         wmo.save_root_header()
 

@@ -1,4 +1,3 @@
-
 from . import wmo_format
 from .wmo_format import *
 
@@ -9,6 +8,7 @@ import mathutils
 from mathutils import *
 
 import sys
+
 
 class BSP_Tree:
     def __init__(self):
@@ -51,7 +51,7 @@ class BSP_Tree:
         self.Nodes.append(node)
 
         # part contain less than 30 polygons, lets end this, add final node
-        if(len(facesInBox) <= maxFaceCount):
+        if (len(facesInBox) <= maxFaceCount):
             node.PlaneType = BSP_PLANE_TYPE.Leaf
             node.Childrens = (-1, -1)
             node.NumFaces = len(facesInBox)
@@ -70,12 +70,11 @@ class BSP_Tree:
             # split on axis X (YZ plane)
             planeType = BSP_PLANE_TYPE.YZ_plane
         elif box_size_y > box_size_x and box_size_y > box_size_z:
-            #split on axis Y (XZ plane)
+            # split on axis Y (XZ plane)
             planeType = BSP_PLANE_TYPE.XZ_plane
         else:
             # split on axis Z (XY plane)
             planeType = BSP_PLANE_TYPE.XY_plane
-
 
         splitResult = self.SplitBox(box, facesInBox, vertices, indices, planeType)
 
@@ -90,7 +89,7 @@ class BSP_Tree:
             v1 = Vector((vertices[indices[f * 3 + 1]]))
             v2 = Vector((vertices[indices[f * 3 + 2]]))
             tri = (v0, v1, v2)
-            if(CollideBoxTri(child1_box, tri)):
+            if (CollideBoxTri(child1_box, tri)):
                 child1_faces.append(f)
 
         child2_box = splitResult[2]
@@ -102,21 +101,21 @@ class BSP_Tree:
             v1 = Vector((vertices[indices[f * 3 + 1]]))
             v2 = Vector((vertices[indices[f * 3 + 2]]))
             tri = (v0, v1, v2)
-            if(CollideBoxTri(child2_box, tri)):
+            if (CollideBoxTri(child2_box, tri)):
                 child2_faces.append(f)
 
         # dont add child if there is no faces inside
-        if(len(child1_faces) == 0):
+        if (len(child1_faces) == 0):
             iChild1 = -1
         else:
             iChild1 = self.AddNode(child1_box, child1_faces, vertices, indices, maxFaceCount)
 
-        if(len(child2_faces) == 0):
+        if (len(child2_faces) == 0):
             iChild2 = -1
         else:
             iChild2 = self.AddNode(child2_box, child2_faces, vertices, indices, maxFaceCount)
 
-        #node = BSP_Node()
+        # node = BSP_Node()
         node.PlaneType = planeType
         node.Childrens = (iChild1, iChild2)
         node.NumFaces = 0
@@ -137,4 +136,4 @@ class BSP_Tree:
         self.AddNode(box, faces, vertices, indices, maxFaceCount)
 
         sys.setrecursionlimit(resursLimit)
-        return
+
