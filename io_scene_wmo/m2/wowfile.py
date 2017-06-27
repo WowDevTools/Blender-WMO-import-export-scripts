@@ -22,7 +22,7 @@ def FillLine(f):
 def ReadBlock(f,chunk,func,animfiles = None):
     f.seek(chunk.offset)
     ret = []
-    if(animfiles == None):
+    if(animfiles is None):
         for i in xrange(chunk.count):
             temp = func().unpack(f)
             ret.append(temp)

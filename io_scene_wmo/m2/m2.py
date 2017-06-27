@@ -231,7 +231,7 @@ class AnimSub:
         self.type = type
         self.nEntries,  = struct.unpack("i",f.read(4))
         self.ofsEntries,= struct.unpack("i",f.read(4))
-        if(animfile == None):
+        if(animfile is None):
             oldpos = f.tell()
             f.seek(self.ofsEntries)
             self.values = []

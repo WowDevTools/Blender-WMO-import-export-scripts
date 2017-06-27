@@ -155,7 +155,7 @@ class WMOFile:
 
         mat_index = self.compare_materials(mat)
 
-        if mat_index != None:
+        if mat_index is not None:
             return mat_index
 
         else:

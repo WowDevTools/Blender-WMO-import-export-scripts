@@ -1148,10 +1148,10 @@ class WMOGroupFile:
             self.mogp.Flags |= MOGP_FLAG.HasLight
 
         # write second MOTV and MOCV
-        if uv_second_uv == None:
+        if uv_second_uv is None:
             self.motv2 = None
 
-        if vg_blendmap == None:
+        if vg_blendmap is None:
             self.mocv2 = None
 
         print("\nDone saving group: <<{}>>".format(obj.name[:-4]))

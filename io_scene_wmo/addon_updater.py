@@ -160,7 +160,7 @@ class Singleton_updater(object):
     @include_branch_list.setter
     def include_branch_list(self, value):
         try:
-            if value == None:
+            if value is None:
                 self._include_branch_list = ['master']
             elif type(value) != type(['master']):
                 raise ValueError("include_branch_list should be a list of valid branches")
@@ -263,10 +263,10 @@ class Singleton_updater(object):
         return self._updater_path
     @stage_path.setter
     def stage_path(self, value):
-        if value == None:
+        if value is None:
             if self._verbose:print("Aborting assigning stage_path, it's null")
             return
-        elif value != None and not os.path.exists(value):
+        elif value is not None and not os.path.exists(value):
             try:
                 os.makedirs(value)
             except:
@@ -287,13 +287,13 @@ class Singleton_updater(object):
 
     @property
     def tag_latest(self):
-        if self._tag_latest == None:
+        if self._tag_latest is None:
             return None
         return self._tag_latest["name"]
 
     @property
     def latest_release(self):
-        if self._releases_latest == None:
+        if self._releases_latest is None:
             return None
         return self._latest_release
 
@@ -370,7 +370,7 @@ class Singleton_updater(object):
         return self._version_min_update
     @version_min_update.setter
     def version_min_update(self, value):
-        if value == None:
+        if value is None:
             self._version_min_update = None
             return
         if type(value) != type((1,2,3)):
@@ -385,7 +385,7 @@ class Singleton_updater(object):
         return self._version_max_update
     @version_max_update.setter
     def version_max_update(self, value):
-        if value == None:
+        if value is None:
             self._version_max_update = None
             return
         if type(value) != type((1,2,3)):
@@ -443,7 +443,7 @@ class Singleton_updater(object):
         self._prefiltered_tag_count = len(all_tags)
 
         # pre-process to skip tags
-        if self.skip_tag != None:
+        if self.skip_tag is not None:
             self._tags = [tg for tg in all_tags if self.skip_tag(tg)==False]
         else:
             self._tags = all_tags
@@ -462,7 +462,7 @@ class Singleton_updater(object):
                 }
                 self._tags = [include] + self._tags # append to front
 
-        if self._tags == None:
+        if self._tags is None:
             # some error occurred
             self._tag_latest = None
             self._tags = []
@@ -519,7 +519,7 @@ class Singleton_updater(object):
         # return the json version
         get = None
         get = self.get_api_raw(url) # this can fail by self-created error raising
-        if get != None:
+        if get is not None:
             return json.JSONDecoder().decode( get )
         else:
             return None
@@ -546,7 +546,7 @@ class Singleton_updater(object):
             except:
                 error = "failed to make staging directory"
         
-        if error != None:
+        if error is not None:
             if self._verbose: print("Error: Aborting update, "+error)
             raise ValueError("Aborting update, "+error)
 
@@ -724,7 +724,7 @@ class Singleton_updater(object):
 
     def version_tuple_from_text(self,text):
 
-        if text == None: return ()
+        if text is None: return ()
 
         # should go through string and remove all non-integers,
         # and for any given break split into a different section
@@ -752,7 +752,7 @@ class Singleton_updater(object):
     # called for running check in a background thread
     def check_for_update_async(self, callback=None):
 
-        if self._json != None and "update_ready" in self._json:
+        if self._json is not None and "update_ready" in self._json:
             if self._json["update_ready"] == True:
                 self._update_ready = True
                 self._update_link = self._json["version_text"]["link"]
@@ -767,7 +767,7 @@ class Singleton_updater(object):
         elif self._async_checking == True:
             if self._verbose:print("Skipping async check, already started")
             return # already running the bg thread
-        elif self._update_ready == None:
+        elif self._update_ready is None:
             self.start_async_check_update(False, callback)
 
     def check_for_update_now(self, callback=None):
@@ -780,7 +780,7 @@ class Singleton_updater(object):
         if self._async_checking == True:
             if self._verbose:print("Skipping async check, already started")
             return # already running the bg thread
-        elif self._update_ready == None:
+        elif self._update_ready is None:
             self.start_async_check_update(True, callback)
         else:
             self._update_ready = None
@@ -798,14 +798,14 @@ class Singleton_updater(object):
 
         # avoid running again in, just return past result if found
         # but if force now check, then still do it
-        if self._update_ready != None and now == False:
+        if self._update_ready is not None and now == False:
             return (self._update_ready,self._update_version,self._update_link)
 
-        if self._current_version == None:
+        if self._current_version is None:
             raise ValueError("current_version not yet defined")
-        if self._repo == None:
+        if self._repo is None:
             raise ValueError("repo not yet defined")
-        if self._user == None:
+        if self._user is None:
             raise ValueError("username not yet defined")
 
         self.set_updater_json() # self._json
@@ -905,7 +905,7 @@ class Singleton_updater(object):
             if name == tag["name"]:
                 tg = tag
                 break
-        if tg == None:
+        if tg is None:
             raise ValueError("Version tag not found: "+revert_tag)
         new_version = self.version_tuple_from_text(self.tag_latest)
         self._update_version = new_version
@@ -920,7 +920,7 @@ class Singleton_updater(object):
         self._json["ignore"] = False # clear ignore flag
         self._json["version_text"] = {}
 
-        if revert_tag != None:
+        if revert_tag is not None:
             self.set_tag(revert_tag)
             self._update_ready = True
 
@@ -946,12 +946,12 @@ class Singleton_updater(object):
             if self._update_ready != True:
                 if self.verbose:print("Update stopped, new version not ready")
                 return 1 # stopped
-            elif self._update_link == None:
+            elif self._update_link is None:
                 # this shouldn't happen if update is ready
                 if self.verbose:print("Update stopped, update link unavailable")
                 return 1 # stopped
 
-            if self.verbose and revert_tag==None:
+            if self.verbose and revert_tag is None:
                 print("Staging update")
             elif self.verbose:
                 print("Staging install")
@@ -959,11 +959,11 @@ class Singleton_updater(object):
             self.upack_staged_zip()
 
         else:
-            if self._update_link == None:
+            if self._update_link is None:
                 return # stopped, no link - run check update first or set tag
             if self.verbose:print("Forcing update")
             # first do a check
-            if self._update_link == None:
+            if self._update_link is None:
                 if self.verbose:print("Update stopped, could not get link")
                 return
             self.stage_repository(self._update_link)
@@ -971,7 +971,7 @@ class Singleton_updater(object):
             # would need to compare against other versions held in tags
 
         # run the front-end's callback if provided
-        if callback != None:callback()
+        if callback is not None:callback()
 
         # return something meaningful, 0 means it worked
         return 0
@@ -1006,7 +1006,7 @@ class Singleton_updater(object):
 
 
     def set_updater_json(self):
-        if self._updater_path == None:
+        if self._updater_path is None:
             raise ValueError("updater_path is not defined")
         elif os.path.isdir(self._updater_path) == False:
             os.makedirs(self._updater_path)
@@ -1103,13 +1103,13 @@ class Singleton_updater(object):
 
         if self._verbose:
             print("{} BG thread: Finished checking for update, doing callback".format(self._addon))
-        if callback != None:callback(self._update_ready)
+        if callback is not None:callback(self._update_ready)
         self._async_checking = False
         self._check_thread = None
 
 
     def stop_async_check_update(self):
-        if self._check_thread != None:
+        if self._check_thread is not None:
             try:
                 if self._verbose:print("Thread will end in normal course.")
                 # however, "There is no direct kill method on a thread object."

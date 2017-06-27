@@ -103,7 +103,7 @@ class addon_updater_install_popup(bpy.types.Operator):
             if updater.verbose:
                 if res==0: print("Updater returned successful")
                 else: print("Updater returned "+str(res)+", error occurred")
-        elif updater.update_ready == None:
+        elif updater.update_ready is None:
             (update_ready, version, link) = updater.check_for_update(now=True)
             
             # re-launch this dialog
@@ -127,7 +127,7 @@ class addon_updater_check_now(bpy.types.Operator):
         if updater.invalidupdater == True:
             return {'CANCELLED'}
 
-        if updater.async_checking == True and updater.error == None:
+        if updater.async_checking == True and updater.error is None:
             # Check already happened
             # Used here to just avoid constant applying settings below
             # Ignoring if error, to prevent being stuck on the error screen
@@ -180,7 +180,7 @@ class addon_updater_update_now(bpy.types.Operator):
             except:
                 atr = addon_updater_install_manually.bl_idname.split(".")
                 getattr(getattr(bpy.ops, atr[0]),atr[1])('INVOKE_DEFAULT')
-        elif updater.update_ready == None:
+        elif updater.update_ready is None:
             (update_ready, version, link) = updater.check_for_update(now=True)
             # re-launch this dialog
             atr = addon_updater_install_popup.bl_idname.split(".")
@@ -221,7 +221,7 @@ class addon_updater_update_target(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         if updater.invalidupdater == True: return False
-        return updater.update_ready != None and len(updater.tags)>0
+        return updater.update_ready is not None and len(updater.tags) > 0
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
@@ -293,14 +293,14 @@ class addon_updater_install_manually(bpy.types.Operator):
 
         row = layout.row()
 
-        if updater.update_link != None:
+        if updater.update_link is not None:
             row.operator("wm.url_open",text="Direct download").url=\
                     updater.update_link
         else:
             row.operator("wm.url_open",text="(failed to retrieve)")
             row.enabled = False
 
-            if updater.website != None:
+            if updater.website is not None:
                 row = layout.row()
                 row.operator("wm.url_open",text="Open website").url=\
                         updater.website
@@ -550,7 +550,7 @@ def check_for_update_background(context):
     if ran_background_check == True:
         # Global var ensures check only happens once
         return
-    elif updater.update_ready != None or updater.async_checking == True:
+    elif updater.update_ready is not None or updater.async_checking == True:
         # Check already happened
         # Used here to just avoid constant applying settings below
         return
@@ -611,7 +611,7 @@ def showReloadPopup():
     saved_state = updater.json
     global ran_update_sucess_popup
 
-    a = saved_state != None
+    a = saved_state is not None
     b = "just_updated" in saved_state
     c = saved_state["just_updated"]
 
@@ -727,7 +727,7 @@ def update_settings_ui(self, context):
     row = box.row()
     col = row.column()
     movemosue = False
-    if updater.error != None:
+    if updater.error is not None:
         subcol = col.row(align=True)
         subcol.scale_y = 1
         split = subcol.split(align=True)
@@ -740,10 +740,10 @@ def update_settings_ui(self, context):
         split.operator(addon_updater_check_now.bl_idname,
                         text = "", icon="FILE_REFRESH")
 
-    elif updater.update_ready == None and updater.async_checking == False:
+    elif updater.update_ready is None and updater.async_checking == False:
         col.scale_y = 2
         col.operator(addon_updater_check_now.bl_idname)
-    elif updater.update_ready == None: # async is running
+    elif updater.update_ready is None: # async is running
         subcol = col.row(align=True)
         subcol.scale_y = 1
         split = subcol.split(align=True)
@@ -823,11 +823,11 @@ def update_settings_ui(self, context):
     row = box.row()
     row.scale_y = 0.7
     lastcheck = updater.json["last_check"]
-    if updater.error != None and updater.error_msg != None:
+    if updater.error is not None and updater.error_msg is not None:
         row.label(updater.error_msg)
     elif movemosue == True:
         row.label("Move mouse if button doesn't update")
-    elif lastcheck != "" and lastcheck != None:
+    elif lastcheck != "" and lastcheck is not None:
         lastcheck = lastcheck[0: lastcheck.index(".") ]
         row.label("Last update check: " + lastcheck)
     else:
@@ -862,12 +862,12 @@ def skip_tag_function(tag):
     if type(tupled) != type( (1,2,3) ): return True
     
     # select the min tag version - change tuple accordingly
-    if updater.version_min_update != None:
+    if updater.version_min_update is not None:
         if tupled < updater.version_min_update:
             return True # skip if current version below this
     
     # select the max tag version
-    if updater.version_max_update != None:
+    if updater.version_max_update is not None:
         if tupled >= updater.version_max_update:
             return True # skip if current version at or above this
     

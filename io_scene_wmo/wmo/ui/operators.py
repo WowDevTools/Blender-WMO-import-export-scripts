@@ -742,7 +742,7 @@ class OBJECT_OP_Add_Water(bpy.types.Operator):
         water = bpy.context.scene.objects.active
         bpy.ops.transform.resize(value=(self.xPlanes, self.yPlanes, 1.0))
 
-        water.name = water.name + "_Liquid"
+        water.name += "_Liquid"
 
         mesh = water.data
 
@@ -768,7 +768,7 @@ class OBJECT_OP_Add_Fog(bpy.types.Operator):
 
         bpy.ops.mesh.primitive_uv_sphere_add()
         fog = bpy.context.scene.objects.active
-        fog.name = fog.name + "_Fog"
+        fog.name += "_Fog"
 
         # applying real object transformation
         bpy.ops.object.shade_smooth()
