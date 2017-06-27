@@ -1052,7 +1052,7 @@ class ConvertOperators(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
         col = layout.column()
-        col.operator("scene.wow_selected_objects_to_group", text='To WNO group', icon='OBJECT_DATA')
+        col.operator("scene.wow_selected_objects_to_group", text='To WMO group', icon='OBJECT_DATA')
         col.operator("scene.wow_selected_objects_to_wow_material", text='To WMO material', icon='SMOOTH')
         col.operator("scene.wow_selected_objects_to_portals", text='To WMO portal', icon='MOD_MIRROR')
         col.operator("scene.wow_texface_to_material", text='Texface to material', icon='TEXTURE_DATA')
