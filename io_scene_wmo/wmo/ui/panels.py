@@ -1008,6 +1008,12 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
         box1_row1.operator("scene.wow_add_fog", text = 'Fog', icon = 'GROUP_VERTEX')
         box1_row1.operator("scene.wow_add_water", text = 'Water', icon = 'MOD_WAVE')
         box1_row2 = box1_col.row(align=True)
+        if game_data_loaded:
+            if not has_sets:
+                box1_row2.operator("scene.wow_wmo_import_doodad_from_wmv", text='M2', icon = 'LOAD_FACTORY')
+                box1_row2.operator("scene.wow_import_last_wmo_from_wmv", text = 'WMO', icon = 'APPEND_BLEND')
+
+        box1_col.operator("scene.wow_add_scale_reference", text = 'Scale', icon = 'OUTLINER_OB_ARMATURE')
 
         col.label(text="Game data:")
         icon = 'COLOR_GREEN' if game_data_loaded else 'COLOR_RED'
@@ -1035,15 +1041,6 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
             else:
                 box_col2.operator("scene.wow_clear_preserved_doodad_sets", text='Clear doodad sets', icon='CANCEL')
 
-        if game_data_loaded:
-            if not has_sets:
-                box1_row2.operator("scene.wow_wmo_import_doodad_from_wmv", text='M2', icon = 'LOAD_FACTORY')
-
-                box1_row2.operator("scene.wow_import_last_wmo_from_wmv", text = 'WMO', icon = 'APPEND_BLEND')
-
-        box1_col.operator("scene.wow_add_scale_reference", text = 'Scale', icon = 'OUTLINER_OB_ARMATURE')
-
-
 class ConvertOperators(bpy.types.Menu):
     bl_label = "Convert"
     bl_idname = "view3D.convert_to_menu"
@@ -1056,6 +1053,25 @@ class ConvertOperators(bpy.types.Menu):
         col.operator("scene.wow_selected_objects_to_wow_material", text='To WMO material', icon='SMOOTH')
         col.operator("scene.wow_selected_objects_to_portals", text='To WMO portal', icon='MOD_MIRROR')
         col.operator("scene.wow_texface_to_material", text='Texface to material', icon='TEXTURE_DATA')
+
+class INFO_MT_mesh_WoW_components_add(bpy.types.Menu):
+    bl_label = "WoW"
+    bl_idname = "view3D.add_wow_components_menu"
+    bl_options = {'REGISTER'}
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+        col.operator("scene.wow_add_fog", text = 'Fog', icon = 'GROUP_VERTEX')
+        col.operator("scene.wow_add_water", text = 'Water', icon = 'MOD_WAVE')
+        col.operator("scene.wow_add_scale_reference", text = 'Scale', icon = 'OUTLINER_OB_ARMATURE')
+
+        if hasattr(bpy, "wow_game_data") and bpy.wow_game_data.files:
+            col.operator("scene.wow_wmo_import_doodad_from_wmv", text='M2', icon='LOAD_FACTORY')
+            col.operator("scene.wow_import_last_wmo_from_wmv", text='WMO', icon='APPEND_BLEND')
+
+def wow_components_add_menu_item(self, context):
+    self.layout.menu("view3D.add_wow_components_menu", icon = 'SOLO_ON')
 
 
 class WoWToolsPanelLiquidFlags(bpy.types.Panel):
@@ -1100,6 +1116,7 @@ def register():
     RegisterWowPortalPlaneProperties()
     RegisterWoWVisibilityProperties()
     RegisterWowFogProperties()
+    bpy.types.INFO_MT_add.prepend(wow_components_add_menu_item)
 
 def unregister():
     UnregisterWowRootProperties()
@@ -1112,6 +1129,7 @@ def unregister():
     UnregisterWowPortalPlaneProperties()
     UnregisterWoWVisibilityProperties()
     UnregisterWowFogProperties()
+    bpy.types.INFO_MT_add.remove(wow_components_add_menu_item)
 
 
 

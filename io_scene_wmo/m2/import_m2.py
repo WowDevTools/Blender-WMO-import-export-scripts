@@ -170,7 +170,7 @@ class WoW_WMO_Import_Doodad_WMV(bpy.types.Operator):
 
         else:
             self.report({'ERROR'}, "Failed to import model. "
-            "ave your blendfile first.")
+            "Save your blendfile first.")
             return {'CANCELLED'}
 
         return {'FINISHED'}
