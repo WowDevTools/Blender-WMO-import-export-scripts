@@ -1152,21 +1152,21 @@ class BSP_PLANE_TYPE:
 class BSP_Node:
     def __init__(self):
         self.PlaneType = 0
-        self.Childrens = (0, 0)
+        self.Children = (0, 0)
         self.NumFaces = 0
         self.FirstFace = 0
         self.Dist = 0
 
     def Read(self, f):
         self.PlaneType = struct.unpack("h", f.read(2))[0]
-        self.Childrens = struct.unpack("hh", f.read(4))
+        self.Children = struct.unpack("hh", f.read(4))
         self.NumFaces = struct.unpack("H", f.read(2))[0]
         self.FirstFace = struct.unpack("I", f.read(4))[0]
         self.Dist = struct.unpack("f", f.read(4))[0]
 
     def Write(self, f):
         f.write(struct.pack('h', self.PlaneType))
-        f.write(struct.pack('hh', *self.Childrens))
+        f.write(struct.pack('hh', *self.Children))
         f.write(struct.pack('H', self.NumFaces))
         f.write(struct.pack('I', self.FirstFace))
         f.write(struct.pack('f', self.Dist))

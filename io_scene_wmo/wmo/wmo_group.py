@@ -1120,7 +1120,7 @@ class WMOGroupFile:
         else:
             self.modr = None
 
-        bsp_tree = BSP_Tree()
+        bsp_tree = BSPTree()
         bsp_tree.GenerateBSP(self.movt.Vertices, self.movi.Indices, obj.WowVertexInfo.NodeSize)
 
         self.mobn.Nodes = bsp_tree.Nodes

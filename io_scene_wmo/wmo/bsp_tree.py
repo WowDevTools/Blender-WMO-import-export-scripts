@@ -10,14 +10,14 @@ from mathutils import *
 import sys
 
 
-class BSP_Tree:
+class BSPTree:
     def __init__(self):
         self.Nodes = []
         self.Faces = []
         pass
 
     # split box in two smaller, at dist calculated internally
-    def SplitBox(self, box, facesInBox, vertices, indices, axis):
+    def split_box(self, box, facesInBox, vertices, indices, axis):
         # compute average of vertice positions
         """count = 0
         sum = 0
@@ -30,36 +30,36 @@ class BSP_Tree:
 
         # if split is out of box, just split in half
         if(splitDist <= box[0][axis] or splitDist >= box[1][axis]):"""
-        splitDist = (box[0][axis] + box[1][axis]) / 2
+        split_dist = (box[0][axis] + box[1][axis]) / 2
 
-        newBox1 = (Vector((box[0][0], box[0][1], box[0][2])), Vector((box[1][0], box[1][1], box[1][2])))
-        newBox1[1][axis] = splitDist
+        new_box1 = (Vector((box[0][0], box[0][1], box[0][2])), Vector((box[1][0], box[1][1], box[1][2])))
+        new_box1[1][axis] = split_dist
 
-        newBox2 = (Vector((box[0][0], box[0][1], box[0][2])), Vector((box[1][0], box[1][1], box[1][2])))
-        newBox2[0][axis] = splitDist
+        new_box2 = (Vector((box[0][0], box[0][1], box[0][2])), Vector((box[1][0], box[1][1], box[1][2])))
+        new_box2[0][axis] = split_dist
 
         # split dist absolute coordinate on split axis
         # ret_splitDist = splitDist - ((box[0][axis] + box[1][axis]) / 2)
-        return (splitDist, newBox1, newBox2)
+        return split_dist, new_box1, new_box2
 
     # return index of add
-    def AddNode(self, box, facesInBox, vertices, indices, maxFaceCount):
+    def add_node(self, box, faces_in_box, vertices, indices, max_face_count):
 
         node = BSP_Node()
 
-        iNode = len(self.Nodes)
+        i_node = len(self.Nodes)
         self.Nodes.append(node)
 
         # part contain less than 30 polygons, lets end this, add final node
-        if (len(facesInBox) <= maxFaceCount):
+        if len(faces_in_box) <= max_face_count:
             node.PlaneType = BSP_PLANE_TYPE.Leaf
-            node.Childrens = (-1, -1)
-            node.NumFaces = len(facesInBox)
+            node.Children = (-1, -1)
+            node.NumFaces = len(faces_in_box)
             node.FirstFace = len(self.Faces)
             node.Dist = 0
 
-            self.Faces.extend(facesInBox)
-            return iNode
+            self.Faces.extend(faces_in_box)
+            return i_node
 
         # split bigger side
         box_size_x = box[1][0] - box[0][0]
@@ -68,72 +68,72 @@ class BSP_Tree:
 
         if box_size_x > box_size_y and box_size_x > box_size_z:
             # split on axis X (YZ plane)
-            planeType = BSP_PLANE_TYPE.YZ_plane
+            plane_type = BSP_PLANE_TYPE.YZ_plane
         elif box_size_y > box_size_x and box_size_y > box_size_z:
             # split on axis Y (XZ plane)
-            planeType = BSP_PLANE_TYPE.XZ_plane
+            plane_type = BSP_PLANE_TYPE.XZ_plane
         else:
             # split on axis Z (XY plane)
-            planeType = BSP_PLANE_TYPE.XY_plane
+            plane_type = BSP_PLANE_TYPE.XY_plane
 
-        splitResult = self.SplitBox(box, facesInBox, vertices, indices, planeType)
+        split_result = self.split_box(box, faces_in_box, vertices, indices, plane_type)
 
-        splitDist = splitResult[0]
+        split_dist = split_result[0]
 
-        child1_box = splitResult[1]
+        child1_box = split_result[1]
         child1_faces = []
 
         # calculate faces in child1 box
-        for f in facesInBox:
-            v0 = Vector((vertices[indices[f * 3]]))
-            v1 = Vector((vertices[indices[f * 3 + 1]]))
-            v2 = Vector((vertices[indices[f * 3 + 2]]))
-            tri = (v0, v1, v2)
-            if (CollideBoxTri(child1_box, tri)):
+        for f in faces_in_box:
+            tri = (Vector((vertices[indices[f * 3]])),
+                   Vector((vertices[indices[f * 3 + 1]])),
+                   Vector((vertices[indices[f * 3 + 2]])))
+
+            if collide_box_tri(child1_box, tri):
                 child1_faces.append(f)
 
-        child2_box = splitResult[2]
+        child2_box = split_result[2]
         child2_faces = []
 
         # calculate faces in child2 box
-        for f in facesInBox:
-            v0 = Vector((vertices[indices[f * 3]]))
-            v1 = Vector((vertices[indices[f * 3 + 1]]))
-            v2 = Vector((vertices[indices[f * 3 + 2]]))
-            tri = (v0, v1, v2)
-            if (CollideBoxTri(child2_box, tri)):
+        for f in faces_in_box:
+            tri = (Vector((vertices[indices[f * 3]])),
+                   Vector((vertices[indices[f * 3 + 1]])),
+                   Vector((vertices[indices[f * 3 + 2]])))
+
+            if collide_box_tri(child2_box, tri):
                 child2_faces.append(f)
 
         # dont add child if there is no faces inside
-        if (len(child1_faces) == 0):
-            iChild1 = -1
+        if len(child1_faces) == 0:
+            i_child1 = -1
         else:
-            iChild1 = self.AddNode(child1_box, child1_faces, vertices, indices, maxFaceCount)
+            i_child1 = self.add_node(child1_box, child1_faces, vertices, indices, max_face_count)
 
-        if (len(child2_faces) == 0):
-            iChild2 = -1
+        if len(child2_faces) == 0:
+            i_child2 = -1
         else:
-            iChild2 = self.AddNode(child2_box, child2_faces, vertices, indices, maxFaceCount)
+            i_child2 = self.add_node(child2_box, child2_faces, vertices, indices, max_face_count)
 
         # node = BSP_Node()
-        node.PlaneType = planeType
-        node.Childrens = (iChild1, iChild2)
+        node.PlaneType = plane_type
+        node.Children = (i_child1, i_child2)
         node.NumFaces = 0
         node.FirstFace = 0
-        node.Dist = splitDist
+        node.Dist = split_dist
 
-        return iNode
+        return i_node
 
-    def GenerateBSP(self, vertices, indices, maxFaceCount):
-        resursLimit = sys.getrecursionlimit()
+    def GenerateBSP(self, vertices, indices, max_face_count):
+        resurs_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(100000)
 
         faces = []
         for iFace in range(len(indices) // 3):
             faces.append(iFace)
 
-        box = CalculateBoundingBox(vertices)
-        self.AddNode(box, faces, vertices, indices, maxFaceCount)
+        box = calculate_bounding_box(vertices)
+        self.add_node(box, faces, vertices, indices, max_face_count)
 
-        sys.setrecursionlimit(resursLimit)
+        sys.setrecursionlimit(resurs_limit)
 

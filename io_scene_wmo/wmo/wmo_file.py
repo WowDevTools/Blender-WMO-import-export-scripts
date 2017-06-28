@@ -16,8 +16,8 @@ class WMOFile:
         self.filepath = filepath
         self.groups = []
         self.bl_scene_objects = BlenderSceneObjects()
-        self.materialLookup = {}
-        self.textureLookup = {}
+        self.material_lookup = {}
+        self.texture_lookup = {}
 
         self.mver = MVER_chunk()
         self.mohd = MOHD_chunk()
@@ -143,7 +143,7 @@ class WMOFile:
 
         mat1 = get_attributes(material.WowMaterial)
 
-        for material2, index in self.materialLookup.items():
+        for material2, index in self.material_lookup.items():
 
             if mat1 == get_attributes(material2.WowMaterial):
                 return index
@@ -161,10 +161,10 @@ class WMOFile:
         else:
             # else add it then return index
             if not mat.WowMaterial.Enabled:
-                self.materialLookup[mat] = 0xFF
+                self.material_lookup[mat] = 0xFF
                 return 0xFF
             else:
-                self.materialLookup[mat] = len(self.momt.Materials)
+                self.material_lookup[mat] = len(self.momt.Materials)
 
                 WowMat = WMO_Material()
 
@@ -172,11 +172,11 @@ class WMOFile:
                 WowMat.BlendMode = int(mat.WowMaterial.BlendingMode)
                 WowMat.TerrainType = int(mat.WowMaterial.TerrainType)
 
-                if mat.WowMaterial.Texture1 in self.textureLookup:
-                    WowMat.Texture1Ofs = self.textureLookup[mat.WowMaterial.Texture1]
+                if mat.WowMaterial.Texture1 in self.texture_lookup:
+                    WowMat.Texture1Ofs = self.texture_lookup[mat.WowMaterial.Texture1]
                 else:
-                    self.textureLookup[mat.WowMaterial.Texture1] = self.motx.AddString(mat.WowMaterial.Texture1)
-                    WowMat.Texture1Ofs = self.textureLookup[mat.WowMaterial.Texture1]
+                    self.texture_lookup[mat.WowMaterial.Texture1] = self.motx.AddString(mat.WowMaterial.Texture1)
+                    WowMat.Texture1Ofs = self.texture_lookup[mat.WowMaterial.Texture1]
 
                 WowMat.EmissiveColor = (int(mat.WowMaterial.EmissiveColor[0] * 255),
                                         int(mat.WowMaterial.EmissiveColor[1] * 255),
@@ -185,11 +185,11 @@ class WMOFile:
 
                 WowMat.TextureFlags1 = 0
 
-                if mat.WowMaterial.Texture2 in self.textureLookup:
-                    WowMat.Texture2Ofs = self.textureLookup[mat.WowMaterial.Texture2]
+                if mat.WowMaterial.Texture2 in self.texture_lookup:
+                    WowMat.Texture2Ofs = self.texture_lookup[mat.WowMaterial.Texture2]
                 else:
-                    self.textureLookup[mat.WowMaterial.Texture2] = self.motx.AddString(mat.WowMaterial.Texture2)
-                    WowMat.Texture2Ofs = self.textureLookup[mat.WowMaterial.Texture2]
+                    self.texture_lookup[mat.WowMaterial.Texture2] = self.motx.AddString(mat.WowMaterial.Texture2)
+                    WowMat.Texture2Ofs = self.texture_lookup[mat.WowMaterial.Texture2]
 
                 WowMat.DiffColor = (int(mat.WowMaterial.DiffColor[0] * 255),
                                     int(mat.WowMaterial.DiffColor[1] * 255),
@@ -201,7 +201,7 @@ class WMOFile:
 
                 self.momt.Materials.append(WowMat)
 
-                return self.materialLookup[mat]
+                return self.material_lookup[mat]
 
     def add_group_info(self, flags, bounding_box, name, desc):
         """ Add group info, then return offset of name and desc in a tuple """
@@ -220,7 +220,7 @@ class WMOFile:
 
     def load_materials(self, name, texture_path):
         """ Load materials from WoW WMO root file """
-        self.materialLookup = {}
+        self.material_lookup = {}
 
         images = []
         imageNames = []
@@ -235,14 +235,14 @@ class WMOFile:
             mat.transparency_method = 'Z_TRANSPARENCY'
             mat.use_transparency = True
 
-        self.materialLookup[0xFF] = mat
+        self.material_lookup[0xFF] = mat
 
         for index, wmo_material in enumerate(self.momt.Materials):
             texture1 = self.motx.GetString(wmo_material.Texture1Ofs)
             material_name = os.path.basename(texture1)[:-4] + '.png'
 
             mat = bpy.data.materials.new(material_name)
-            self.materialLookup[index] = mat
+            self.material_lookup[index] = mat
 
             mat.WowMaterial.Enabled = True
             mat.WowMaterial.Shader = str(wmo_material.Shader)
