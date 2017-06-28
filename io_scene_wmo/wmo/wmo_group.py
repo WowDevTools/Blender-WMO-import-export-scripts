@@ -281,11 +281,11 @@ class WMOGroupFile:
             for i in range(nodes[i_node].FirstFace, nodes[i_node].FirstFace + nodes[i_node].NumFaces):
                 nodeIndices.append(faces[i])
 
-        if nodes[i_node].Childrens[0] != -1:
-            nodeIndices.extend(self.get_bsp_node_indices(nodes[i_node].Childrens[0], nodes, faces, indices))
+        if nodes[i_node].Children[0] != -1:
+            nodeIndices.extend(self.get_bsp_node_indices(nodes[i_node].Children[0], nodes, faces, indices))
 
-        if nodes[i_node].Childrens[1] != -1:
-            nodeIndices.extend(self.get_bsp_node_indices(nodes[i_node].Childrens[1], nodes, faces, indices))
+        if nodes[i_node].Children[1] != -1:
+            nodeIndices.extend(self.get_bsp_node_indices(nodes[i_node].Children[1], nodes, faces, indices))
 
         return nodeIndices
 
