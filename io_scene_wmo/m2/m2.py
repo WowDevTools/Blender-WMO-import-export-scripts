@@ -1169,7 +1169,7 @@ class M2File:
         self.cameras = ReadBlock(f, hdr.cameras, Camera, self.anim_files)
         self.camera_lookup = ReadBlock(f, hdr.camera_lookup, Lookup)
         self.ribbon_emitters = ReadBlock(f, hdr.ribbon_emitters, Ribbon, self.anim_files)
-        self.particle_emitters = ReadBlock(f, hdr.particle_emitters, Particle, self.anim_files)
+        #self.particle_emitters = ReadBlock(f, hdr.particle_emitters, Particle, self.anim_files)
 
         f.close()
 
