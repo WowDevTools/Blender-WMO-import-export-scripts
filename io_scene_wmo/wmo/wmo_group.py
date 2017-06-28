@@ -268,7 +268,7 @@ class WMOGroupFile:
         else:
             real_liquid_type = self.from_wmo_liquid_type(self.mogp.LiquidType)
 
-        obj.WowLiquid.Color = self.root.materialLookup[self.mliq.materialID].WowMaterial.DiffColor
+        obj.WowLiquid.Color = self.root.material_lookup[self.mliq.materialID].WowMaterial.DiffColor
         obj.WowLiquid.LiquidType = str(real_liquid_type)
         obj.WowLiquid.WMOGroup = group_name
 
@@ -407,12 +407,12 @@ class WMOGroupFile:
         # add materials
         for i in range(len(self.moba.Batches)):
 
-            material = mesh.materials.get(self.root.materialLookup[self.moba.Batches[i].MaterialID].name)
+            material = mesh.materials.get(self.root.material_lookup[self.moba.Batches[i].MaterialID].name)
 
             if not material:
                 mat_id = len(mesh.materials)
                 material_indices[self.moba.Batches[i].MaterialID] = mat_id
-                material = self.root.materialLookup[self.moba.Batches[i].MaterialID]
+                material = self.root.material_lookup[self.moba.Batches[i].MaterialID]
 
                 image = self.get_material_viewport_image(material)
                 material_viewport_textures[mat_id] = image
@@ -423,7 +423,7 @@ class WMOGroupFile:
                     texture_slot = material.texture_slots.add()
                     texture_slot.texture = texture
 
-                mesh.materials.append(self.root.materialLookup[self.moba.Batches[i].MaterialID])
+                mesh.materials.append(self.root.material_lookup[self.moba.Batches[i].MaterialID])
 
                 material.WowMaterial.Enabled = True
 
@@ -441,7 +441,7 @@ class WMOGroupFile:
         for i in self.mopy.TriangleMaterials:
             if i.MaterialID == 0xFF:
                 mat_ghost_ID = len(mesh.materials)
-                mesh.materials.append(self.root.materialLookup[0xFF])
+                mesh.materials.append(self.root.material_lookup[0xFF])
                 material_viewport_textures[mat_ghost_ID] = None
                 material_indices[0xFF] = mat_ghost_ID
                 break
