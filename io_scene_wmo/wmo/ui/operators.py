@@ -436,8 +436,7 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
     Action = bpy.props.EnumProperty(
         items=[
             ('SELECT', "Select", "Rotate all instances of selected doodads", 'PMARKER_ACT', 0),
-            (
-            'REPLACE', "Replace", "Replace all instances of selected doodads with last M2 from WMV", 'FILE_REFRESH', 1),
+            ('REPLACE', "Replace", "Replace all instances of selected doodads with last M2 from WMV", 'FILE_REFRESH', 1),
             ('RESIZE', "Resize", "Resize all instances of selected doodads", 'FULLSCREEN_ENTER', 2),
             ('DELETE', "Delete", "Delete all instances of selected doodads", 'CANCEL', 3),
             ('ROTATE', "Rotate", "Rotate all instances of selected doodads", 'LOOP_FORWARDS', 4)],
@@ -519,6 +518,8 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
                         rotation = obj.rotation_quaternion
                         scale = obj.scale
                         parent = obj.parent
+                        color = obj.WowDoodad.Color
+                        flags = obj.WowDoodad.Flags
 
                         bpy.data.objects.remove(obj, do_unlink=True)
 
@@ -531,6 +532,8 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
                         obj.rotation_quaternion = rotation
                         obj.scale = scale
                         obj.parent = parent
+                        obj.WowDoodad.Color = color
+                        obj.WoWDoodad.Flags = flags
                         objects_to_select.append(obj)
 
                     elif self.Action == 'RESIZE':

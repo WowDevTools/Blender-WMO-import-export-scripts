@@ -162,7 +162,6 @@ class WMOGroupFile:
                 pass
         return None
 
-
     def from_wmo_liquid_type(self, basic_liquid_type):
         """ Convert simplified WMO liquid type IDs to real LiquidType.dbc IDs """
         real_liquid_type = 0
