@@ -35,73 +35,73 @@ class WMOGroupFile:
     def read(self, f):
         """ Read WoW WMO group file """
 
-        self.mver.Read(f)
-        self.mogp.Read(f)
-        self.mopy.Read(f)
-        self.movi.Read(f)
-        self.movt.Read(f)
-        self.monr.Read(f)
-        self.motv.Read(f)
-        self.moba.Read(f)
+        self.mver.read(f)
+        self.mogp.read(f)
+        self.mopy.read(f)
+        self.movi.read(f)
+        self.movt.read(f)
+        self.monr.read(f)
+        self.motv.read(f)
+        self.moba.read(f)
 
         if self.mogp.Flags & MOGP_FLAG.HasLight:
-            self.molr.Read(f)
+            self.molr.read(f)
 
         if self.mogp.Flags & MOGP_FLAG.HasDoodads:
-            self.modr.Read(f)
+            self.modr.read(f)
 
         if self.mogp.Flags & MOGP_FLAG.HasCollision:
-            self.mobn.Read(f)
-            self.mobr.Read(f)
+            self.mobn.read(f)
+            self.mobr.read(f)
 
         if self.mogp.Flags & MOGP_FLAG.HasVertexColor:
-            self.mocv.Read(f)
+            self.mocv.read(f)
 
         if self.mogp.Flags & MOGP_FLAG.HasWater:
             if self.mogp.LiquidType in {3, 4, 7, 8, 11, 12}:
                 self.mliq.LiquidMaterial = False
-            self.mliq.Read(f)
+            self.mliq.read(f)
 
         if self.mogp.Flags & MOGP_FLAG.HasTwoMOTV:
-            self.motv2.Read(f)
+            self.motv2.read(f)
 
         if self.mogp.Flags & MOGP_FLAG.HasTwoMOCV:
-            self.mocv2.Read(f)
+            self.mocv2.read(f)
 
     def write(self, f):
         """ Write a saved WoW WMO group to a file """
         print("\nWriting file: <<" +  os.path.basename(f.name) + ">>")
 
-        self.mver.Write(f)
+        self.mver.write(f)
 
         f.seek(0x58)
-        self.mopy.Write(f)
-        self.movi.Write(f)
-        self.movt.Write(f)
-        self.monr.Write(f)
-        self.motv.Write(f)
-        self.moba.Write(f)
+        self.mopy.write(f)
+        self.movi.write(f)
+        self.movt.write(f)
+        self.monr.write(f)
+        self.motv.write(f)
+        self.moba.write(f)
 
         if self.molr:
-            self.molr.Write(f)
+            self.molr.write(f)
 
         if self.modr:
-            self.modr.Write(f)
+            self.modr.write(f)
 
-        self.mobn.Write(f)
-        self.mobr.Write(f)
+        self.mobn.write(f)
+        self.mobr.write(f)
 
         if self.mocv:
-            self.mocv.Write(f)
+            self.mocv.write(f)
 
         if self.mliq:
-            self.mliq.Write(f)
+            self.mliq.write(f)
 
         if self.motv2:
-            self.motv2.Write(f)
+            self.motv2.write(f)
 
         if self.mocv2:
-            self.mocv2.Write(f)
+            self.mocv2.write(f)
 
         # get file size
         f.seek(0, 2)
@@ -109,7 +109,7 @@ class WMOGroupFile:
 
         # write header
         f.seek(0xC)
-        self.mogp.Write(f)
+        self.mogp.write(f)
 
     @staticmethod
     def get_avg(list):
@@ -494,7 +494,7 @@ class WMOGroupFile:
 
         # add WMO group properties
         nobj.WowWMOGroup.Enabled = True
-        nobj.WowWMOGroup.GroupDesc = self.root.mogn.GetString(self.mogp.DescGroupNameOfs)
+        nobj.WowWMOGroup.GroupDesc = self.root.mogn.get_string(self.mogp.DescGroupNameOfs)
         nobj.WowWMOGroup.GroupDBCid = int(self.mogp.GroupID)
 
         nobj.WowWMOGroup.Fog1 = base_name + "_Fog_" + str(self.mogp.FogIndices[0]).zfill(2)

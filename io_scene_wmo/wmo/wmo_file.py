@@ -48,30 +48,30 @@ class WMOFile:
             # check if file is a WMO root or a WMO group, or unknown
             f.seek(12)
             hdr = ChunkHeader()
-            hdr.Read(f)
+            hdr.read(f)
             f.seek(0)
 
             if hdr.Magic == "DHOM":
-                self.mver.Read(f)
-                self.mohd.Read(f)
-                self.motx.Read(f)
-                self.momt.Read(f)
-                self.mogn.Read(f)
-                self.mogi.Read(f)
-                self.mosb.Read(f)
-                self.mopv.Read(f)
-                self.mopt.Read(f)
-                self.mopr.Read(f)
-                self.movv.Read(f)
-                self.movb.Read(f)
-                self.molt.Read(f)
-                self.mods.Read(f)
-                self.modn.Read(f)
-                self.modd.Read(f)
-                self.mfog.Read(f)
+                self.mver.read(f)
+                self.mohd.read(f)
+                self.motx.read(f)
+                self.momt.read(f)
+                self.mogn.read(f)
+                self.mogi.read(f)
+                self.mosb.read(f)
+                self.mopv.read(f)
+                self.mopt.read(f)
+                self.mopr.read(f)
+                self.movv.read(f)
+                self.movb.read(f)
+                self.molt.read(f)
+                self.mods.read(f)
+                self.modn.read(f)
+                self.modd.read(f)
+                self.mfog.read(f)
 
                 if f.tell() != os.fstat(f.fileno()).st_size:
-                    self.mcvp.Read(f)
+                    self.mcvp.read(f)
 
                 print("\nDone reading root file: <<" + os.path.basename(f.name) + ">>")
                 root_name = os.path.splitext(self.filepath)[0]
@@ -105,23 +105,23 @@ class WMOFile:
         with open(self.filepath, 'wb') as f:
             print("\n\n=== Writing root file ===")
 
-            self.mver.Write(f)
-            self.mohd.Write(f)
-            self.motx.Write(f)
-            self.momt.Write(f)
-            self.mogn.Write(f)
-            self.mogi.Write(f)
-            self.mosb.Write(f)
-            self.mopv.Write(f)
-            self.mopt.Write(f)
-            self.mopr.Write(f)
-            self.movv.Write(f)
-            self.movb.Write(f)
-            self.molt.Write(f)
-            self.mods.Write(f)
-            self.modn.Write(f)
-            self.modd.Write(f)
-            self.mfog.Write(f)
+            self.mver.write(f)
+            self.mohd.write(f)
+            self.motx.write(f)
+            self.momt.write(f)
+            self.mogn.write(f)
+            self.mogi.write(f)
+            self.mosb.write(f)
+            self.mopv.write(f)
+            self.mopt.write(f)
+            self.mopr.write(f)
+            self.movv.write(f)
+            self.movb.write(f)
+            self.molt.write(f)
+            self.mods.write(f)
+            self.modn.write(f)
+            self.modd.write(f)
+            self.mfog.write(f)
 
             print("\nDone writing root file: <<" + os.path.basename(f.name) + ">>")
 
@@ -175,7 +175,7 @@ class WMOFile:
                 if mat.WowMaterial.Texture1 in self.texture_lookup:
                     WowMat.Texture1Ofs = self.texture_lookup[mat.WowMaterial.Texture1]
                 else:
-                    self.texture_lookup[mat.WowMaterial.Texture1] = self.motx.AddString(mat.WowMaterial.Texture1)
+                    self.texture_lookup[mat.WowMaterial.Texture1] = self.motx.add_string(mat.WowMaterial.Texture1)
                     WowMat.Texture1Ofs = self.texture_lookup[mat.WowMaterial.Texture1]
 
                 WowMat.EmissiveColor = (int(mat.WowMaterial.EmissiveColor[0] * 255),
@@ -188,7 +188,7 @@ class WMOFile:
                 if mat.WowMaterial.Texture2 in self.texture_lookup:
                     WowMat.Texture2Ofs = self.texture_lookup[mat.WowMaterial.Texture2]
                 else:
-                    self.texture_lookup[mat.WowMaterial.Texture2] = self.motx.AddString(mat.WowMaterial.Texture2)
+                    self.texture_lookup[mat.WowMaterial.Texture2] = self.motx.add_string(mat.WowMaterial.Texture2)
                     WowMat.Texture2Ofs = self.texture_lookup[mat.WowMaterial.Texture2]
 
                 WowMat.DiffColor = (int(mat.WowMaterial.DiffColor[0] * 255),
@@ -210,9 +210,9 @@ class WMOFile:
         group_info.Flags = flags  # 8
         group_info.BoundingBoxCorner1 = bounding_box[0].copy()
         group_info.BoundingBoxCorner2 = bounding_box[1].copy()
-        group_info.NameOfs = self.mogn.AddString(name)  # 0xFFFFFFFF
+        group_info.NameOfs = self.mogn.add_string(name)  # 0xFFFFFFFF
 
-        desc_ofs = self.mogn.AddString(desc)
+        desc_ofs = self.mogn.add_string(desc)
 
         self.mogi.Infos.append(group_info)
 
@@ -238,7 +238,7 @@ class WMOFile:
         self.material_lookup[0xFF] = mat
 
         for index, wmo_material in enumerate(self.momt.Materials):
-            texture1 = self.motx.GetString(wmo_material.Texture1Ofs)
+            texture1 = self.motx.get_string(wmo_material.Texture1Ofs)
             material_name = os.path.basename(texture1)[:-4] + '.png'
 
             mat = bpy.data.materials.new(material_name)
@@ -249,7 +249,7 @@ class WMOFile:
             mat.WowMaterial.BlendingMode = str(wmo_material.BlendMode)
             mat.WowMaterial.Texture1 = texture1
             mat.WowMaterial.EmissiveColor = [x / 255 for x in wmo_material.EmissiveColor[0:4]]
-            mat.WowMaterial.Texture2 = self.motx.GetString(wmo_material.Texture2Ofs)
+            mat.WowMaterial.Texture2 = self.motx.get_string(wmo_material.Texture2Ofs)
             mat.WowMaterial.DiffColor = [x / 255 for x in wmo_material.DiffColor[0:4]]
             mat.WowMaterial.TerrainType = str(wmo_material.TerrainType)
 
@@ -332,23 +332,19 @@ class WMOFile:
 
             l = self.molt.Lights[i]
 
-            if (l.LightType == 0):  # omni
-                l_type = 'POINT'
-            elif (l.LightType == 1):  # spot
-                l_type = 'SPOT'
-            elif (l.LightType == 2):  # direct
-                l_type = 'SUN'
-            elif (l.LightType == 3):  # ambient
-                l_type = 'POINT'  # use point with no attenuation
-            else:
-                raise Exception("Light type unknown :" + str(l.LightType) + "(light nbr : " + str(i) + ")")
+            bl_light_types = ['POINT', 'SPOT', 'SUN', 'POINT']
+
+            try:
+                l_type = bl_light_types[l.LightType]
+            except IndexError:
+                raise Exception("Light type unknown : {} (light nbr : {})".format(str(l.LightType), str(i)))
 
             light_name = name + "_Light_" + str(i).zfill(2)
             light = bpy.data.lamps.new(light_name, l_type)
             light.color = (l.Color[2] / 255, l.Color[1] / 255, l.Color[0] / 255)
             light.energy = l.Intensity
 
-            if l.LightType == 0 or l.LightType == 1:
+            if l.LightType in {0, 1}:
                 light.falloff_type = 'INVERSE_LINEAR'
                 light.distance = l.Unknown4 / 2
                 light.use_sphere = True
@@ -452,7 +448,7 @@ class WMOFile:
 
                 for i in range(doodad_set.StartDoodad, doodad_set.StartDoodad + doodad_set.nDoodads):
                     doodad = self.modd.Definitions[i]
-                    doodad_path = os.path.splitext(self.modn.GetString(doodad.NameOfs))[0] + ".m2"
+                    doodad_path = os.path.splitext(self.modn.get_string(doodad.NameOfs))[0] + ".m2"
 
                     nobj = None
                     obj = obj_map.get(doodad_path)
@@ -536,7 +532,7 @@ class WMOFile:
                 if property_definition.NameOfs not in string_filter:
                     path = scene.WoWRoot.MODN_StringTable.add()
                     path.Ofs = property_definition.NameOfs
-                    path.String = self.modn.GetString(property_definition.NameOfs)
+                    path.String = self.modn.get_string(property_definition.NameOfs)
                     string_filter.append(property_definition.NameOfs)
 
     def load_portals(self, name, root):
@@ -566,7 +562,7 @@ class WMOFile:
 
             for relation in self.mopr.Relationships:
                 if relation.PortalIndex == index:
-                    group_name = self.mogn.GetString(self.groups[relation.GroupIndex].mogp.GroupNameOfs)
+                    group_name = self.mogn.get_string(self.groups[relation.GroupIndex].mogp.GroupNameOfs)
                     if first_relationship:
                         obj.WowPortalPlane.First = group_name
                         first_relationship = False

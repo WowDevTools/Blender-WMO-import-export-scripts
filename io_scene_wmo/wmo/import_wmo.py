@@ -28,7 +28,7 @@ def import_wmo_to_blender_scene(filepath, load_textures, import_doodads):
         if game_data.files:
             if load_textures:
                 print("\n\n### Extracting textures ###")
-                game_data.extract_textures_as_png(os.path.dirname(filepath), wmo.motx.GetAllStrings())
+                game_data.extract_textures_as_png(os.path.dirname(filepath), wmo.motx.get_all_strings())
         else:
             print("\nFailed to load textures because game data was not loaded.")
 
@@ -45,7 +45,7 @@ def import_wmo_to_blender_scene(filepath, load_textures, import_doodads):
     print("\n\n### Importing WMO groups ###")
 
     for group in wmo.groups:
-        obj_name = wmo.mogn.GetString(group.mogp.GroupNameOfs)
+        obj_name = wmo.mogn.get_string(group.mogp.GroupNameOfs)
         print("\nImporting group <<{}>>".format(obj_name))
         group.load_object(obj_name, display_name, import_doodads)
 
