@@ -111,7 +111,6 @@ class WMOGroupFile:
         f.seek(0xC)
         self.mogp.write(f)
 
-    @staticmethod
     def get_avg(list):
         """ Get single average normal vector from a split normal """
         normal = [0.0, 0.0, 0.0]
@@ -125,7 +124,6 @@ class WMOGroupFile:
 
         return normal
 
-    @staticmethod
     def comp_colors(color1, color2):
         """ Compare two colors """
 
@@ -134,15 +132,6 @@ class WMOGroupFile:
                 return False
         return True
 
-    @staticmethod
-    def ret_min(a, b):
-        return a if a < b else b
-
-    @staticmethod
-    def ret_max(a, b):
-        return a if a > b else b
-
-    @staticmethod
     def get_batch_type(polygon, mesh, vg_index_a, vg_index_b):
         """ Find which MOBA batch type a passed polygon belongs two """
         counter_a = 0
@@ -169,6 +158,7 @@ class WMOGroupFile:
             except:
                 pass
         return None
+
 
     def from_wmo_liquid_type(self, basic_liquid_type):
         """ Convert simplified WMO liquid type IDs to real LiquidType.dbc IDs """
@@ -937,8 +927,8 @@ class WMOGroupFile:
                         new_index_last += 1
                         self.movt.Vertices[new_index_current] = tuple(mesh.vertices[vertex_index].co)
 
-                    sentry_indices[0] = self.ret_min(sentry_indices[0], new_index_current)
-                    sentry_indices[1] = self.ret_max(sentry_indices[1], new_index_current)
+                    sentry_indices[0] = min(sentry_indices[0], new_index_current)
+                    sentry_indices[1] = max(sentry_indices[1], new_index_current)
 
                     self.movi.Indices.append(new_index_current)
 
@@ -1017,8 +1007,8 @@ class WMOGroupFile:
                     for i in range(0, 2):
                         for j in range(0, 3):
                             idx = i * 3 + j
-                            bounding_box[idx] = self.ret_min(bounding_box[idx], floor(self.movt.Vertices[new_index][j])) \
-                                               if i == 0 else self.ret_max(bounding_box[idx], ceil(self.movt.Vertices[new_index][j]))
+                            bounding_box[idx] = min(bounding_box[idx], floor(self.movt.Vertices[new_index][j])) \
+                                               if i == 0 else max(bounding_box[idx], ceil(self.movt.Vertices[new_index][j]))
 
             # skip batch writing if processed polyBatch is collision
             if batch_key[0] == 0xFF:
@@ -1054,8 +1044,8 @@ class WMOGroupFile:
 
         for vtx in self.movt.Vertices:
             for i in range(0, 3):
-                self.mogp.BoundingBoxCorner1[i] = self.ret_min(self.mogp.BoundingBoxCorner1[i], floor(vtx[i]))
-                self.mogp.BoundingBoxCorner2[i] = self.ret_max(self.mogp.BoundingBoxCorner2[i], ceil(vtx[i]))
+                self.mogp.BoundingBoxCorner1[i] = min(self.mogp.BoundingBoxCorner1[i], floor(vtx[i]))
+                self.mogp.BoundingBoxCorner2[i] = max(self.mogp.BoundingBoxCorner2[i], ceil(vtx[i]))
 
         self.mogp.Flags |= MOGP_FLAG.HasCollision # /!\ MUST HAVE 0x1 FLAG ELSE THE GAME CRASH !
         if '0' in obj.WowWMOGroup.Flags:
