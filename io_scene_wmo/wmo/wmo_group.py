@@ -111,6 +111,7 @@ class WMOGroupFile:
         f.seek(0xC)
         self.mogp.write(f)
 
+    @staticmethod
     def get_avg(list):
         """ Get single average normal vector from a split normal """
         normal = [0.0, 0.0, 0.0]
@@ -124,6 +125,7 @@ class WMOGroupFile:
 
         return normal
 
+    @staticmethod
     def comp_colors(color1, color2):
         """ Compare two colors """
 
@@ -132,6 +134,7 @@ class WMOGroupFile:
                 return False
         return True
 
+    @staticmethod
     def get_batch_type(polygon, mesh, vg_index_a, vg_index_b):
         """ Find which MOBA batch type a passed polygon belongs two """
         counter_a = 0
@@ -276,24 +279,24 @@ class WMOGroupFile:
     def get_bsp_node_indices(self, i_node, nodes, faces, indices):
         """ Get indices of a WMO BSP tree nodes """
         # last node in branch
-        nodeIndices = []
+        node_indices = []
         if nodes[i_node].PlaneType & BSP_PLANE_TYPE.Leaf:
             for i in range(nodes[i_node].FirstFace, nodes[i_node].FirstFace + nodes[i_node].NumFaces):
-                nodeIndices.append(faces[i])
+                node_indices.append(faces[i])
 
         if nodes[i_node].Children[0] != -1:
-            nodeIndices.extend(self.get_bsp_node_indices(nodes[i_node].Children[0], nodes, faces, indices))
+            node_indices.extend(self.get_bsp_node_indices(nodes[i_node].Children[0], nodes, faces, indices))
 
         if nodes[i_node].Children[1] != -1:
-            nodeIndices.extend(self.get_bsp_node_indices(nodes[i_node].Children[1], nodes, faces, indices))
+            node_indices.extend(self.get_bsp_node_indices(nodes[i_node].Children[1], nodes, faces, indices))
 
-        return nodeIndices
+        return node_indices
 
     def get_collision_indices(self):
         """ Get indices of a WMO BSP tree nodes that have collision """
-        nodeIndices = self.get_bsp_node_indices(0, self.mobn.Nodes, self.mobr.Faces, self.movi.Indices)
+        node_indices = self.get_bsp_node_indices(0, self.mobn.Nodes, self.mobr.Faces, self.movi.Indices)
         indices = []
-        for i in nodeIndices:
+        for i in node_indices:
             if not self.mopy.TriangleMaterials[i].Flags & 0x04:
                 indices.append(self.movi.Indices[i * 3])
                 indices.append(self.movi.Indices[i * 3 + 1])
@@ -309,7 +312,7 @@ class WMOGroupFile:
 
         vertices = self.movt.Vertices
         normals = self.monr.Normals
-        texCoords = self.motv.TexCoords
+        tex_coords = self.motv.TexCoords
 
         for i in range(0, len(self.movi.Indices), 3):
             faces.append(self.movi.Indices[i:i+3])
@@ -346,7 +349,7 @@ class WMOGroupFile:
             flag_set = nobj.WowWMOGroup.Flags
             flag_set.add('0')
             nobj.WowWMOGroup.Flags = flag_set
-            vertColor_layer1 = mesh.vertex_colors.new("Col")
+            vert_color_layer1 = mesh.vertex_colors.new("Col")
 
             lightmap = nobj.vertex_groups.new("Lightmap")
             nobj.WowVertexInfo.Lightmap = lightmap.name
@@ -355,7 +358,7 @@ class WMOGroupFile:
             # loops and vertex_color are in the same order, so we use it to find vertex index
             for i in range(len(mesh.loops)):
 
-                vertColor_layer1.data[i].color = (self.mocv.vertColors[mesh.loops[i].vertex_index][2] / 255,
+                vert_color_layer1.data[i].color = (self.mocv.vertColors[mesh.loops[i].vertex_index][2] / 255,
                                                   self.mocv.vertColors[mesh.loops[i].vertex_index][1] / 255,
                                                   self.mocv.vertColors[mesh.loops[i].vertex_index][0] / 255)
 
@@ -374,7 +377,7 @@ class WMOGroupFile:
         uv1 = mesh.uv_textures.new("UVMap")
         uv_layer1 = mesh.uv_layers[0]
         for i in range(len(uv_layer1.data)):
-            uv = texCoords[mesh.loops[i].vertex_index]
+            uv = tex_coords[mesh.loops[i].vertex_index]
             uv_layer1.data[i].uv = (uv[0], 1 - uv[1])
 
         if self.mogp.Flags & MOGP_FLAG.HasTwoMOTV:
@@ -392,15 +395,15 @@ class WMOGroupFile:
 
         # create batch vertex groups
 
-        batchMapA = None
-        batchMapB = None
+        batch_map_a = None
+        batch_map_b = None
 
         if self.mogp.nBatchesA != 0:
-            batchMapA = nobj.vertex_groups.new("BatchMapA")
-            nobj.WowVertexInfo.BatchTypeA = batchMapA.name
+            batch_map_a = nobj.vertex_groups.new("BatchMapA")
+            nobj.WowVertexInfo.BatchTypeA = batch_map_a.name
         if self.mogp.nBatchesB != 0:
-            batchMapB = nobj.vertex_groups.new("BatchMapB")
-            nobj.WowVertexInfo.BatchTypeB = batchMapB.name
+            batch_map_b = nobj.vertex_groups.new("BatchMapB")
+            nobj.WowVertexInfo.BatchTypeB = batch_map_b.name
 
         batch_material_map = {}
 
@@ -428,11 +431,11 @@ class WMOGroupFile:
                 material.WowMaterial.Enabled = True
 
             if i < self.mogp.nBatchesA:
-                batchMapA.add(self.movi.Indices[self.moba.Batches[i].StartTriangle
+                batch_map_a.add(self.movi.Indices[self.moba.Batches[i].StartTriangle
                               : self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle], 1.0, 'ADD')
 
             elif i < self.mogp.nBatchesA + self.mogp.nBatchesB:
-                batchMapB.add(self.movi.Indices[self.moba.Batches[i].StartTriangle
+                batch_map_b.add(self.movi.Indices[self.moba.Batches[i].StartTriangle
                               : self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle], 1.0, 'ADD')
 
             batch_material_map[(self.moba.Batches[i].StartTriangle // 3, (self.moba.Batches[i].StartTriangle + self.moba.Batches[i].nTriangle) // 3)] = self.moba.Batches[i].MaterialID
@@ -440,20 +443,20 @@ class WMOGroupFile:
         # add ghost material
         for i in self.mopy.TriangleMaterials:
             if i.MaterialID == 0xFF:
-                mat_ghost_ID = len(mesh.materials)
+                mat_ghost__id = len(mesh.materials)
                 mesh.materials.append(self.root.material_lookup[0xFF])
-                material_viewport_textures[mat_ghost_ID] = None
-                material_indices[0xFF] = mat_ghost_ID
+                material_viewport_textures[mat_ghost__id] = None
+                material_indices[0xFF] = mat_ghost__id
                 break
 
         # set faces material
         for i in range(len(mesh.polygons)):
-            matID = self.mopy.TriangleMaterials[i].MaterialID
+            mat_id = self.mopy.TriangleMaterials[i].MaterialID
 
-            mesh.polygons[i].material_index = material_indices[matID]
+            mesh.polygons[i].material_index = material_indices[mat_id]
 
             # set texture displayed in viewport
-            img = material_viewport_textures[material_indices[matID]]
+            img = material_viewport_textures[material_indices[mat_id]]
             if img is not None:
                 uv1.data[i].image = img
 
@@ -659,20 +662,20 @@ class WMOGroupFile:
         ob.select = False
         bpy.context.scene.objects.active = active
 
-        StartVertex = 0
+        start_vertex = 0
         sum = 0
         for vertex in mesh.vertices:
-            curSum = vertex.co[0] + vertex.co[1]
+            cur_sum = vertex.co[0] + vertex.co[1]
 
-            if curSum < sum:
-                StartVertex = vertex.index
-                sum = curSum
+            if cur_sum < sum:
+                start_vertex = vertex.index
+                sum = cur_sum
 
         self.mliq.xTiles = round(ob.dimensions[0] / 4.1666625)
         self.mliq.yTiles = round(ob.dimensions[1] / 4.1666625)
         self.mliq.xVerts = self.mliq.xTiles + 1
         self.mliq.yVerts = self.mliq.yTiles + 1
-        self.mliq.Position = mesh.vertices[StartVertex].co
+        self.mliq.Position = mesh.vertices[start_vertex].co
 
         self.mogp.Flags |= 0x1000 # do we really need that?
         self.mogp.LiquidType = int(ob.WowLiquid.LiquidType)
@@ -700,18 +703,18 @@ class WMOGroupFile:
 
             if mesh.uv_layers.active:
 
-                uvMap = {}
+                uv_map = {}
 
                 for poly in mesh.polygons:
                     for loop_index in poly.loop_indices:
-                        if mesh.loops[loop_index].vertex_index not in uvMap:
-                            uvMap[mesh.loops[loop_index].vertex_index] = mesh.uv_layers.active.data[loop_index].uv
+                        if mesh.loops[loop_index].vertex_index not in uv_map:
+                            uv_map[mesh.loops[loop_index].vertex_index] = mesh.uv_layers.active.data[loop_index].uv
 
                 for i in range(self.mliq.xVerts * self.mliq.yVerts):
                     vertex = MagmaVertex()
 
-                    vertex.u = int( uvMap.get(mesh.vertices[i].index)[0])
-                    vertex.v = int( uvMap.get(mesh.vertices[i].index)[1])
+                    vertex.u = int(uv_map.get(mesh.vertices[i].index)[0])
+                    vertex.v = int(uv_map.get(mesh.vertices[i].index)[1])
 
                     vertex.height = mesh.vertices[i].co[2]
                     self.mliq.VertexMap.append(vertex)
