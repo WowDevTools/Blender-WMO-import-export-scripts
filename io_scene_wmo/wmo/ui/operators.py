@@ -532,7 +532,7 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
                         obj.rotation_quaternion = rotation
                         obj.scale = scale
                         obj.parent = parent
-                        obj.WowDoodad.Color = color
+                        obj.WoWDoodad.Color = color
                         obj.WoWDoodad.Flags = flags
                         objects_to_select.append(obj)
 
