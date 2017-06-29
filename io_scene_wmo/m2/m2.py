@@ -1111,7 +1111,7 @@ def InAnimFile(a_name, anim):
     while len(scnd) < 2:
         scnd = "0" + scnd
     fname = a_name + first + "-" + scnd + ".anim"
-    return (os.path.isfile(fname), fname)
+    return os.path.isfile(fname), fname
 
 
 def CreateAnimFileName(a_name, anim, animfile):
@@ -1122,7 +1122,7 @@ def CreateAnimFileName(a_name, anim, animfile):
     while len(scnd) < 2:
         scnd = "0" + scnd
     fname = a_name + first + "-" + scnd + ".anim"
-    return (animfile[0], fname)
+    return animfile[0], fname
 
 
 class M2File:
