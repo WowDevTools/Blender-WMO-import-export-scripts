@@ -426,6 +426,41 @@ class DOODAD_SET_ADD(bpy.types.Operator):
 
         return {'FINISHED'}
 
+class DOODAD_SET_COLOR(bpy.types.Operator):
+    bl_idname = 'scene.wow_doodad_set_color'
+    bl_label = 'Set Doodad Color'
+    bl_description = "Set color to selected doodads"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    Color = bpy.props.FloatVectorProperty(
+        name='Color',
+        description='Color applied to doodads',
+        subtype='COLOR',
+        size=4
+    )
+
+    def draw(self, context):
+        self.layout.column().prop(self, "Color")
+
+    def execute(self, context):
+
+        if not bpy.context.selected_objects:
+            self.report({'ERROR'}, "No objects selected.")
+            return {'FINISHED'}
+
+        success = False
+        for obj in bpy.context.selected_objects:
+            if obj.WoWDoodad.Enabled:
+                obj.WoWDoodad.Color = self.Color
+                success = True
+
+        if success:
+            self.report({'INFO'}, "Successfully assigned color to selected doodads.")
+        else:
+            self.report({'ERROR'}, "No doodads found among selected objects.")
+
+        return {'FINISHED'}
+
 
 class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
     bl_idname = 'scene.wow_doodad_set_template_action'
@@ -1164,7 +1199,7 @@ class OBJECT_OP_To_WoWMaterial(bpy.types.Operator):
             return {'FINISHED'}
         else:
             self.report({'ERROR'}, "No WMO group objects found among selected objects")
-            return {'CANCELLED'}
+            return {'FINISHED'}
 
 
 class WOW_WMO_SELECT_ENTITY(bpy.types.Operator):

@@ -1037,6 +1037,7 @@ class WMOToolsPanelObjectMode(bpy.types.Panel):
             if not has_sets:
                 box_col2.operator("scene.wow_doodad_set_add", text='Add to doodadset', icon='ZOOMIN')
                 box_col2.operator("scene.wow_doodads_bake_color", text='Bake color', icon='GROUP_VCOL')
+                box_col2.operator("scene.wow_doodad_set_color", text='Set color', icon='COLOR')
                 box_col2.operator("scene.wow_doodad_set_template_action", text='Template action', icon='FORCE_MAGNETIC')
             else:
                 box_col2.operator("scene.wow_clear_preserved_doodad_sets", text='Clear doodad sets', icon='CANCEL')
