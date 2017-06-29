@@ -518,8 +518,8 @@ class DOODAD_SET_TEMPLATE_ACTION(bpy.types.Operator):
                         rotation = obj.rotation_quaternion
                         scale = obj.scale
                         parent = obj.parent
-                        color = obj.WowDoodad.Color
-                        flags = obj.WowDoodad.Flags
+                        color = obj.WoWDoodad.Color
+                        flags = obj.WoWDoodad.Flags
 
                         bpy.data.objects.remove(obj, do_unlink=True)
 
