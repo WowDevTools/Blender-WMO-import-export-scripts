@@ -806,14 +806,17 @@ class WMOGroupFile:
             mesh.calc_normals_split()
         else:
             bpy.ops.mesh.customdata_custom_splitnormals_add()
-            vertex_pos_tree = mathutils.kdtree.KDTree(len(original_obj.data.vertices))
+            original_obj.data.calc_normals_split()
+            loop_pos_tree = mathutils.kdtree.KDTree(len(original_obj.data.loops))
 
-            for index, vertex in enumerate(original_obj.data.vertices):
-                vertex_pos_tree.insert(tuple(original_obj.matrix_world * vertex.co), index)
+            for index, loop in enumerate(original_obj.data.loops):
+                vertex_pos = original_obj.matrix_world * original_obj.data.vertices[loop.vertex_index].co
+                loop_pos_tree.insert(tuple(vertex_pos), index)
 
-            vertex_pos_tree.balance()
+                loop_pos_tree.balance()
 
-            custom_normals = [vertex_pos_tree.find(tuple(mesh.vertices[loop.vertex_index].co)) for loop in mesh.loops]
+            custom_normals = [original_obj.data.loops[loop_pos_tree.find(tuple(mesh.vertices[loop.vertex_index].co))[1]].normal
+                              for loop in mesh.loops]
 
             mesh.normals_split_custom_set(custom_normals)
             mesh.calc_normals_split()
