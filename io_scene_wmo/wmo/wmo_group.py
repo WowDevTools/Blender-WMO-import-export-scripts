@@ -809,10 +809,10 @@ class WMOGroupFile:
             original_obj.data.calc_normals_split()
 
             obj.select = True
-            bpy.context.scene.object.active = original_obj
+            bpy.context.scene.objects.active = original_obj
             bpy.ops.object.data_transfer(data_type='CUSTOM_NORMAL')
             obj.select = False
-            bpy.context.scene.object.active = obj
+            bpy.context.scene.objects.active = obj
             mesh.calc_normals_split()
 
         # doing safety checks
