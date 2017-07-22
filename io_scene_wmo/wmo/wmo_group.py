@@ -807,18 +807,12 @@ class WMOGroupFile:
         else:
             bpy.ops.mesh.customdata_custom_splitnormals_add()
             original_obj.data.calc_normals_split()
-            loop_pos_tree = mathutils.kdtree.KDTree(len(original_obj.data.loops))
 
-            for index, loop in enumerate(original_obj.data.loops):
-                vertex_pos = original_obj.matrix_world * original_obj.data.vertices[loop.vertex_index].co
-                loop_pos_tree.insert(tuple(vertex_pos), index)
-
-                loop_pos_tree.balance()
-
-            custom_normals = [original_obj.data.loops[loop_pos_tree.find(tuple(mesh.vertices[loop.vertex_index].co))[1]].normal
-                              for loop in mesh.loops]
-
-            mesh.normals_split_custom_set(custom_normals)
+            obj.select = True
+            bpy.context.scene.object.active = original_obj
+            bpy.ops.object.data_transfer(data_type='CUSTOM_NORMAL')
+            obj.select = False
+            bpy.context.scene.object.active = obj
             mesh.calc_normals_split()
 
         # doing safety checks
