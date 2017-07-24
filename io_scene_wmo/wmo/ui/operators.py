@@ -888,7 +888,7 @@ class OBJECT_OP_Fill_Textures(bpy.types.Operator):
                         and not mesh.materials[i].WowMaterial.Texture1 \
                         and mesh.materials[i].active_texture.type == 'IMAGE' \
                         and mesh.materials[i].active_texture.image is not None:
-                    path = (os.path.splitext(mesh.materials[i].active_texture.image.filepath)[0] + ".blp", "")
+                    path = (os.path.splitext(bpy.path.abspath(mesh.materials[i].active_texture.image.filepath))[0] + ".blp", "")
                     rest_path = ""
 
                     while True:
