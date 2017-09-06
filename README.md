@@ -10,10 +10,6 @@ This repo only exists for development purposes, not for deploying versions to us
 # Donation
 The provided software is available completely free of charge, however if you want to support me, here is my PayPal account: https://www.paypal.me/sergeishumakov2015
 
-Also there is a thing that can speed up the development of Blender addons for me. http://blendermarket.com/products/code-autocomplete/. I will also share this purchased script with Miton who is at the moment working on a similar Blender plugin for .M2 models. So, by helping me, you can speed up the development of two tools at once.
-
-Thanks to K.Stranden for making a donation.
-
 # Currently supported features
 - Geometry editing. The script allows the user to edit WMO geometry, UVmaps and create outdoor and indor groups.
 - Material editing. The addon supports all features of WoW material system. A user is able to create materials, set textures, change used shaders, blending modes, flags etc.
