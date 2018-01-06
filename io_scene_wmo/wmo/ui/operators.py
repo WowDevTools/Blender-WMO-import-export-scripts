@@ -24,7 +24,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
     def poll(cls, context):
         return True
 
-    dir_path = StringProperty(
+    dir_path = bpy.props.StringProperty(
         name="",
         description="Choose a directory with ADTs:",
         default="",
