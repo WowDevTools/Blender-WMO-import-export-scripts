@@ -69,6 +69,11 @@ class WMOPreferences(bpy.types.AddonPreferences):
         subtype='DIR_PATH'
     )
 
+    fileinfo_path = StringProperty(
+        name="Path to fileinfo.exe",
+        subtype='DIR_PATH'
+    )
+
     wmv_path = StringProperty(
         name="WoW Model Viewer Log Path",
         subtype='FILE_PATH'

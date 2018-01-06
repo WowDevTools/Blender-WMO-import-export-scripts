@@ -2,15 +2,124 @@ from .panels import *
 from ...m2 import import_m2 as m2
 
 import bpy
+import subprocess
 import mathutils
 import os
 import sys
 import time
+import struct
 
 
 ###############################
 ## WMO operators
 ###############################
+
+class IMPORT_ADT_SCENE(bpy.types.Operator):
+    bl_idname = "scene.wow_import_adt_scene"
+    bl_label = "Import M2s and WMOs from ADT"
+    bl_description = "Import M2s and WMOs from ADT"
+    bl_options = {'UNDO', 'REGISTER'}
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    dir_path = StringProperty(
+        name="",
+        description="Choose a directory with ADTs:",
+        default="",
+        maxlen=1024,
+        subtype='DIR_PATH')
+
+
+    def execute(self, context):
+
+        game_data = getattr(bpy, "wow_game_data", None)
+
+        if not game_data or not game_data.files:
+            self.report({'ERROR'}, "Failed to import model. Connect to game client first.")
+            return {'CANCELLED'}
+
+        save_dir = bpy.path.abspath("//") if bpy.data.is_saved else None
+
+        if not save_dir:
+            self.report({'ERROR'}, """Failed to import WMO.
+            Save your blendfile first.""")
+            return {'CANCELLED'}
+
+        preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
+
+        dir = self.dir_path
+        fileinfo_path = preferences.fileinfo_path
+
+        m2_paths = []
+        wmo_paths = []
+
+        m2_instances = {}
+        wmo_instances = {}
+
+        for filename in os.listdir(dir):
+
+            if filename.endswith(".adt"):
+                filepath = os.path.join(dir, filename)
+                subprocess.call([fileinfo_path, filepath])
+
+                with open(os.path.splitext(filepath)[0] + ".txt", 'r') as f:
+
+                    cur_chunk = ""
+                    for line in f.readlines():
+                        parsed_line = line.replace('\t', ' ')
+                        data = parsed_line.split()
+
+                        if not data:
+                            continue
+
+                        if data[0] in {'MMDX', 'MWMO', 'MDDF', 'MODF'}:
+                            cur_chunk = data[0]
+                        else:
+                            if cur_chunk == 'MMDX':
+                                m2_paths.append(data[1])
+                            elif cur_chunk == 'MWMO':
+                                wmo_paths.append(data[1])
+                            elif cur_chunk == 'MDDF':
+                                m2_instances[data[1]] = data[2:].insert(0, data[0])
+                            elif cur_chunk == 'MODF':
+                                wmo_instances[data[1]] = data[2:].insert(0, data[0])
+
+        for instance in m2_instances:
+            obj = None
+            doodad_path = m2_paths[instance[0]]
+            try:
+                obj = m2.m2_to_blender_mesh(save_dir, doodad_path, game_data)
+            except:
+                bpy.ops.mesh.primitive_cube_add()
+                obj = bpy.context.scene.objects.active
+                print("#nFailed to import model: <<{}>>. Placeholder is imported instead.".format(doodad_path))
+
+            obj.location = (instance[1], instance[3], instance[2])
+            obj.rotation = instance[4:6]
+            obj.scale = (instance[7] / 1024.0 for _ in range(3))
+
+        '''
+        from .. import import_wmo
+        for instance in wmo_instances:
+            obj = None
+            wmo_path = wmo_paths[instance[0]]
+            try:
+                import_wmo.import_wmo_to_blender_scene(os.path.join(save_dir, wmo_path), True, True)
+            except:
+                bpy.ops.mesh.primitive_cube_add()
+                obj = bpy.context.scene.objects.active
+                print("#nFailed to import model: <<{}>>. Placeholder is imported instead.".format(doodad_path))
+
+            obj.location = (instance[1], instance[3], instance[2])
+            obj.rotation = instance[4:6]
+        '''
+
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_confirm(self, event)
 
 class IMPORT_LAST_WMO_FROM_WMV(bpy.types.Operator):
     bl_idname = "scene.wow_import_last_wmo_from_wmv"
