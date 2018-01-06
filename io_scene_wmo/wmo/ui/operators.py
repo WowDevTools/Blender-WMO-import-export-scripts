@@ -50,6 +50,9 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
         preferences = bpy.context.user_preferences.addons.get("io_scene_wmo").preferences
 
         dir = self.dir_path
+        if not dir:
+            return {'FINISHED'}
+
         fileinfo_path = preferences.fileinfo_path
 
         m2_paths = []

@@ -123,6 +123,7 @@ class WMOPreferences(bpy.types.AddonPreferences):
         self.layout.prop(self, "wow_path")
         self.layout.prop(self, "wmv_path")
         self.layout.prop(self, "blp_path")
+        self.layour.prop(self, "fileinfo_path")
         addon_updater_ops.update_settings_ui(self, context)
 
 class WMOImporter(bpy.types.Operator):
