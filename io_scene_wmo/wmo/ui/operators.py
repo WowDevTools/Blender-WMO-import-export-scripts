@@ -91,7 +91,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
 
         for instance in m2_instances:
             obj = None
-            doodad_path = m2_paths[instance[0]]
+            doodad_path = m2_paths[int(instance[0])]
             try:
                 obj = m2.m2_to_blender_mesh(save_dir, doodad_path, game_data)
             except:
@@ -99,9 +99,9 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                 obj = bpy.context.scene.objects.active
                 print("#nFailed to import model: <<{}>>. Placeholder is imported instead.".format(doodad_path))
 
-            obj.location = (instance[1], instance[3], instance[2])
-            obj.rotation = instance[4:6]
-            obj.scale = (instance[7] / 1024.0 for _ in range(3))
+            obj.location = (float(instance[1]), float(instance[3]), float(instance[2]))
+            obj.rotation = (float(instance[4]), float(instance[5]), float(instance[6]))
+            obj.scale = (float(instance[7]) / 1024.0 for _ in range(3))
 
         '''
         from .. import import_wmo
