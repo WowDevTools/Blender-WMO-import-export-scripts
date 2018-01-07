@@ -142,7 +142,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                 obj.parent = parent
 
         from .. import import_wmo
-        for instance in wmo_instances:
+        for uid, instance in wmo_instances.items():
             obj = None
             wmo_path = wmo_paths[int(instance[0])]
             try:
