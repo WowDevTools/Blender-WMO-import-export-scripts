@@ -71,7 +71,7 @@ class WMOPreferences(bpy.types.AddonPreferences):
 
     fileinfo_path = StringProperty(
         name="Path to fileinfo.exe",
-        subtype='DIR_PATH'
+        subtype='FILE_PATH'
     )
 
     wmv_path = StringProperty(

@@ -37,7 +37,7 @@ def import_wmo_to_blender_scene(filepath, load_textures, import_doodads, group_o
     if group_objects:
         bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
         parent = bpy.context.scene.objects.active
-        parent.name = wmo.display_name
+        parent.name = wmo.display_name + ".wmo"
         wmo.parent = parent
 
     # load all materials in root file
@@ -53,7 +53,7 @@ def import_wmo_to_blender_scene(filepath, load_textures, import_doodads, group_o
     for group in wmo.groups:
         obj_name = wmo.mogn.get_string(group.mogp.GroupNameOfs)
         print("\nImporting group <<{}>>".format(obj_name))
-        group.load_object(wmo, obj_name, import_doodads)
+        group.load_object(obj_name, import_doodads)
 
     wmo.load_portals()
 

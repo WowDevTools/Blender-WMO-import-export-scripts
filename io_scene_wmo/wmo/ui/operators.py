@@ -83,11 +83,15 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                     break
                 i += 1
 
+            bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
+            parent = bpy.context.scene.objects.active
+            parent.name = group_name
+
         for filename in os.listdir(dir):
 
             if filename.endswith(".adt"):
                 filepath = os.path.join(dir, filename)
-                subprocess.call([fileinfo_path, filepath])
+                subprocess.call([fileinfo_path, filepath] )
 
                 with open(os.path.splitext(filepath)[0] + ".txt", 'r') as f:
 
@@ -115,6 +119,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                                 entry.insert(0, data[0])
                                 wmo_instances[data[1]] = entry
 
+
         for uid, instance in m2_instances.items():
             obj = None
             doodad_path = m2_paths[int(instance[0])]
@@ -125,6 +130,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                 obj = bpy.context.scene.objects.active
                 print("\nFailed to import model: <<{}>>. Placeholder is imported instead.".format(doodad_path))
 
+            obj.name += ".m2"
             obj.location = ((-float(instance[1])), (float(instance[3])), float(instance[2]))
             obj.rotation_euler = (math.radians(float(instance[6])),
                                   math.radians(float(instance[4])),
@@ -136,26 +142,37 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                 obj.WoWDoodad.Path = doodad_path
 
             if self.group_objects:
-                bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
-                parent = bpy.context.scene.objects.active
-                parent.name = group_name
                 obj.parent = parent
+
 
         from .. import import_wmo
         for uid, instance in wmo_instances.items():
             obj = None
             wmo_path = wmo_paths[int(instance[0])]
+
+            game_data.extract_files(save_dir, (wmo_path,))
+
+            i = 0
+            while True:
+                result = game_data.extract_files(save_dir, (wmo_path[:-4] + "_" + str(i).zfill(3) + ".wmo",))
+                if not result:
+                    break
+                i += 1
+
             try:
                 obj = import_wmo.import_wmo_to_blender_scene(os.path.join(save_dir, wmo_path), True, True, True)
             except:
                 bpy.ops.mesh.primitive_cube_add()
                 obj = bpy.context.scene.objects.active
-                print("#nFailed to import model: <<{}>>. Placeholder is imported instead.".format(wmo_path))
+                print("\nFailed to import model: <<{}>>. Placeholder is imported instead.".format(wmo_path))
 
             obj.location = ((-float(instance[1])), (float(instance[3])), float(instance[2]))
             obj.rotation_euler = (math.radians(float(instance[6])),
                                   math.radians(float(instance[4])),
                                   math.radians(float(instance[5]) + 90))
+
+            if self.group_objects:
+                obj.parent = parent
 
         return {'FINISHED'}
 
