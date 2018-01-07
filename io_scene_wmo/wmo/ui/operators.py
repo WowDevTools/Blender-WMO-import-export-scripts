@@ -30,7 +30,13 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
         default="",
         maxlen=1024,
         subtype='DIR_PATH')
-~
+
+    doodads_on = bpy.props.BoolProperty(
+        name="As doodads",
+        description="Import M2 models as doodads",
+        default=True
+    )
+
     def execute(self, context):
 
         game_data = getattr(bpy, "wow_game_data", None)
@@ -108,6 +114,9 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                                   math.radians(float(instance[5]) + 90))
             obj.scale = tuple((float(instance[7]) / 1024.0 for _ in range(3)))
 
+            if self.doodads_on:
+                obj.WoWDoodad.Enabled = True
+                obj.WoWDoodad.Path = doodad_path
 
 
         '''
@@ -130,6 +139,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
 
     def invoke(self, context, event):
         return context.window_manager.invoke_confirm(self, event)
+
 
 class IMPORT_LAST_WMO_FROM_WMV(bpy.types.Operator):
     bl_idname = "scene.wow_import_last_wmo_from_wmv"
