@@ -4,6 +4,7 @@ from ...m2 import import_m2 as m2
 import bpy
 import subprocess
 import mathutils
+import math
 import os
 import sys
 import time
@@ -136,7 +137,6 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
 
             if self.group_objects:
                 bpy.data.groups[group_name].objects.link(obj)
-
 
         '''
         from .. import import_wmo
