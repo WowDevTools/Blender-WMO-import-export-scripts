@@ -85,9 +85,13 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                             elif cur_chunk == 'MWMO':
                                 wmo_paths.append(data[1])
                             elif cur_chunk == 'MDDF':
-                                m2_instances[data[1]] = data[2:].insert(0, data[0])
+                                entry = data[2:]
+                                entry.insert(0, data[0])
+                                m2_instances[data[1]] = entry
                             elif cur_chunk == 'MODF':
-                                wmo_instances[data[1]] = data[2:].insert(0, data[0])
+                                entry = data[2:]
+                                entry.insert(0, data[0])
+                                wmo_instances[data[1]] = entry
 
         for uid, instance in m2_instances.items():
             obj = None
