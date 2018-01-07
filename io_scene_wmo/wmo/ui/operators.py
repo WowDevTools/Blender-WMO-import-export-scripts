@@ -100,7 +100,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                 print("#nFailed to import model: <<{}>>. Placeholder is imported instead.".format(doodad_path))
 
             obj.location = (float(instance[1]), float(instance[3]), float(instance[2]))
-            obj.rotation = (float(instance[4]), float(instance[5]), float(instance[6]))
+            obj.rotation_euler = (float(instance[4]), float(instance[5]), float(instance[6]))
             obj.scale = (float(instance[7]) / 1024.0 for _ in range(3))
 
         '''
