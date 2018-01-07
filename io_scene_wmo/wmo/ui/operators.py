@@ -138,21 +138,21 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
             if self.group_objects:
                 bpy.data.groups[group_name].objects.link(obj)
 
-        '''
         from .. import import_wmo
         for instance in wmo_instances:
             obj = None
             wmo_path = wmo_paths[instance[0]]
             try:
-                import_wmo.import_wmo_to_blender_scene(os.path.join(save_dir, wmo_path), True, True)
+                obj = import_wmo.import_wmo_to_blender_scene(os.path.join(save_dir, wmo_path), True, True, True)
             except:
                 bpy.ops.mesh.primitive_cube_add()
                 obj = bpy.context.scene.objects.active
-                print("#nFailed to import model: <<{}>>. Placeholder is imported instead.".format(doodad_path))
+                print("#nFailed to import model: <<{}>>. Placeholder is imported instead.".format(wmo_path))
 
-            obj.location = (instance[1], instance[3], instance[2])
-            obj.rotation = instance[4:6]
-        '''
+            obj.location = ((-float(instance[1])), (float(instance[3])), float(instance[2]))
+            obj.rotation_euler = (math.radians(float(instance[6])),
+                                  math.radians(float(instance[4])),
+                                  math.radians(float(instance[5]) + 90))
 
         return {'FINISHED'}
 
@@ -212,7 +212,7 @@ class IMPORT_LAST_WMO_FROM_WMV(bpy.types.Operator):
 
             try:
                 from .. import import_wmo
-                import_wmo.import_wmo_to_blender_scene(os.path.join(dir, wmo_path), True, True)
+                import_wmo.import_wmo_to_blender_scene(os.path.join(dir, wmo_path), True, True, True)
             except:
                 self.report({'ERROR'}, "Failed to import model.")
                 return {'CANCELLED'}

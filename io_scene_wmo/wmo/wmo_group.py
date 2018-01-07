@@ -304,7 +304,7 @@ class WMOGroupFile:
         return indices
 
     # Create mesh from file data
-    def load_object(self, obj_name, base_name, editable_doodads):
+    def load_object(self, root, obj_name, editable_doodads):
         """ Load WoW WMO group as an object to the Blender scene """
         custom_normals = []
         faces = []
@@ -489,10 +489,10 @@ class WMOGroupFile:
         nobj.WowWMOGroup.GroupDesc = self.root.mogn.get_string(self.mogp.DescGroupNameOfs)
         nobj.WowWMOGroup.GroupDBCid = int(self.mogp.GroupID)
 
-        nobj.WowWMOGroup.Fog1 = base_name + "_Fog_" + str(self.mogp.FogIndices[0]).zfill(2)
-        nobj.WowWMOGroup.Fog2 = base_name + "_Fog_" + str(self.mogp.FogIndices[1]).zfill(2)
-        nobj.WowWMOGroup.Fog3 = base_name + "_Fog_" + str(self.mogp.FogIndices[2]).zfill(2)
-        nobj.WowWMOGroup.Fog4 = base_name + "_Fog_" + str(self.mogp.FogIndices[3]).zfill(2)
+        nobj.WowWMOGroup.Fog1 = root.display_name + "_Fog_" + str(self.mogp.FogIndices[0]).zfill(2)
+        nobj.WowWMOGroup.Fog2 = root.display_name + "_Fog_" + str(self.mogp.FogIndices[1]).zfill(2)
+        nobj.WowWMOGroup.Fog3 = root.display_name + "_Fog_" + str(self.mogp.FogIndices[2]).zfill(2)
+        nobj.WowWMOGroup.Fog4 = root.display_name + "_Fog_" + str(self.mogp.FogIndices[3]).zfill(2)
 
         if self.mogp.Flags & MOGP_FLAG.HasWater:
             self.load_liquids(obj_name, nobj.location)
@@ -543,6 +543,9 @@ class WMOGroupFile:
 
         if scn.objects.active is None or scn.objects.active.mode == 'OBJECT':
             scn.objects.active = nobj
+
+        if root.parent:
+            nobj.parent = root.parent
 
     def get_portal_direction(self, portal_obj, group_obj):
         """ Get the direction of MOPR portal relation given a portal object and a target group """

@@ -18,6 +18,8 @@ class WMOFile:
         self.bl_scene_objects = BlenderSceneObjects()
         self.material_lookup = {}
         self.texture_lookup = {}
+        self.display_name = os.path.basename(os.path.splitext(filepath)[0])
+        self.parent = None
 
         self.mver = MVER_chunk()
         self.mohd = MOHD_chunk()
@@ -218,12 +220,13 @@ class WMOFile:
 
         return group_info.NameOfs, desc_ofs
 
-    def load_materials(self, name, texture_path):
+    def load_materials(self):
         """ Load materials from WoW WMO root file """
         self.material_lookup = {}
+        texture_path = os.path.dirname(self.filepath) + "\\"
 
         images = []
-        imageNames = []
+        image_names = []
 
         # Add ghost material
         mat = bpy.data.materials.get("WowMaterial_ghost")
@@ -279,17 +282,17 @@ class WMOFile:
 
                     # check if image already loaded
                     for iImg in range(len(images)):
-                        if imageNames[iImg] == tex1_img_filename:
+                        if image_names[iImg] == tex1_img_filename:
                             tex1.image = images[iImg]
                             img1_loaded = True
                             break
 
                     # if image is not loaded, do it
-                    if img1_loaded == False:
+                    if not img1_loaded:
                         tex1_img = bpy.data.images.load(texture_path + tex1_img_filename)
                         tex1.image = tex1_img
                         images.append(tex1_img)
-                        imageNames.append(tex1_img_filename)
+                        image_names.append(tex1_img_filename)
 
                 except:
                     pass
@@ -311,25 +314,23 @@ class WMOFile:
 
                     # check if image already loaded
                     for iImg in range(len(images)):
-                        if imageNames[iImg] == tex2_img_filename:
+                        if image_names[iImg] == tex2_img_filename:
                             tex2.image = images[iImg]
                             img2_loaded = True
                             break
 
                     # if image is not loaded, do it
-                    if img2_loaded == False:
+                    if not img2_loaded:
                         tex2_img = bpy.data.images.load(texture_path + tex2_img_filename)
                         tex2.image = tex2_img
                         images.append(tex2_img)
-                        imageNames.append(tex2_img_filename)
+                        image_names.append(tex2_img_filename)
                 except:
                     pass
 
-    def load_lights(self, name):
+    def load_lights(self):
         """ Load WoW WMO MOLT lights """
         for i in range(len(self.molt.Lights)):
-            light_name = name + "_Light_" + str(i).zfill(2)
-
             l = self.molt.Lights[i]
 
             bl_light_types = ['POINT', 'SPOT', 'SUN', 'POINT']
@@ -339,7 +340,7 @@ class WMOFile:
             except IndexError:
                 raise Exception("Light type unknown : {} (light nbr : {})".format(str(l.LightType), str(i)))
 
-            light_name = name + "_Light_" + str(i).zfill(2)
+            light_name = self.display_name + "_Light_" + str(i).zfill(2)
             light = bpy.data.lamps.new(light_name, l_type)
             light.color = (l.Color[2] / 255, l.Color[1] / 255, l.Color[0] / 255)
             light.energy = l.Intensity
@@ -366,7 +367,11 @@ class WMOFile:
 
             bpy.context.scene.objects.link(obj)
 
-    def load_fogs(self, name):
+            if self.parent:
+                obj.parent = self.parent
+
+
+    def load_fogs(self):
         """ Load WoW WMO fog objects """
         for i in range(len(self.mfog.Fogs)):
 
@@ -378,7 +383,7 @@ class WMOFile:
             if not f.BigRadius:
                 fog.hide = False
 
-            fog.name = name + "_Fog_" + str(i).zfill(2)
+            fog.name = self.display_name + "_Fog_" + str(i).zfill(2)
 
             # applying real object transformation
             fog.location = f.Position
@@ -429,6 +434,9 @@ class WMOFile:
             fog.WowFog.StartFactor2 = f.StartFactor2
             fog.WowFog.Color2 = (f.Color2[2] / 255, f.Color2[1] / 255, f.Color2[0] / 255)
 
+            if self.parent:
+                fog.parent = self.parent
+
     def load_doodads(self, dir=None, game_data=None):
         """ Load doodad sets to scene. Two modes are supported: data storing and actual import."""
         scene = bpy.context.scene
@@ -445,6 +453,9 @@ class WMOFile:
                 anchor.lock_location = (True, True, True)
                 anchor.lock_rotation = (True, True, True)
                 anchor.lock_scale = (True, True, True)
+
+                if self.parent:
+                    anchor.parent = self.parent
 
                 for i in range(doodad_set.StartDoodad, doodad_set.StartDoodad + doodad_set.nDoodads):
                     doodad = self.modd.Definitions[i]
@@ -535,11 +546,11 @@ class WMOFile:
                     path.String = self.modn.get_string(property_definition.NameOfs)
                     string_filter.append(property_definition.NameOfs)
 
-    def load_portals(self, name, root):
+    def load_portals(self):
         """ Load WoW WMO portal planes """
         vert_count = 0
         for index, portal in enumerate(self.mopt.Infos):
-            portal_name = name + "_Portal_" + str(index).zfill(3)
+            portal_name = self.display_name + "_Portal_" + str(index).zfill(3)
 
             verts = []
             face = []
@@ -573,7 +584,10 @@ class WMOFile:
             mesh.from_pydata(verts, [], faces)
             bpy.context.scene.objects.link(obj)
 
-    def load_properties(self, name):
+            if self.parent:
+                obj.parent = self.parent
+
+    def load_properties(self):
         """ Load global WoW WMO properties """
         properties = bpy.context.scene.WoWRoot
         properties.AmbientColor = [float(self.mohd.AmbientColor[2] / 255),

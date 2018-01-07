@@ -5,7 +5,7 @@ import time
 from .wmo_file import WMOFile
 
 
-def import_wmo_to_blender_scene(filepath, load_textures, import_doodads):
+def import_wmo_to_blender_scene(filepath, load_textures, import_doodads, group_objects):
     """ Read and import WoW WMO object to Blender scene"""
 
     start_time = time.time()
@@ -32,24 +32,30 @@ def import_wmo_to_blender_scene(filepath, load_textures, import_doodads):
         else:
             print("\nFailed to load textures because game data was not loaded.")
 
-    display_name = os.path.basename(os.path.splitext(filepath)[0])
+    # group objects if required
+    parent = None
+    if group_objects:
+        bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
+        parent = bpy.context.scene.objects.active
+        parent.name = wmo.display_name
+        wmo.parent = parent
 
     # load all materials in root file
-    wmo.load_materials(display_name, os.path.dirname(filepath) + "\\")
+    wmo.load_materials()
 
     # load all WMO components
-    wmo.load_lights(display_name)
-    wmo.load_properties(display_name)
-    wmo.load_fogs(display_name)
+    wmo.load_lights()
+    wmo.load_properties()
+    wmo.load_fogs()
 
     print("\n\n### Importing WMO groups ###")
 
     for group in wmo.groups:
         obj_name = wmo.mogn.get_string(group.mogp.GroupNameOfs)
         print("\nImporting group <<{}>>".format(obj_name))
-        group.load_object(obj_name, display_name, import_doodads)
+        group.load_object(wmo, obj_name, import_doodads)
 
-    wmo.load_portals(display_name, wmo)
+    wmo.load_portals()
 
     print("\n\n### Importing WMO doodad sets ###")
 
@@ -60,3 +66,5 @@ def import_wmo_to_blender_scene(filepath, load_textures, import_doodads):
 
     print("\nDone importing WMO. \nTotal import time: ",
           time.strftime("%M minutes %S seconds.\a", time.gmtime(time.time() - start_time)))
+
+    return parent

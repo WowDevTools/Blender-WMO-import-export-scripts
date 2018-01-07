@@ -153,8 +153,14 @@ class WMOImporter(bpy.types.Operator):
         default=True,
         )
 
+    group_objects = BoolProperty(
+        name="Group objects",
+        description="Group all objects of this WMO on import",
+        default=False,
+        )
+
     def execute(self, context):
-        import_wmo.import_wmo_to_blender_scene(self.filepath, self.load_textures, self.import_doodads)
+        import_wmo.import_wmo_to_blender_scene(self.filepath, self.load_textures, self.import_doodads, self.group_objects)
         return {'FINISHED'}
 
     def invoke(self, context, event):
