@@ -144,7 +144,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
         from .. import import_wmo
         for instance in wmo_instances:
             obj = None
-            wmo_path = wmo_paths[instance[0]]
+            wmo_path = wmo_paths[int(instance[0])]
             try:
                 obj = import_wmo.import_wmo_to_blender_scene(os.path.join(save_dir, wmo_path), True, True, True)
             except:
