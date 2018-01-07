@@ -76,9 +76,9 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
         group_name = None
         if self.group_objects:
             i = 0
-            while(True):
+            while True:
                 name = "ADTImport_" + str(i)
-                if name not in bpy.data.groups:
+                if name not in bpy.context.scene.objects:
                     group_name = name
                     break
                 i += 1
@@ -123,7 +123,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
             except:
                 bpy.ops.mesh.primitive_cube_add()
                 obj = bpy.context.scene.objects.active
-                print("#nFailed to import model: <<{}>>. Placeholder is imported instead.".format(doodad_path))
+                print("\nFailed to import model: <<{}>>. Placeholder is imported instead.".format(doodad_path))
 
             obj.location = ((-float(instance[1])), (float(instance[3])), float(instance[2]))
             obj.rotation_euler = (math.radians(float(instance[6])),
@@ -136,7 +136,10 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                 obj.WoWDoodad.Path = doodad_path
 
             if self.group_objects:
-                bpy.data.groups[group_name].objects.link(obj)
+                bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
+                parent = bpy.context.scene.objects.active
+                parent.name = group_name
+                obj.parent = parent
 
         from .. import import_wmo
         for instance in wmo_instances:
