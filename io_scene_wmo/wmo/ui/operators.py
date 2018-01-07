@@ -37,6 +37,12 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
         default=True
     )
 
+    group_objects = bpy.props.BoolProperty(
+        name="Group objects",
+        description="Add imported objects to a new group",
+        default=True
+    )
+
     def execute(self, context):
 
         game_data = getattr(bpy, "wow_game_data", None)
@@ -65,6 +71,16 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
 
         m2_instances = {}
         wmo_instances = {}
+
+        group_name = None
+        if self.group_objects:
+            i = 0
+            while(True):
+                name = "ADTImport_" + str(i)
+                if name not in bpy.data.groups:
+                    group_name = name
+                    break
+                i += 1
 
         for filename in os.listdir(dir):
 
@@ -117,6 +133,9 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
             if self.doodads_on:
                 obj.WoWDoodad.Enabled = True
                 obj.WoWDoodad.Path = doodad_path
+
+            if self.group_objects:
+                bpy.data.groups[group_name].objects.link(obj)
 
 
         '''
