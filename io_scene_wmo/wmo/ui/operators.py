@@ -120,15 +120,27 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                                 wmo_instances[data[1]] = entry
 
 
+        instance_cache = {}
+
+        # import M2s
         for uid, instance in m2_instances.items():
-            obj = None
             doodad_path = m2_paths[int(instance[0])]
-            try:
-                obj = m2.m2_to_blender_mesh(save_dir, doodad_path, game_data)
-            except:
-                bpy.ops.mesh.primitive_cube_add()
-                obj = bpy.context.scene.objects.active
-                print("\nFailed to import model: <<{}>>. Placeholder is imported instead.".format(doodad_path))
+            cached_obj = instance_cache.get(doodad_path)
+
+            if cached_obj:
+                obj = cached_obj.copy()
+                obj.data = cached_obj.data.copy()
+                bpy.context.scene.objects.link(obj)
+
+            else:
+                try:
+                    obj = m2.m2_to_blender_mesh(save_dir, doodad_path, game_data)
+                except:
+                    bpy.ops.mesh.primitive_cube_add()
+                    obj = bpy.context.scene.objects.active
+                    print("\nFailed to import model: <<{}>>. Placeholder is imported instead.".format(doodad_path))
+
+                instance_cache[doodad_path] = obj
 
             obj.name += ".m2"
             obj.location = ((-float(instance[1])), (float(instance[3])), float(instance[2]))
@@ -144,11 +156,14 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
             if self.group_objects:
                 obj.parent = parent
 
-
+        # import WMOs
         from .. import import_wmo
         for uid, instance in wmo_instances.items():
-            obj = None
+
             wmo_path = wmo_paths[int(instance[0])]
+
+            cached_obj = instance_cache.get(wmo_path)
+
 
             game_data.extract_files(save_dir, (wmo_path,))
 
@@ -165,6 +180,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                 bpy.ops.mesh.primitive_cube_add()
                 obj = bpy.context.scene.objects.active
                 print("\nFailed to import model: <<{}>>. Placeholder is imported instead.".format(wmo_path))
+
 
             obj.location = ((-float(instance[1])), (float(instance[3])), float(instance[2]))
             obj.rotation_euler = (math.radians(float(instance[6])),
