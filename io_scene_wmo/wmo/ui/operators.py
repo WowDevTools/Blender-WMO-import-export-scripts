@@ -89,7 +89,7 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
                             elif cur_chunk == 'MODF':
                                 wmo_instances[data[1]] = data[2:].insert(0, data[0])
 
-        for instance in m2_instances:
+        for uid, instance in m2_instances.items():
             obj = None
             doodad_path = m2_paths[int(instance[0])]
             try:
@@ -102,6 +102,8 @@ class IMPORT_ADT_SCENE(bpy.types.Operator):
             obj.location = (float(instance[1]), float(instance[3]), float(instance[2]))
             obj.rotation_euler = (float(instance[4]), float(instance[5]), float(instance[6]))
             obj.scale = tuple((float(instance[7]) / 1024.0 for _ in range(3)))
+
+
 
         '''
         from .. import import_wmo
