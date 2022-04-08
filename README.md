@@ -2,8 +2,8 @@
 Actually this addon is much more than a usual import/export Blender plugin. Besides core functionality of importing and saving edited WMOs, this addon is also a powerful editor supporting nearly all features of World of Warcraft World Model Object (WMO) files. Written in Python using Blender API.
 
 # DEPRECATED!!!
-This repository is deprecated in favor of WoW Blender Studio, an more recent continuation of this addon. https://gitlab.com/skarnproject/blender-wow-studio.
-WoW Blender Studio is intended to be used for the most recent versions of Blender. The code on *this* repo only supports Blender 2.79b. Not support for this version will be given.
+This repository is deprecated in favor of WoW Blender Studio, a more recent continuation of this addon. https://gitlab.com/skarnproject/blender-wow-studio.
+WoW Blender Studio is intended to be used with the most recent versions of Blender. The code on **this** repository only supports Blender 2.79b. No support for this version will be given.
 
 # What is World Model Object?
 World Model Object or just WMO is a special compound 3D structure used in the game World of Warcraft for making buildings, dungeons and other big complicated 3D objects. It does not only contain traditional 3D model parts as geometry, UV maps, materials and so on; but it does also support features like liquids, complex lighting system, portal culling system and much more.
